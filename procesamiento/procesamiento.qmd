@@ -1,0 +1,628 @@
+---
+title: "Preparación"
+format:
+  html:
+    code-copy: true
+    code-tools: true
+    toc: true
+    toc-location: right
+    toc-depth: 4
+    toc-expand: 2
+    toc-title: Contents
+    number-sections: true
+    number-depth: 4
+    fig-width: 10
+    fig-height: 7
+editor_options:
+  chunk_output_type: console
+editor: source
+lang: es
+fontsize: 12pt
+---
+
+```{r}
+#| label: set
+#| echo: false
+#| message: false
+#| warning: false
+
+library(knitr)
+knitr::opts_chunk$set(echo = FALSE, include = TRUE, warning = FALSE, message = FALSE)
+
+table_format <- if(is_html_output()) {
+  "html"
+} else if(is_latex_output()) {
+  "latex"
+}
+table_format2 <- if(is_html_output()) {
+  T
+} else if(is_latex_output()) {
+  F
+}
+
+options(kableExtra.html.bsTable = T)
+options(knitr.kable.NA = "")
+```
+
+```{r}
+if (!require("pacman")) install.packages("pacman") # instalar pacman
+                            # cargar librerias
+pacman::p_load(dplyr,       # Manipulacion de datos
+               knitr,
+               kableExtra,
+               summarytools,
+               ggplot2,
+               ggeffects,
+               haven,
+               sjlabelled,
+               lme4,
+               sjmisc,
+               sjPlot,
+               ggrepel,
+               ggpubr
+               )
+
+data_original<- haven::read_dta(here::here("input/original/OECD_RTM_2024.dta"))
+
+# Verificación del filtro de Q25: el cuestionario cita S11 = A/D/E, pero la
+# condición descrita (en trabajo o temporalmente ausente) corresponde a S10 = 1, 4, 5.
+# La tabla muestra quiénes respondieron efectivamente la batería.
+table(data_original$s10, !is.na(data_original$q25a))
+
+data <- data_original %>%
+  dplyr::select(id,
+              country,
+              ctrcode,
+              year,
+              ctryear,
+              weight,
+              # Sociodemográficas
+              sex=s2,
+              age=s3_agegroup,
+              educ=s7_cat3,
+              income=s9_dec,
+              born=s5,
+              place=s14,
+              # Situación y posición laboral
+              workstatus=s10,
+              selfemploy=s11,
+              contract=s12,
+              employment=s25,
+              sector=s26,
+              public=s27,
+              platform=s29,
+              # Q25. Amenaza egotrópica: probabilidad de que ocurra en el propio empleo (5 años)
+              tecnoestres_1=q25a,    # reemplazo por un robot
+              tecnoestres_2=q25b,    # reemplazo por una persona venida de otro país
+              tecnoestres_3=q25c,    # reemplazo por una herramienta de IA tipo ChatGPT
+              tecnoestres_4=q25d,    # traslado del empleo a otro país
+              tecnoestres_5=q25e,    # reemplazo por una persona en una plataforma
+              tecnoestres_6=q25f,    # pérdida del empleo por habilidades tecnológicas
+              tecnoestres_7=q25g,    # mayor compatibilidad con la vida privada
+              tecnoestres_8=q25h,    # trabajo menos peligroso o exigente físicamente
+              tecnoestres_9=q25i,    # trabajo menos aburrido, repetitivo o estresante
+              # Q26. Expectativas sociotrópicas: efectos de la IA en el país (5 a 10 años)
+              ai_country_1=q26a,     # aumento de la desigualdad de ingresos
+              ai_country_2=q26b,     # más tiempo libre
+              ai_country_3=q26c,     # trabajos menos aburridos o estresantes
+              ai_country_4=q26d,     # creación de más empleos
+              ai_country_5=q26e,     # más desempleo
+              ai_country_6=q26f,     # más vigilancia en el trabajo
+              ai_country_7=q26g,     # necesidad de reentrenarse
+              # Q27. Apoyo a medidas frente a la digitalización y el cambio tecnológico
+              policy_1=q27a,         # educación universitaria y vocacional para jóvenes
+              policy_2=q27b,         # reentrenamiento para personas en edad de trabajar
+              policy_3=q27c,         # infraestructura digital
+              policy_4=q27d,         # impuesto a robots o empresas tecnológicas
+              policy_5=q27e,         # límite o reducción de la jornada laboral
+              policy_6=q27f,         # prestaciones más accesibles o generosas
+              policy_7=q27g,         # renta básica universal e incondicional
+              policy_8=q27h,         # subsidios a empresas de industrias afectadas
+              policy_9=q27i,         # migración de trabajadores calificados
+              policy_10=q27j,        # migración de trabajadores no calificados
+              policy_11=q27k,        # prioridad a trabajadores nacionales en la contratación
+              policy_12=q27l,        # aranceles para proteger industrias nacionales
+              # Q11. Protección percibida: apoyo adecuado ante pérdida de ingresos por...
+              protection_1=q11a,     # desempleo
+              protection_2=q11b,     # enfermedad o discapacidad
+              protection_3=q11c,     # tener hijos
+              protection_4=q11d,     # dejar de trabajar para cuidar
+              protection_5=q11e,     # jubilación
+              protection_6=q11f,     # muerte del cónyuge o pareja
+              protection_7=q11g,     # desastre de gran magnitud
+              # Otras percepciones y actitudes
+              unnemployment=q2b,     # preocupación por perder el empleo (próximos 1-2 años)
+              skills_lt=q3d,         # preocupación por no tener las habilidades necesarias (10 años)
+              econ_country=q6,       # situación económica del país respecto de hace 12 meses
+              econ_household=q7,     # situación económica del hogar respecto de hace 12 meses
+              voice=q12,             # el gobierno incorpora la opinión de personas como yo
+              distributive=q16,
+              deservingness=q17,
+              gov_more=q18,          # el gobierno debería hacer más por la seguridad económica
+              tax_rich=q20,          # gravar más a los ricos para apoyar a los pobres
+              shortage_migration=q23c, # más migración ante la escasez de trabajadores
+              shortage_tech=q23e,    # más tecnología ante la escasez de trabajadores
+              # Variables que no pasan por set_na (valores 98 y 99 pueden ser válidos)
+#              firmsize=s28          # número de trabajadores de la empresa (texto abierto)
+#              vote=s35               # intención de voto (partidos por país)
+              )
+
+# En s26 el 99 agrupa "Otra industria" y "Prefiere no decir". Se conserva como categoría
+# "otro" (no analizable) para no perder esos casos, por eso se recodifica antes de set_na.
+data$sector <- car::recode(as.numeric(data$sector), "99=20")
+
+# Valores perdidos. "No puede elegir" está codificado como 98 en Q2, Q3, Q11, Q12,
+# Q16 a Q18, Q20, Q23 y Q25 a Q27, y "Prefiere no decir" como 99 en S2, S5 y S14.
+data <- data %>% set_na(sex:shortage_tech, na=c(98,99))
+# En q6 y q7 "No sabe" está codificado como 96 (en el cuestionario figura como 6)
+data <- data %>% set_na(econ_country, econ_household, na=96)
+
+# Ítems para el análisis de dimensionalidad
+digitalization <-
+  data %>%
+  select(tecnoestres_1, tecnoestres_2, tecnoestres_3, tecnoestres_4, tecnoestres_5,
+         tecnoestres_6, tecnoestres_7, tecnoestres_8, tecnoestres_9)
+
+expectations <-
+  data %>%
+  select(ai_country_1, ai_country_2, ai_country_3, ai_country_4, ai_country_5,
+         ai_country_6, ai_country_7)
+
+policies <-
+  data %>%
+  select(policy_1, policy_2, policy_3, policy_4, policy_5, policy_6,
+         policy_7, policy_8, policy_9, policy_10, policy_11, policy_12)
+
+vars <- paste0("tecnoestres_", 1:9)
+labelled::var_label(digitalization)[vars] <- labelled::var_label(digitalization)[vars] %>%
+  stringr::str_remove("^q25[a-z]:\\s*Digitaln\\. and your job:\\s*")
+
+vars <- paste0("ai_country_", 1:7)
+labelled::var_label(expectations)[vars] <- labelled::var_label(expectations)[vars] %>%
+  stringr::str_remove("^q26[a-z]:\\s*[^:]+:\\s*")
+
+vars <- paste0("policy_", 1:12)
+labelled::var_label(policies)[vars] <- labelled::var_label(policies)[vars] %>%
+  stringr::str_remove("^q27[a-z]:\\s*[^:]+:\\s*")
+
+save(digitalization, file=here::here("input/proc/digitalization.RData"))
+save(expectations, file=here::here("input/proc/expectations.RData"))
+save(policies, file=here::here("input/proc/policies.RData"))
+
+# Índices (los ítems pasan a numéricos para acelerar el cálculo por fila)
+data <- data %>% mutate(across(tecnoestres_1:protection_7, as.numeric))
+
+data <- data %>% rowwise() %>%
+        mutate(# Amenaza egotrópica
+               ego_tech = mean(c(tecnoestres_1, tecnoestres_3), na.rm=TRUE),    # robot e IA
+               ego_human = mean(c(tecnoestres_2, tecnoestres_4), na.rm=TRUE),   # persona de otro país y deslocalización
+               ego_all = mean(c(tecnoestres_1, tecnoestres_2, tecnoestres_3,
+                                tecnoestres_4, tecnoestres_5, tecnoestres_6), na.rm=TRUE),
+               # Amenaza y beneficio en el propio empleo (AFE de dos factores sin q25b ni q25d),
+               # en paralelo con el pesimismo y el optimismo sociotrópicos de Q26
+               ego_neg = mean(c(tecnoestres_1, tecnoestres_3, tecnoestres_5, tecnoestres_6), na.rm=TRUE), # robot, IA, plataforma y habilidades
+               ego_pos = mean(c(tecnoestres_7, tecnoestres_8, tecnoestres_9), na.rm=TRUE), # vida privada, seguridad, menos estrés
+               # Índice de amenaza del paper anterior, sin la IA; solo para robustez
+               tecnoestres = mean(c(tecnoestres_1, tecnoestres_5, tecnoestres_6), na.rm=TRUE), # robot, plataforma y habilidades
+               # Expectativas sociotrópicas
+               socio_neg = mean(c(ai_country_1, ai_country_5, ai_country_6), na.rm=TRUE), # desigualdad, desempleo, vigilancia
+               socio_pos = mean(c(ai_country_2, ai_country_3, ai_country_4), na.rm=TRUE), # tiempo libre, mejores trabajos, más empleo
+               # Repertorios de política, según el análisis factorial de Q27:
+               # q27f y q27g forman la compensación; q27d carga con q27k, q27l y q27h
+               # (protección frente a competidores, sean personas o máquinas);
+               # q27e (jornada) queda aparte y q27i-q27j forman la migración.
+               investment = mean(c(policy_1, policy_2, policy_3), na.rm=TRUE),
+               compensation = mean(c(policy_6, policy_7), na.rm=TRUE),
+               # q27h tiene cargas cruzadas con compensación; va en protección por razones
+               # teóricas (protege empleos e industrias existentes). protection_core la excluye.
+               protection = mean(c(policy_4, policy_8, policy_11, policy_12), na.rm=TRUE),
+               protection_core = mean(c(policy_4, policy_11, policy_12), na.rm=TRUE),
+               closure = mean(c(policy_11, policy_12), na.rm=TRUE),            # versión estrecha
+               migration = mean(c(policy_9, policy_10), na.rm=TRUE),
+               compensation_orig = mean(c(policy_4, policy_5, policy_6, policy_7), na.rm=TRUE), # solo para comparar
+               policy_mean = mean(c(policy_1, policy_2, policy_3, policy_4, policy_5, policy_6,
+                                    policy_7, policy_8, policy_9, policy_10, policy_11, policy_12), na.rm=TRUE),
+               # Protección social percibida (Q11); se renombra para no confundirla con el repertorio
+               perceived_protection = mean(c(protection_1, protection_2, protection_3, protection_4,
+                                             protection_5, protection_6, protection_7), na.rm=TRUE)
+               ) %>%
+        ungroup()
+
+data <- data %>%
+        mutate(ego_robot = tecnoestres_1,
+               ego_ai = tecnoestres_3,
+               socio_ineq = ai_country_1,
+               # Apoyo relativo: cada repertorio menos la media individual de los doce ítems
+               rel_investment = investment - policy_mean,
+               rel_compensation = compensation - policy_mean,
+               rel_compensation_orig = compensation_orig - policy_mean,
+               rel_protection = protection - policy_mean,
+               rel_protection_core = protection_core - policy_mean,
+               rel_closure = closure - policy_mean,
+               rel_migration = migration - policy_mean,
+               rel_subsidies = policy_8 - policy_mean,
+               # Preferencia por protección frente a compensación (H2)
+               protection_vs_compensation = protection - compensation
+               )
+
+# Situación laboral: en trabajo o temporalmente ausente (s10 = 1, 4, 5)
+data$employed <- car::recode(as.numeric(data$workstatus), "c(1,4,5)=1; c(2,3)=0; else=NA")
+
+# Posición en el mercado laboral, según la recodificación del cuestionario:
+# estándar = asalariado (o ambos) con contrato indefinido;
+# no estándar = asalariado (o ambos) con contrato temporal o sin contrato
+data <- data %>%
+  mutate(
+    lm_position = case_when(
+      selfemploy %in% c(1,3) & contract == 1 ~ "Standard",
+      selfemploy %in% c(1,3) & contract %in% c(2,3) ~ "Non-standard",
+      selfemploy == 2 ~ "Self-employed",
+      TRUE ~ NA_character_
+    ),
+    lm_position = factor(lm_position,
+                         levels = c("Standard",
+                                    "Non-standard",
+                                    "Self-employed"))
+  )
+
+data$sex <- as_factor(data$sex)
+data$age <- as_factor(data$age)
+data$educ <- as_factor(data$educ)
+data$selfemploy <- as_factor(data$selfemploy)
+data$platform <- as_factor(data$platform)
+data$platform <- car::recode(data$platform, "2=1;1=2;3=2")
+data$selfemploy <- car::recode(data$selfemploy, "1=1;2=2;3=2")
+
+data$parttime <- car::recode(as.numeric(data$employment), "c(1,2)=0; c(3,4)=1; else=NA")
+data$public <- car::recode(as.numeric(data$public), "1=1; 2=0; NA=0") # independientes = 0 (no se les pregunta)
+data$public[data$employed == 0] <- NA
+data$foreign_born <- car::recode(as.numeric(data$born), "1=0; 2=1; else=NA")
+data$place <- car::recode(as.numeric(data$place), "c(1,2)=1; 3=2; c(4,5)=3; else=NA")
+data$sector_cat <- car::recode(as.numeric(data$sector), "1:2=1; 3:5=2; 6=3; 7:9=4; 10:14=5; 15:17=6; 18:19=7; 20=8; else=NA")
+#data$firmsize_cat <- car::recode(as.numeric(data$firmsize), "1=1; 2:9=2; 10:49=3; 50:249=4; 250:hi=5; else=NA")
+
+data$place <- set_labels(data$place,
+            labels=c("Big city or suburbs"=1,
+                     "Town or small city"=2,
+                     "Village or countryside"=3))
+data$sector_cat <- set_labels(data$sector_cat,
+            labels=c("Agriculture and mining"=1,
+                     "Manufacturing and utilities"=2,
+                     "Construction"=3,
+                     "Trade, transport and hospitality"=4,
+                     "ICT, finance and business services"=5,
+                     "Public administration, education and health"=6,
+                     "Other services"=7,
+                     "Other or not stated"=8))
+# data$firmsize_cat <- set_labels(data$firmsize_cat,
+#             labels=c("1"=1,
+#                      "2-9"=2,
+#                      "10-49"=3,
+#                      "50-249"=4,
+#                      "250 or more"=5))
+data$place <- as_factor(data$place)
+data$sector_cat <- as_factor(data$sector_cat)
+#data$firmsize_cat <- as_factor(data$firmsize_cat)
+
+# ============================================================
+# Intención de voto por partidos de derecha radical (S35)
+# Clasificación provisional a partir del Anexo A del cuestionario,
+# a revisar con The PopuList 3.0 (Rooduijn et al. 2023).
+# Se usa como aproximación a la oferta política de cierre (H4b).
+# ============================================================
+
+# data$vote_label <- as.character(sjlabelled::as_label(data$vote))
+
+# data <- data %>%
+#   mutate(
+#     rr_vote = case_when(
+#       is.na(vote) ~ NA_real_,
+#       ctrcode == "AUT" & grepl("Freedom Party|Freiheitliche", vote_label) ~ 1,
+#       ctrcode == "BEL" & grepl("Flemish Interest|Vlaams Belang", vote_label) ~ 1,
+#       ctrcode == "CAN" & grepl("People's Party|Parti populaire", vote_label) ~ 1,
+#       ctrcode == "CHE" & grepl("Swiss People's Party|Schweizerische Volkspartei|Ticino League|Lega dei Ticinesi", vote_label) ~ 1,
+#       ctrcode == "CHL" & grepl("Republican Party|Partido Republicano", vote_label) ~ 1,
+#       ctrcode == "DEU" & grepl("Alternative for Germany|Alternative für Deutschland", vote_label) ~ 1,
+#       ctrcode == "DNK" & grepl("Danish People's Party|Dansk Folkeparti|New Right|Nye Borgerlige|Denmark Democrats|Danmarksdemokraterne", vote_label) ~ 1,
+#       ctrcode == "ESP" & grepl("Vox", vote_label) ~ 1,
+#       ctrcode == "EST" & grepl("Conservative People's Party|Konservatiivne Rahvaerakond", vote_label) ~ 1,
+#       ctrcode == "FIN" & grepl("Finns Party|Perussuomalaiset", vote_label) ~ 1,
+#       ctrcode == "FRA" & grepl("National Rally|Rassemblement National|Reconquest|Reconquête", vote_label) ~ 1,
+#       ctrcode == "GBR" & grepl("Reform UK", vote_label) ~ 1,
+#       ctrcode == "GRC" & grepl("Greek Solution|Victory|Voice of Reason", vote_label) ~ 1,
+#       ctrcode == "ISR" & grepl("Otzma Yehudit|Religious Zionist", vote_label) ~ 1,
+#       ctrcode == "ITA" & grepl("Brothers of Italy|Fratelli d'Italia|League|Lega", vote_label) ~ 1,
+#       ctrcode == "LTU" & grepl("People and Justice Union|Tautos ir teisingumo", vote_label) ~ 1,
+#       ctrcode == "LVA" & grepl("National Alliance|Nacionālā apvienība", vote_label) ~ 1,
+#       ctrcode == "NLD" & grepl("Party for Freedom|Partij voor de Vrijheid|Forum for Democracy|Forum voor Democratie|JA21|Right Answer", vote_label) ~ 1,
+#       ctrcode == "NOR" & grepl("Progress Party|Fremskrittspartiet", vote_label) ~ 1,
+#       ctrcode == "POL" & grepl("Confederation|Konfederacja|Law and Justice|Prawo i Sprawiedliwość", vote_label) ~ 1,
+#       ctrcode == "PRT" & grepl("Enough|Chega", vote_label) ~ 1,
+#       ctrcode == "SVN" & grepl("Slovenian Democratic Party|Slovenska demokratska|Slovenian National Party|Slovenska Nacionalna", vote_label) ~ 1,
+#       ctrcode == "TUR" & grepl("Nationalist Movement Party|Milliyetçi Hareket|Victory Party|Zafer", vote_label) ~ 1,
+#       TRUE ~ 0
+#     )
+#   )
+
+# # Revisar qué etiquetas quedaron clasificadas como derecha radical
+# table(data$vote_label[data$rr_vote == 1], data$ctrcode[data$rr_vote == 1])
+
+# ============================================================
+# Nivel país: medias por país y centrado dentro de país (cwc)
+# Las medias de Q25 (ego_*) se calculan entre ocupados (únicos que responden Q25);
+# las de expectativas sociotrópicas y voto, sobre toda la muestra.
+# ============================================================
+
+data <- data %>%
+  group_by(ctrcode) %>%
+  mutate(ego_neg_mean = mean(ego_neg, na.rm=TRUE),
+         ego_neg_cwc = ego_neg - ego_neg_mean,
+         ego_pos_mean = mean(ego_pos, na.rm=TRUE),
+         ego_pos_cwc = ego_pos - ego_pos_mean,
+         # tecnoestres (sin IA), ego_tech (robot e IA) y ego_ai se conservan solo como robustez
+         tecnoestres_mean = mean(tecnoestres, na.rm=TRUE),
+         tecnoestres_cwc = tecnoestres - tecnoestres_mean,
+         ego_tech_mean = mean(ego_tech, na.rm=TRUE),
+         ego_tech_cwc = ego_tech - ego_tech_mean,
+         ego_ai_mean = mean(ego_ai, na.rm=TRUE),
+         ego_ai_cwc = ego_ai - ego_ai_mean,
+         ego_human_mean = mean(ego_human, na.rm=TRUE),
+         ego_human_cwc = ego_human - ego_human_mean,
+         socio_neg_mean = mean(socio_neg, na.rm=TRUE),
+         socio_neg_cwc = socio_neg - socio_neg_mean,
+         socio_ineq_mean = mean(socio_ineq, na.rm=TRUE),
+         socio_ineq_cwc = socio_ineq - socio_ineq_mean,
+         socio_pos_mean = mean(socio_pos, na.rm=TRUE),
+         socio_pos_cwc = socio_pos - socio_pos_mean
+ #        rr_share = mean(rr_vote, na.rm=TRUE)
+         ) %>%
+  ungroup()
+
+names(data)
+data <- data %>% dplyr::select(id, country, ctrcode, year, ctryear, weight,
+                               sex, age, educ, income, foreign_born, place,
+                               employed, lm_position, selfemploy, platform, public, parttime, sector_cat, #firmsize_cat,
+                               ego_neg, ego_pos, tecnoestres, ego_tech, ego_robot, ego_ai, ego_human, ego_all,
+                               socio_neg, socio_ineq, socio_pos,
+                               ego_neg_mean, ego_neg_cwc, ego_pos_mean, ego_pos_cwc, tecnoestres_mean, tecnoestres_cwc,
+                               ego_tech_mean, ego_tech_cwc, ego_ai_mean, ego_ai_cwc, ego_human_mean, ego_human_cwc,
+                               socio_neg_mean, socio_neg_cwc, socio_ineq_mean, socio_ineq_cwc, socio_pos_mean, socio_pos_cwc,
+                               policy_1:policy_12,
+                               investment, compensation, compensation_orig, protection, protection_core,
+                               closure, migration, policy_mean,
+                               rel_investment, rel_compensation, rel_compensation_orig, rel_protection,
+                               rel_protection_core, rel_closure, rel_migration, rel_subsidies,
+                               protection_vs_compensation,
+                               perceived_protection, unnemployment, skills_lt, econ_country, econ_household, voice,
+                               distributive, deservingness, gov_more, tax_rich, shortage_migration, shortage_tech
+#                               vote_label, rr_vote, rr_share,
+                               )
+
+# Etiquetas de los ítems de Q27 (se pierden al pasarlos a numéricos)
+vars <- paste0("policy_", 1:12)
+labelled::var_label(data)[vars] <- labelled::var_label(policies)[vars]
+
+```
+
+## Macro vars
+
+```{r}
+# ============================================================
+# Base de indicadores macro para los 27 países del estudio
+# Nivel país (27 filas, ctrcode en ISO3). Criterio temporal: dato más reciente
+# disponible desde 2015, registrando el año efectivamente usado por país e indicador.
+# Cada indicador va en escala original y estandarizado entre los 27 países (_z).
+# Todos se descargan por API; no se escriben valores a mano ni se imputa.
+#
+# Fuentes:
+#   - Gini (ingreso disponible):  World Bank, WDI, SI.POV.GINI
+#   - PIB per cápita (PPP, US$ internacionales constantes 2021):
+#                                 World Bank, WDI, NY.GDP.PCAP.PP.KD
+#   - Tasa de desempleo (% fuerza laboral, estimación OIT):
+#                                 World Bank, WDI, SL.UEM.TOTL.ZS
+#   - Empleo en la industria (% del empleo total, estimación OIT):
+#                                 World Bank, WDI, SL.IND.EMPL.ZS
+#   - Gasto social público total (% del PIB):
+#                                 OECD SOCX (DSD_SOCX_AGG@DF_SOCX_AGG), PROGRAMME_TYPE _T
+#   - Gasto público en políticas activas del mercado de trabajo (% del PIB), dividido por
+#     la tasa de desempleo del mismo año (WDI):
+#                                 OECD SOCX (DSD_SOCX_AGG@DF_SOCX_AGG), PROGRAMME_TYPE TP60
+#   - Rigidez de la protección del empleo, contratos indefinidos (despidos individuales
+#     y colectivos), versión 4, escala 0 a 6:
+#                                 OECD EPL (DSD_EPL@DF_EPL), MEASURE EPL_OV, VERSION4
+#
+# No se incluyen, porque no cubren los 27 países:
+#   - Generosidad del seguro de desempleo (SOCX TP71, Unemployment, dividido por la tasa
+#     de desempleo): México no tiene dato en ningún año (estado M, "data cannot exist") y
+#     Dinamarca registra 0 desde 2010.
+#   - Proporción del empleo expuesto a IA generativa (OIT, DF_EMP_TEMP_SEX_GAI_NB):
+#     sin datos para Canadá, Grecia, Israel, Corea, Eslovenia, Türkiye y Estados Unidos.
+# ============================================================
+
+iso_map <- tibble::tribble(
+  ~code, ~country,         ~iso2c, ~iso3c,
+   1, "Austria",         "AT", "AUT",
+   2, "Belgium",         "BE", "BEL",
+   3, "Canada",          "CA", "CAN",
+   4, "Chile",           "CL", "CHL",
+   5, "Denmark",         "DK", "DNK",
+   6, "Estonia",         "EE", "EST",
+   7, "Finland",         "FI", "FIN",
+   8, "France",          "FR", "FRA",
+   9, "Germany",         "DE", "DEU",
+  10, "Greece",          "GR", "GRC",
+  11, "Ireland",         "IE", "IRL",
+  12, "Israel",          "IL", "ISR",
+  13, "Italy",           "IT", "ITA",
+  14, "Korea",           "KR", "KOR",
+  15, "Latvia",          "LV", "LVA",
+  16, "Lithuania",       "LT", "LTU",
+  17, "Mexico",          "MX", "MEX",
+  18, "Netherlands",     "NL", "NLD",
+  19, "Norway",          "NO", "NOR",
+  20, "Poland",          "PL", "POL",
+  21, "Portugal",        "PT", "PRT",
+  22, "Slovenia",        "SI", "SVN",
+  23, "Spain",           "ES", "ESP",
+  24, "Switzerland",     "CH", "CHE",
+  25, "Türkiye",         "TR", "TUR",
+  26, "United Kingdom",  "GB", "GBR",
+  27, "United States",   "US", "USA"
+)
+
+# ---- 1. Banco Mundial (WDI): Gini, PIB pc PPP, desempleo, empleo industrial -----
+
+wdi_raw <- WDI::WDI(
+  country   = iso_map$iso2c,
+  indicator = c(gini    = "SI.POV.GINI",
+                gdp_pc  = "NY.GDP.PCAP.PP.KD",
+                unemp   = "SL.UEM.TOTL.ZS",
+                ind_emp = "SL.IND.EMPL.ZS"),
+  start = 2015, end = 2024
+)
+
+# Dato más reciente no perdido por país e indicador, con su año
+wdi_latest <- wdi_raw %>%
+  tidyr::pivot_longer(cols = c(gini, gdp_pc, unemp, ind_emp),
+                      names_to = "indicator", values_to = "value") %>%
+  dplyr::filter(!is.na(value)) %>%
+  dplyr::group_by(iso2c, indicator) %>%
+  dplyr::slice_max(year, n = 1, with_ties = FALSE) %>%
+  dplyr::ungroup() %>%
+  tidyr::pivot_wider(id_cols = iso2c,
+                     names_from  = indicator,
+                     values_from = c(value, year),
+                     names_glue  = "{indicator}_{.value}") %>%
+  dplyr::rename(gini = gini_value, gdp_pc = gdp_pc_value, unemp = unemp_value,
+                ind_emp = ind_emp_value)
+
+# ---- 2. OCDE SOCX: gasto social público total, % del PIB -------------------
+# API SDMX del OECD Data Explorer. Dimensiones del dataflow: REF_AREA, FREQ, MEASURE,
+# UNIT_MEASURE (PT_B1GQ = % del PIB), EXPEND_SOURCE (ES10 = público), SPENDING_TYPE,
+# PROGRAMME_TYPE (_T = total, TP60 = políticas activas, TP71 = desempleo) y PRICE_BASE.
+
+socx_url <- paste0(
+  "https://sdmx.oecd.org/public/rest/data/OECD.ELS.SPD,DSD_SOCX_AGG@DF_SOCX_AGG,/",
+  paste(iso_map$iso3c, collapse = "+"),
+  ".A..PT_B1GQ.ES10._T._T.?startPeriod=2019&format=csvfilewithlabels"
+)
+socx_latest <- readr::read_csv(socx_url, show_col_types = FALSE) %>%
+  dplyr::select(iso3c = REF_AREA, socx_year = TIME_PERIOD, socx = OBS_VALUE) %>%
+  dplyr::filter(!is.na(socx)) %>%
+  dplyr::group_by(iso3c) %>%
+  dplyr::slice_max(socx_year, n = 1, with_ties = FALSE) %>%
+  dplyr::ungroup()
+
+# ---- 3. OCDE SOCX: políticas activas del mercado de trabajo (TP60) -----------
+# Gasto público en políticas activas (% del PIB) dividido por la tasa de desempleo
+# del mismo año (WDI), como medida de esfuerzo por desempleado.
+
+almp_url <- paste0(
+  "https://sdmx.oecd.org/public/rest/data/OECD.ELS.SPD,DSD_SOCX_AGG@DF_SOCX_AGG,/",
+  paste(iso_map$iso3c, collapse = "+"),
+  ".A..PT_B1GQ.ES10._T.TP60.?startPeriod=2015&format=csvfilewithlabels"
+)
+almp_latest <- readr::read_csv(almp_url, show_col_types = FALSE) %>%
+  dplyr::select(iso3c = REF_AREA, almp_year = TIME_PERIOD, almp_gdp = OBS_VALUE) %>%
+  dplyr::filter(!is.na(almp_gdp)) %>%
+  dplyr::group_by(iso3c) %>%
+  dplyr::slice_max(almp_year, n = 1, with_ties = FALSE) %>%
+  dplyr::ungroup() %>%
+  dplyr::left_join(dplyr::select(wdi_raw, iso3c, almp_year = year, almp_unemp = unemp),
+                   by = c("iso3c", "almp_year")) %>%
+  dplyr::mutate(almp = almp_gdp / almp_unemp)
+
+# ---- 4. OCDE EPL: protección del empleo, contratos indefinidos ----------------
+# Dimensiones del dataflow: FREQ, REF_AREA, MEASURE (EPL_OV = despidos individuales y
+# colectivos, contratos indefinidos), UNIT_MEASURE (escala 0 a 6) y VERSION (VERSION4).
+
+epl_url <- paste0(
+  "https://sdmx.oecd.org/public/rest/data/OECD.ELS.JAI,DSD_EPL@DF_EPL,/A.",
+  paste(iso_map$iso3c, collapse = "+"),
+  ".EPL_OV..VERSION4?startPeriod=2015&format=csvfilewithlabels"
+)
+epl_latest <- readr::read_csv(epl_url, show_col_types = FALSE) %>%
+  dplyr::select(iso3c = REF_AREA, epl_year = TIME_PERIOD, epl = OBS_VALUE) %>%
+  dplyr::filter(!is.na(epl)) %>%
+  dplyr::group_by(iso3c) %>%
+  dplyr::slice_max(epl_year, n = 1, with_ties = FALSE) %>%
+  dplyr::ungroup()
+
+# ---- 5. Consolidar y estandarizar entre los 27 países -------------------------
+
+macro <- iso_map %>%
+  dplyr::left_join(wdi_latest,  by = "iso2c") %>%
+  dplyr::left_join(socx_latest, by = "iso3c") %>%
+  dplyr::left_join(almp_latest, by = "iso3c") %>%
+  dplyr::left_join(epl_latest,  by = "iso3c") %>%
+  dplyr::mutate(
+    gdp_pc_log = log(gdp_pc),
+    dplyr::across(c(gini, gdp_pc_log, unemp, socx, almp, epl, ind_emp),
+                  ~ as.numeric(scale(.x)), .names = "{.col}_z")
+  ) %>%
+  dplyr::select(ctrcode = iso3c, country_name = country,
+                gini, gini_year, gini_z,
+                gdp_pc, gdp_pc_log, gdp_pc_year, gdp_pc_log_z,
+                unemp, unemp_year, unemp_z,
+                socx, socx_year, socx_z,
+                almp_gdp, almp_unemp, almp, almp_year, almp_z,
+                epl, epl_year, epl_z,
+                ind_emp, ind_emp_year, ind_emp_z)
+
+# Los 27 países deben tener todos los indicadores (no se imputa)
+stopifnot(nrow(macro) == 27, !anyNA(macro))
+macro
+
+# ---- 6. Tabla de fuentes para el apéndice ----------------------------------
+
+tabla_fuentes <- tibble::tribble(
+  ~Indicator,                          ~Source,                                            ~Series,             ~Years,
+  "Gini coefficient (disposable income)", "World Bank, World Development Indicators",      "SI.POV.GINI",       paste(range(macro$gini_year,   na.rm = TRUE), collapse = "-"),
+  "GDP per capita (PPP, constant 2021 international $)", "World Bank, World Development Indicators", "NY.GDP.PCAP.PP.KD", paste(range(macro$gdp_pc_year, na.rm = TRUE), collapse = "-"),
+  "Unemployment rate (% of labour force, ILO estimate)", "World Bank, World Development Indicators", "SL.UEM.TOTL.ZS",    paste(range(macro$unemp_year,  na.rm = TRUE), collapse = "-"),
+  "Public social expenditure (% of GDP)", "OECD Social Expenditure Database (SOCX)",       "DSD_SOCX_AGG@DF_SOCX_AGG, PROGRAMME_TYPE _T", paste(range(macro$socx_year,   na.rm = TRUE), collapse = "-"),
+  "Public spending on active labour market programmes (% of GDP) per percentage point of unemployment", "OECD SOCX; World Bank, World Development Indicators", "DSD_SOCX_AGG@DF_SOCX_AGG, PROGRAMME_TYPE TP60; SL.UEM.TOTL.ZS", paste(range(macro$almp_year, na.rm = TRUE), collapse = "-"),
+  "Strictness of employment protection, regular contracts (individual and collective dismissals, version 4)", "OECD Employment Protection Legislation Database", "DSD_EPL@DF_EPL, MEASURE EPL_OV, VERSION4", paste(range(macro$epl_year, na.rm = TRUE), collapse = "-"),
+  "Employment in industry (% of total employment, ILO estimate)", "World Bank, World Development Indicators", "SL.IND.EMPL.ZS", paste(range(macro$ind_emp_year, na.rm = TRUE), collapse = "-")
+)
+tabla_fuentes
+
+# ---- 7. Guardar -------------------------------------------------------------
+# Base y tabla de fuentes para el análisis; copia en CSV, con la fecha de descarga,
+# que se versiona en el repositorio.
+
+save(macro, tabla_fuentes, file=here::here("input/proc/macro.RData"))
+
+dir.create(here::here("input/macro"), showWarnings = FALSE)
+readr::write_csv(macro %>% dplyr::mutate(download_date = Sys.Date()),
+                 here::here("input/macro/macro_indicators.csv"))
+
+save(data, file=here::here("input/proc/data.RData"))
+```
+
+## Country data
+
+```{r}
+country_data <- data %>% group_by(ctrcode) %>%
+                      summarise(ego_tech = mean(ego_tech, na.rm=TRUE),
+                                ego_neg = mean(ego_neg, na.rm=TRUE),
+                                ego_pos = mean(ego_pos, na.rm=TRUE),
+                                socio_neg = mean(socio_neg, na.rm=TRUE),
+                                socio_pos = mean(socio_pos, na.rm=TRUE),
+                                investment = mean(investment, na.rm=TRUE),
+                                compensation = mean(compensation, na.rm=TRUE),
+                                protection = mean(protection, na.rm=TRUE),
+                                closure = mean(closure, na.rm=TRUE),
+                                policy_mean = mean(policy_mean, na.rm=TRUE),
+                                rel_investment = mean(rel_investment, na.rm=TRUE),
+                                rel_compensation = mean(rel_compensation, na.rm=TRUE),
+                                rel_protection = mean(rel_protection, na.rm=TRUE),
+                                rel_closure = mean(rel_closure, na.rm=TRUE)
+ #                               rr_share = mean(rr_vote, na.rm=TRUE),
+                                )
+
+# Indicadores macro, en escala original y estandarizados entre los 27 países
+country_data <- dplyr::left_join(country_data, macro, by = "ctrcode")
+
+save(country_data, file=here::here("input/proc/country_data.RData"))
+```

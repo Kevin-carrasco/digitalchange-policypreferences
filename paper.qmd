@@ -1,0 +1,83 @@
+---
+title: "[Working title]"
+format:
+  html:
+    code-fold: true
+    html-math-method: katex
+    number-sections: true
+  docx:
+    number-sections: true
+  pdf:
+    geometry: margin=2cm
+    template-partials:
+      - title.tex
+    keep-tex: true
+    include-in-header:
+      text: |
+        \usepackage[noblocks]{authblk}
+        \renewcommand*{\Authsep}{, }
+        \renewcommand*{\Authand}{, }
+        \renewcommand*{\Authands}{, }
+        \renewcommand\Affilfont{\small}
+    number-sections: true
+editor: source
+bibliography: "input/bib/tech-anxiety.bib"
+csl: "input/bib/sage-harvard.csl"
+author:
+  - name: Kevin Carrasco
+    orcid: 0000-0002-9348-8361
+    email: kevincq625@gmail.com
+    affiliations:
+      - ref: 1
+affiliations:
+  - id: 1
+    name: Núcleo Milenio sobre Evolución del Trabajo (M-NEW)
+citeproc: true
+link-citations: true
+linestretch: 1.15
+mainfont: Times New Roman
+fontsize: 12pt
+colorlinks: true
+fig-height: 4
+fig-width: 7.5
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE, cache = FALSE, out.width = '85%')
+options(scipen = 999)
+options(kableExtra.auto_format = FALSE)
+rm(list = ls())
+options(knitr.kable.NA = '')
+options(knitr.graphics.error = FALSE)
+```
+
+# Introduction
+
+{{< include 01-introduction.qmd >}}
+
+# Data, variables and methods
+
+## Data
+
+{{< include 03-methods.qmd >}}
+
+# Analysis
+
+{{< include 04-results.qmd >}}
+
+# Discussion
+
+{{< include 05-discussion.qmd >}}
+
+# Conclusion
+
+{{< include 06-conclusion.qmd >}}
+
+# References
+
+::: {#refs}
+:::
+
+# Appendix
+
+{{< include 07-appendix.qmd >}}
