@@ -1,4 +1,4 @@
-# [Working title] Egotropic and sociotropic technological anxiety and policy repertoires in 27 OECD countries
+# [Working title] Percepciones del cambio tecnológico y preferencias de política social de los trabajadores en 27 países de la OCDE
 
 Replication materials and writing environment for a manuscript in preparation.
 The paper is written in Quarto and the analyses run in R.
