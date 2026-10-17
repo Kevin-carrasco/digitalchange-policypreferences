@@ -1,0 +1,227 @@
+
+```{r}
+#| label: setup-methods
+#| echo: false
+#| include: false
+
+if (! require("pacman")) install.packages("pacman")
+
+pacman::p_load(tidyverse,
+               haven,
+               sjlabelled,
+               summarytools,
+               psych,
+               here)
+
+options(scipen=999)
+
+load(file=here::here("input/proc/data.RData"))
+load(file=here::here("input/proc/digitalization.RData"))
+load(file=here::here("input/proc/expectations.RData"))
+
+# Variables de los modelos (muestra analítica común)
+vars_modelo <- c("policy_mean", "rel_investment", "rel_compensation", "rel_protection",
+                 "ego_neg", "ego_pos", "socio_neg", "socio_pos", "ego_human", "unnemployment",
+                 "sex", "age", "educ", "income", "lm_position", "platform", "public", "sector_cat")
+
+n_total <- nrow(data)
+n_ocupados <- sum(data$employed == 1, na.rm = TRUE)
+n_no_ocupados <- sum(data$employed == 0, na.rm = TRUE)
+
+muestra <- data %>%
+  filter(employed == 1) %>%
+  select(ctrcode, all_of(vars_modelo)) %>%
+  na.omit()
+
+n_analitica <- nrow(muestra)
+pct_analitica <- round(100 * n_analitica / n_ocupados, 1)
+
+# Confiabilidad de los índices
+digitalization <- digitalization %>% mutate(across(everything(), as.numeric))
+expectations <- expectations %>% mutate(across(everything(), as.numeric))
+ocupados <- data %>% filter(employed == 1) %>% mutate(across(policy_1:policy_12, as.numeric))
+
+a_amenaza <- psych::alpha(select(digitalization, tecnoestres_1, tecnoestres_3, tecnoestres_5, tecnoestres_6))$total$raw_alpha
+a_beneficio <- psych::alpha(select(digitalization, tecnoestres_7, tecnoestres_8, tecnoestres_9))$total$raw_alpha
+r_apertura <- cor(digitalization$tecnoestres_2, digitalization$tecnoestres_4, use = "pairwise.complete.obs")
+
+a_negativas <- psych::alpha(select(expectations, ai_country_1, ai_country_5, ai_country_6))$total$raw_alpha
+a_positivas <- psych::alpha(select(expectations, ai_country_2, ai_country_3, ai_country_4))$total$raw_alpha
+
+a_inversion <- psych::alpha(select(ocupados, policy_1, policy_2, policy_3))$total$raw_alpha
+a_proteccion <- psych::alpha(select(ocupados, policy_4, policy_8, policy_11, policy_12))$total$raw_alpha
+r_compensacion <- cor(ocupados$policy_6, ocupados$policy_7, use = "pairwise.complete.obs")
+```
+
+Este estudio utiliza datos de la ola más reciente (2024) de la encuesta Risks That Matter (RTM) de la OCDE [@oecd_risks_2024], una encuesta comparada de opinión pública que cubre a `r format(n_total, big.mark = ".", decimal.mark = ",")` personas de entre 18 y 64 años en 27 países miembros (Alemania, Austria, Bélgica, Canadá, Chile, Corea, Dinamarca, Eslovenia, España, Estados Unidos, Estonia, Finlandia, Francia, Grecia, Irlanda, Israel, Italia, Letonia, Lituania, México, Noruega, Países Bajos, Polonia, Portugal, Reino Unido, Suiza y Türkiye). La encuesta se aplica en línea y cuenta con ponderadores de postestratificación calibrados por edad, sexo, región y nivel educacional [@thomas_survey_2025]. La ola de 2024 incorpora preguntas sobre los efectos esperados de la inteligencia artificial en el mercado laboral y sobre el apoyo a distintas respuestas públicas frente a la digitalización y el cambio tecnológico.
+
+El análisis se restringe a las personas que en la semana previa a la entrevista tenían un trabajo remunerado o estaban temporalmente ausentes de él por razones de salud u otras (n = `r format(n_ocupados, big.mark = ".", decimal.mark = ",")`). Esta restricción sigue la estructura del cuestionario, ya que las preguntas sobre la amenaza y el beneficio de la tecnología para el propio empleo solo se aplican a quienes trabajan, de modo que las `r format(n_no_ocupados, big.mark = ".", decimal.mark = ",")` personas no ocupadas, busquen o no empleo, quedan fuera del análisis por diseño. Tras eliminar los casos con valores perdidos en las variables de los modelos, la muestra analítica es de `r format(n_analitica, big.mark = ".", decimal.mark = ",")` personas, el `r format(pct_analitica, decimal.mark = ",")` % de la muestra elegible. El apéndice reporta el tamaño muestral por país.
+
+## Variables
+
+La variable dependiente son las preferencias frente al cambio tecnológico, medidas con la batería "Los gobiernos pueden adoptar medidas para ayudar a trabajadores e industrias a enfrentar los desafíos de la digitalización y el cambio tecnológico, como habilidades obsoletas, escasez de habilidades y posibles pérdidas de empleo. Teniendo en cuenta cuánto podrían costar y cómo usted y su familia podrían beneficiarse, ¿en qué medida se opondría o apoyaría que el gobierno adoptara las siguientes acciones como respuesta a la digitalización y el cambio tecnológico?".^[Las formulaciones de los ítems corresponden a traducciones propias del cuestionario en inglés.] Cada una de las doce medidas se responde en una escala de cinco puntos, desde muy en contra (1) hasta muy a favor (5), y la opción "no sabe" se trata como valor perdido. Aunque la pregunta pide considerar los costos, cada medida se evalúa por separado y sin una restricción presupuestaria.
+
+Las medidas se agrupan en tres repertorios. La inversión reúne la preferencia por la inversión en educación universitaria y formación profesional para jóvenes, en reentrenamiento para personas en edad de trabajar y en infraestructura digital. La compensación reúne las preferencias por prestaciones y servicios más accesibles o generosos, como el seguro de desempleo o los programas de ingreso mínimo, y una renta básica universal e incondicional. La protección reúne las preferencias por la introducción o el aumento de un impuesto a los robots o a las empresas tecnológicas, los subsidios a las empresas de las industrias más afectadas por el cambio tecnológico, la prioridad a los trabajadores del país en la contratación y la introducción de aranceles para proteger las industrias nacionales. Las tres medidas restantes, que son la limitación o reducción de la jornada laboral y la promoción de la migración de trabajadores calificados y no calificados, no forman parte de los repertorios.
+
+Esta agrupación combina criterios teóricos y empíricos. Un análisis factorial exploratorio de las doce medidas, con cinco factores según el análisis paralelo, distingue la inversión, la compensación y la protección, junto a un factor de migración y otro de reducción de la jornada. Los subsidios presentan cargas similares en la protección y en la compensación, por lo que el apéndice reporta también los modelos con un índice de protección que los excluye. La consistencia interna es moderada en la inversión (α = `r format(round(a_inversion, 2), decimal.mark = ",")`) y en la protección (α = `r format(round(a_proteccion, 2), decimal.mark = ",")`). En la compensación, que reúne dos ítems, la correlación entre ítems es de `r format(round(r_compensacion, 2), decimal.mark = ",")`, con un coeficiente de Spearman-Brown de `r format(round(2 * r_compensacion / (1 + r_compensacion), 2), decimal.mark = ",")` [@eisinga_reliability_2013]. El análisis factorial completo se presenta en el apéndice.
+
+A partir de estas medidas se construyen dos componentes. El volumen corresponde al promedio de las doce medidas y expresa el nivel general de apoyo a la intervención estatal frente al cambio tecnológico. La dirección se mide como la diferencia entre el promedio de cada repertorio y el volumen de cada persona, de modo que los valores positivos indican que el repertorio recibe más apoyo que el conjunto de las medidas y los negativos, menos. Este procedimiento centra las respuestas de cada persona en su propio promedio, como propone @schwartz_overview_2012 para medir prioridades valóricas, y separa la prioridad asignada a cada repertorio de la tendencia general a apoyar las medidas, que puede variar entre personas y países por razones sustantivas y por estilos de respuesta [@fischer_standardization_2004; @rudnev_caveats_2021].
+
+La @fig-policies presenta el apoyo promedio a cada medida entre las personas ocupadas. Los tres repertorios reciben, en promedio, un apoyo superior al punto medio de la escala, lo que indica una demanda extendida de intervención estatal frente al cambio tecnológico. La inversión concentra el mayor apoyo, en línea con estudios previos [@busemeyer_public_2017; @churchill_policy_2025].
+
+```{r}
+#| label: fig-policies
+#| echo: false
+#| fig-cap: Apoyo promedio a las medidas frente a la digitalización y el cambio tecnológico
+#| fig-cap-location: top
+#| fig-subcap: "Fuente: elaboración propia con datos de la OCDE, encuesta Risks That Matter 2024. Personas ocupadas. Escala de 1 (muy en contra) a 5 (muy a favor)"
+
+items <- tibble::tribble(
+  ~item,       ~etiqueta,                                                    ~repertorio,
+  "policy_1",  "Educación universitaria y formación profesional para jóvenes", "Inversión",
+  "policy_2",  "Reentrenamiento para personas en edad de trabajar",           "Inversión",
+  "policy_3",  "Infraestructura digital",                                     "Inversión",
+  "policy_6",  "Prestaciones más accesibles o generosas",                     "Compensación",
+  "policy_7",  "Renta básica universal e incondicional",                      "Compensación",
+  "policy_4",  "Impuesto a robots o empresas tecnológicas",                   "Protección",
+  "policy_8",  "Subsidios a industrias afectadas por el cambio tecnológico",  "Protección",
+  "policy_11", "Prioridad a trabajadores del país en la contratación",        "Protección",
+  "policy_12", "Aranceles para proteger industrias nacionales",               "Protección",
+  "policy_5",  "Límite o reducción de la jornada laboral",                    "Otras medidas",
+  "policy_9",  "Promoción de la migración calificada",                        "Otras medidas",
+  "policy_10", "Promoción de la migración no calificada",                     "Otras medidas"
+)
+
+promedios <- data %>%
+  filter(employed == 1) %>%
+  select(all_of(items$item)) %>%
+  mutate(across(everything(), as.numeric)) %>%
+  pivot_longer(everything(), names_to = "item", values_to = "valor") %>%
+  group_by(item) %>%
+  summarise(media = mean(valor, na.rm = TRUE)) %>%
+  left_join(items, by = "item") %>%
+  mutate(repertorio = factor(repertorio,
+                             levels = c("Inversión", "Compensación", "Protección", "Otras medidas")))
+
+promedios %>%
+  ggplot(aes(x = media, y = reorder(etiqueta, media))) +
+  geom_segment(aes(x = 1, xend = media, yend = etiqueta), colour = "grey70") +
+  geom_point(aes(shape = repertorio, fill = repertorio),
+             size = 3, colour = "black", stroke = 0.8) +
+  scale_shape_manual(values = c(21, 22, 24, 23), name = NULL) +
+  scale_fill_manual(values = c("black", "grey55", "white", "grey85"), name = NULL) +
+  scale_x_continuous(limits = c(1, 5), breaks = 1:5) +
+  labs(x = "Apoyo promedio (1 = muy en contra, 5 = muy a favor)", y = NULL) +
+  theme_bw() +
+  theme(legend.position = "bottom")
+```
+
+Tres conjuntos de variables independientes constituyen el núcleo del análisis. El primero corresponde a las percepciones sobre el propio empleo, medidas con la batería "¿Qué tan probable cree que es que ocurra lo siguiente con su trabajo (u oportunidades laborales) en los próximos cinco años?", cuyos ítems se responden en una escala de probabilidad de cuatro puntos. Cuatro ítems se refieren a la amenaza tecnológica y preguntan si el trabajo será reemplazado por un robot, por una herramienta de inteligencia artificial como ChatGPT o por una persona que ofrece un servicio similar a través de una plataforma de internet, y si la persona perderá su empleo por no manejar bien las nuevas tecnologías o por ser reemplazada por alguien con mejores habilidades tecnológicas. Tres ítems se refieren al beneficio esperado y preguntan si la tecnología hará que el trabajo y la jornada sean más compatibles con la vida privada, que el trabajo sea menos peligroso o físicamente exigente y que sea menos aburrido, repetitivo, estresante o mentalmente exigente. Un análisis factorial exploratorio de los siete ítems respalda una estructura de dos factores, a partir de la cual se construyen dos índices como el promedio de sus ítems, la amenaza tecnológica (α = `r format(round(a_amenaza, 2), decimal.mark = ",")`) y el beneficio esperado (α = `r format(round(a_beneficio, 2), decimal.mark = ",")`). El ítem sobre la inteligencia artificial carga en el factor de amenaza en la solución de dos factores y aparece como una dimensión aislada en una solución de tres factores, lo que se interpreta como sobreextracción, por lo que se mantiene en el índice.
+
+Dos ítems adicionales de la misma batería se refieren a la amenaza asociada a la apertura económica y preguntan si el trabajo será ocupado por una persona de otro país o trasladado a otro país (r = `r format(round(r_apertura, 2), decimal.mark = ",")`). Su promedio se incluye como control, para distinguir la amenaza tecnológica de la amenaza asociada a la competencia extranjera, una distinción necesaria porque la protección incluye medidas dirigidas a la competencia extranjera.
+
+El segundo conjunto corresponde a las expectativas sobre los efectos sociales de la inteligencia artificial, medidas con la batería "Pensando en los efectos de la inteligencia artificial (IA) en el mercado laboral, ¿qué tan probable cree que es lo siguiente en [país] en los próximos 5 a 10 años?", con la misma escala de cuatro puntos. Un análisis factorial exploratorio de los siete ítems identifica dos factores. Las expectativas negativas promedian los ítems sobre el aumento de la desigualdad de ingresos, del desempleo y de la vigilancia en el trabajo (α = `r format(round(a_negativas, 2), decimal.mark = ",")`), y las expectativas positivas, los ítems sobre más tiempo libre para la mayoría, trabajos menos aburridos, repetitivos, estresantes o mentalmente exigentes y la creación de más empleos (α = `r format(round(a_positivas, 2), decimal.mark = ",")`). El ítem sobre la necesidad de que muchas personas se reentrenen carga en el factor negativo, pero se excluye porque describe un requisito de adaptación y no un daño.
+
+El tercer conjunto corresponde al contexto institucional y comprende tres indicadores nacionales que corresponden a los repertorios. La protección del empleo se mide con el indicador de la OCDE sobre la rigidez de la regulación de los despidos individuales y colectivos de trabajadores con contrato indefinido (versión 4). La generosidad de la compensación se mide con el gasto público en prestaciones por desempleo, y el esfuerzo en inversión, con el gasto público en políticas activas del mercado laboral, ambos como porcentaje del PIB y tomados de la base de gasto social de la OCDE (SOCX). En los dos casos el gasto se divide por la tasa de desempleo, para distinguir la generosidad de las políticas de la magnitud del problema que atienden. Los modelos incluyen además el PIB per cápita (PPA, en logaritmo) del Banco Mundial como control del nivel de desarrollo. Para cada país se usa el valor más reciente disponible, y todos los indicadores se estandarizan entre los 27 países, de modo que sus coeficientes expresan la asociación con una diferencia de una desviación estándar entre países.
+
+Los modelos incluyen como controles la preocupación por perder el empleo o los ingresos del trabajo independiente en los próximos uno o dos años, medida en una escala de cuatro puntos desde nada preocupado hasta muy preocupado, el sexo, el grupo de edad, el nivel educacional y el decil de ingreso autorreportado. Incluyen también cuatro características del empleo. La posición en el mercado laboral distingue a los asalariados con contrato indefinido, a los asalariados con contrato temporal o sin contrato y a los trabajadores independientes. Los otros tres controles corresponden al trabajo mediado por plataformas digitales en el empleo principal, al empleo en el sector público y al sector de actividad.
+
+La @tbl-summary resume estas variables y sus principales estadísticos descriptivos en la muestra analítica.
+
+```{r}
+#| label: tbl-summary
+#| tbl-cap: "Principales estadísticos descriptivos"
+#| tbl-cap-location: top
+#| results: asis
+#| echo: false
+
+descriptive <- muestra %>% select(-ctrcode)
+
+descriptive$sex <- factor(as.numeric(descriptive$sex),
+            levels = c(1, 2),
+            labels = c("Hombre", "Mujer"))
+
+descriptive$age <- factor(as.numeric(descriptive$age),
+            levels = c(1, 2, 3, 4, 5),
+            labels = c("18-24", "25-34", "35-44", "45-54", "55-64"))
+
+descriptive$educ <- factor(as.numeric(descriptive$educ),
+            levels = c(1, 2, 3),
+            labels = c("Bajo", "Medio", "Alto"))
+
+descriptive$lm_position <- factor(as.numeric(descriptive$lm_position),
+            levels = c(1, 2, 3),
+            labels = c("Asalariado con contrato indefinido",
+                       "Asalariado con contrato temporal o sin contrato",
+                       "Independiente"))
+
+descriptive$platform <- factor(as.numeric(descriptive$platform),
+            levels = c(1, 2),
+            labels = c("No", "Sí"))
+
+descriptive$public <- factor(as.numeric(descriptive$public),
+            levels = c(0, 1),
+            labels = c("No", "Sí"))
+
+descriptive$sector_cat <- factor(as.numeric(descriptive$sector_cat),
+            levels = c(1, 2, 3, 4, 5, 6, 7, 8),
+            labels = c("Agricultura y minería",
+                       "Manufactura y servicios básicos",
+                       "Construcción",
+                       "Comercio, transporte y hotelería",
+                       "TIC, finanzas y servicios a empresas",
+                       "Administración pública, educación y salud",
+                       "Otros servicios",
+                       "Otro o no declarado"))
+
+descriptive$unnemployment <- factor(as.numeric(descriptive$unnemployment),
+            levels = c(1, 2, 3, 4),
+            labels = c("Nada preocupado", "No muy preocupado",
+                       "Algo preocupado", "Muy preocupado"))
+
+descriptive$policy_mean  <- sjlabelled::set_label(x = descriptive$policy_mean, label = "Volumen (apoyo general)")
+descriptive$rel_investment  <- sjlabelled::set_label(x = descriptive$rel_investment, label = "Dirección: inversión")
+descriptive$rel_compensation  <- sjlabelled::set_label(x = descriptive$rel_compensation, label = "Dirección: compensación")
+descriptive$rel_protection  <- sjlabelled::set_label(x = descriptive$rel_protection, label = "Dirección: protección")
+descriptive$ego_neg  <- sjlabelled::set_label(x = descriptive$ego_neg, label = "Amenaza tecnológica")
+descriptive$ego_pos  <- sjlabelled::set_label(x = descriptive$ego_pos, label = "Beneficio esperado")
+descriptive$socio_neg  <- sjlabelled::set_label(x = descriptive$socio_neg, label = "Expectativas negativas sobre la IA")
+descriptive$socio_pos  <- sjlabelled::set_label(x = descriptive$socio_pos, label = "Expectativas positivas sobre la IA")
+descriptive$ego_human  <- sjlabelled::set_label(x = descriptive$ego_human, label = "Amenaza asociada a la apertura")
+descriptive$unnemployment  <- sjlabelled::set_label(x = descriptive$unnemployment, label = "Preocupación por perder el empleo")
+descriptive$sex  <- sjlabelled::set_label(x = descriptive$sex, label = "Sexo")
+descriptive$age  <- sjlabelled::set_label(x = descriptive$age, label = "Grupo de edad")
+descriptive$educ  <- sjlabelled::set_label(x = descriptive$educ, label = "Nivel educacional")
+descriptive$income  <- sjlabelled::set_label(x = descriptive$income, label = "Decil de ingreso")
+descriptive$lm_position  <- sjlabelled::set_label(x = descriptive$lm_position, label = "Posición en el mercado laboral")
+descriptive$platform  <- sjlabelled::set_label(x = descriptive$platform, label = "Trabajo en plataformas")
+descriptive$public  <- sjlabelled::set_label(x = descriptive$public, label = "Sector público")
+descriptive$sector_cat  <- sjlabelled::set_label(x = descriptive$sector_cat, label = "Sector de actividad")
+
+df<-dfSummary(descriptive,
+               plain.ascii = FALSE,
+               style = "multiline",
+               tmp.img.dir = "/tmp",
+               graph.magnif = 0.75,
+               headings = F,  # encabezado
+               varnumbers = F, # num variable
+               labels.col = T, # etiquetas
+               na.col = F,    # missing
+               graph.col = F, # plot
+               valid.col = T, # n valido
+               col.widths = c(30,10,10,10))
+
+df$Variable <- NULL # delete variable column
+
+print(df)
+```
+
+## Métodos
+
+Los análisis se realizaron en R, versión `r paste(R.version$major, R.version$minor, sep = ".")`. Para examinar la relación entre las percepciones sobre el cambio tecnológico y las preferencias se estiman modelos lineales multinivel con personas anidadas en países, mediante la función lmer del paquete lme4 [@bates_fitting_2015]. Este enfoque considera la estructura jerárquica de los datos comparados y descompone la varianza de cada resultado en un componente individual y uno nacional [@snijders_multilevel_2012; @hox_multilevel_2017], con interceptos aleatorios por país. Se estima un conjunto de modelos para el volumen y uno para la dirección de cada repertorio, y en cada caso un modelo nulo establece primero la proporción de la varianza que se ubica entre países. Todos los modelos incorporan los ponderadores de postestratificación de la OCDE en el nivel individual.
+
+Para separar las asociaciones dentro y entre países, las cuatro percepciones se centran en la media de cada país, de modo que sus coeficientes expresan diferencias entre personas de un mismo país [@hox_multilevel_2017]. Los modelos se estiman de forma secuencial. El modelo 1 incluye las cuatro percepciones, el modelo 2 agrega los controles sociodemográficos y laborales, el modelo 3 la amenaza asociada a la apertura y la preocupación por perder el empleo, y el modelo 4 el PIB per cápita. Un modelo contextual agrega, además, las medias nacionales de las cuatro percepciones como predictores de nivel 2. Este modelo se estima por separado, ya que entre los 27 países esas medias están fuertemente correlacionadas entre sí, lo que dificulta distinguir sus efectos.
+
+El contexto institucional se incorpora en dos pasos para la inversión, la compensación y la protección. Primero, cada modelo agrega el indicador institucional que corresponde al repertorio. Luego, se estiman las interacciones entre ese indicador y la amenaza tecnológica, y entre ese indicador y las expectativas negativas, una interacción por modelo y con una pendiente aleatoria para la percepción correspondiente [@heisig_why_2019].
+
+Las hipótesis sobre el volumen (H1 y H4) se contrastan en los modelos del volumen, y las hipótesis sobre la dirección (H2a, H2b, H3, H5a y H5b), en los modelos de cada repertorio. La hipótesis de disponibilidad (H6a) se evalúa con las interacciones entre niveles y la hipótesis termostática (H6b), con los efectos principales de los indicadores institucionales. El apéndice descompone, además, la protección en sus cuatro medidas, para distinguir las dirigidas a la tecnología de las dirigidas a la competencia extranjera.

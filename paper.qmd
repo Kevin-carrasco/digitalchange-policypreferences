@@ -1,5 +1,5 @@
 ---
-title: "[Working title]"
+title: "[Working title] Percepciones del cambio tecnológico y preferencias de política social de los trabajadores en 27 países de la OCDE"
 format:
   html:
     code-fold: true
@@ -21,8 +21,9 @@ format:
         \renewcommand\Affilfont{\small}
     number-sections: true
 editor: source
-bibliography: "input/bib/tech-anxiety.bib"
+bibliography: "input/bib/digital-policy-preferences.bib"
 csl: "input/bib/sage-harvard.csl"
+lang: es
 author:
   - name: Kevin Carrasco
     orcid: 0000-0002-9348-8361

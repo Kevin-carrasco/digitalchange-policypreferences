@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.38">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>methods</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="03-methods_files/libs/clipboard/clipboard.min.js"></script>
+<script src="03-methods_files/libs/quarto-html/quarto.js" type="module"></script>
+<script src="03-methods_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="03-methods_files/libs/quarto-html/popper.min.js"></script>
+<script src="03-methods_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="03-methods_files/libs/quarto-html/anchor.min.js"></script>
+<link href="03-methods_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="03-methods_files/libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="03-methods_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="03-methods_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="03-methods_files/libs/bootstrap/bootstrap-efbb37e9afcc02144ebbc7afd12a776f.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+
+
+</head>
+
+<body class="fullcontent quarto-light">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+
+
+
+<p>Este estudio utiliza datos de la ola más reciente (2024) de la encuesta Risks That Matter (RTM) de la OCDE <span class="citation" data-cites="oecd_risks_2024">[@oecd_risks_2024]</span>, una encuesta comparada de opinión pública que cubre a 27.229 personas de entre 18 y 64 años en 27 países miembros (Alemania, Austria, Bélgica, Canadá, Chile, Corea, Dinamarca, Eslovenia, España, Estados Unidos, Estonia, Finlandia, Francia, Grecia, Irlanda, Israel, Italia, Letonia, Lituania, México, Noruega, Países Bajos, Polonia, Portugal, Reino Unido, Suiza y Türkiye). La encuesta se aplica en línea y cuenta con ponderadores de postestratificación calibrados por edad, sexo, región y nivel educacional <span class="citation" data-cites="thomas_survey_2025">[@thomas_survey_2025]</span>. La ola de 2024 incorpora preguntas sobre los efectos esperados de la inteligencia artificial en el mercado laboral y sobre el apoyo a distintas respuestas públicas frente a la digitalización y el cambio tecnológico.</p>
+<p>El análisis se restringe a las personas que en la semana previa a la entrevista tenían un trabajo remunerado o estaban temporalmente ausentes de él por razones de salud u otras (n = 22.063). Esta restricción sigue la estructura del cuestionario, ya que las preguntas sobre la amenaza y el beneficio de la tecnología para el propio empleo solo se aplican a quienes trabajan, de modo que las 5.166 personas no ocupadas, busquen o no empleo, quedan fuera del análisis por diseño. Tras eliminar los casos con valores perdidos en las variables de los modelos, la muestra analítica es de 19.557 personas, el 88,6 % de la muestra elegible. El apéndice reporta el tamaño muestral por país.</p>
+<section id="variables" class="level2">
+<h2 class="anchored" data-anchor-id="variables">Variables</h2>
+<p>La variable dependiente son las preferencias frente al cambio tecnológico, medidas con la batería “Los gobiernos pueden adoptar medidas para ayudar a trabajadores e industrias a enfrentar los desafíos de la digitalización y el cambio tecnológico, como habilidades obsoletas, escasez de habilidades y posibles pérdidas de empleo. Teniendo en cuenta cuánto podrían costar y cómo usted y su familia podrían beneficiarse, ¿en qué medida se opondría o apoyaría que el gobierno adoptara las siguientes acciones como respuesta a la digitalización y el cambio tecnológico?”.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> Cada una de las doce medidas se responde en una escala de cinco puntos, desde muy en contra (1) hasta muy a favor (5), y la opción “no sabe” se trata como valor perdido. Aunque la pregunta pide considerar los costos, cada medida se evalúa por separado y sin una restricción presupuestaria.</p>
+<p>Las medidas se agrupan en tres repertorios. La inversión reúne la inversión en educación universitaria y formación profesional para jóvenes, en reentrenamiento para personas en edad de trabajar y en infraestructura digital. La compensación reúne las prestaciones y servicios más accesibles o generosos, como el seguro de desempleo o los programas de ingreso mínimo, y una renta básica universal e incondicional. La protección reúne la introducción o el aumento de un impuesto a los robots o a las empresas tecnológicas, los subsidios a las empresas de las industrias más afectadas por el cambio tecnológico, la prioridad a los trabajadores del país en la contratación y la introducción de aranceles para proteger las industrias nacionales. Las tres medidas restantes, que son la limitación o reducción de la jornada laboral y la promoción de la migración de trabajadores calificados y no calificados, no forman parte de los repertorios.</p>
+<p>La agrupación combina criterios teóricos y empíricos. Un análisis factorial exploratorio de las doce medidas, con cinco factores según el análisis paralelo, distingue la inversión, la compensación y la protección, junto a un factor de migración y otro de reducción de la jornada. Los subsidios presentan cargas similares en la protección y en la compensación, por lo que el apéndice reporta también los modelos con un índice de protección que los excluye. La consistencia interna es moderada en la inversión (α = 0,66) y en la protección (α = 0,6). En la compensación, que reúne dos ítems, la correlación entre ítems es de 0,43, con un coeficiente de Spearman-Brown de 0,6 <span class="citation" data-cites="eisinga_reliability_2013">[@eisinga_reliability_2013]</span>. El análisis factorial completo se presenta en el apéndice.</p>
+<p>A partir de estas medidas se construyen dos componentes. El volumen corresponde al promedio de las doce medidas y expresa el nivel general de apoyo a la intervención estatal frente al cambio tecnológico. La dirección se mide como la diferencia entre el promedio de cada repertorio y el volumen de cada persona, de modo que los valores positivos indican que el repertorio recibe más apoyo que el conjunto de las medidas y los negativos, menos. Este procedimiento, conocido como ipsatización, separa la prioridad asignada a cada repertorio de la tendencia general a apoyar las medidas, que puede variar entre personas y países por razones sustantivas y por estilos de respuesta <span class="citation" data-cites="fischer_standardization_2004">[@fischer_standardization_2004]</span>.</p>
+<p>La <a href="#fig-policies" class="quarto-xref">Figure&nbsp;1</a> presenta el apoyo promedio a cada medida entre las personas ocupadas. Los tres repertorios reciben, en promedio, un apoyo superior al punto medio de la escala, lo que indica una demanda extendida de intervención estatal frente al cambio tecnológico. La inversión concentra el mayor apoyo, en línea con estudios previos <span class="citation" data-cites="busemeyer_public_2017 churchill_policy_2025">[@busemeyer_public_2017; @churchill_policy_2025]</span>.</p>
+<div class="cell" data-fig-cap-location="top">
+<div id="fig-policies" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-fig-cap-location="top">
+<figure class="quarto-float quarto-float-fig figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-fig" id="fig-policies-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: Apoyo promedio a las medidas frente a la digitalización y el cambio tecnológico
+</figcaption>
+<div aria-describedby="fig-policies-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<div id="fig-policies" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-subfloat-fig figure">
+<div aria-describedby="fig-policies-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="03-methods_files/figure-html/fig-policies-1.png" class="img-fluid figure-img" data-ref-parent="fig-policies" width="672">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-policies-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(a) Fuente: elaboración propia con datos de la OCDE, encuesta Risks That Matter 2024. Personas ocupadas. Escala de 1 (muy en contra) a 5 (muy a favor)
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</figure>
+</div>
+</div>
+<p>Tres conjuntos de variables independientes constituyen el núcleo del análisis. El primero corresponde a las percepciones sobre el propio empleo, medidas con la batería “¿Qué tan probable cree que es que ocurra lo siguiente con su trabajo (u oportunidades laborales) en los próximos cinco años?”, cuyos ítems se responden en una escala de probabilidad de cuatro puntos. Cuatro ítems se refieren a la amenaza tecnológica y preguntan si el trabajo será reemplazado por un robot, por una herramienta de inteligencia artificial como ChatGPT o por una persona que ofrece un servicio similar a través de una plataforma de internet, y si la persona perderá su empleo por no manejar bien las nuevas tecnologías o por ser reemplazada por alguien con mejores habilidades tecnológicas. Tres ítems se refieren al beneficio esperado y preguntan si la tecnología hará que el trabajo y la jornada sean más compatibles con la vida privada, que el trabajo sea menos peligroso o físicamente exigente y que sea menos aburrido, repetitivo, estresante o mentalmente exigente. Un análisis factorial exploratorio de los siete ítems respalda una estructura de dos factores, a partir de la cual se construyen dos índices como el promedio de sus ítems, la amenaza tecnológica (α = 0,87) y el beneficio esperado (α = 0,78). El ítem sobre la inteligencia artificial carga en el factor de amenaza en la solución de dos factores y aparece como una dimensión aislada en una solución de tres factores, lo que se interpreta como sobreextracción, por lo que se mantiene en el índice.</p>
+<p>Dos ítems adicionales de la misma batería se refieren a la amenaza asociada a la apertura económica y preguntan si el trabajo será ocupado por una persona de otro país o trasladado a otro país (r = 0,59). Su promedio se incluye como control, para distinguir la amenaza tecnológica de la amenaza asociada a la competencia extranjera, una distinción necesaria porque la protección incluye medidas dirigidas a la competencia extranjera.</p>
+<p>El segundo conjunto corresponde a las expectativas sobre los efectos sociales de la inteligencia artificial, medidas con la batería “Pensando en los efectos de la inteligencia artificial (IA) en el mercado laboral, ¿qué tan probable cree que es lo siguiente en [país] en los próximos 5 a 10 años?”, con la misma escala de cuatro puntos. Un análisis factorial exploratorio de los siete ítems identifica dos factores. Las expectativas negativas promedian los ítems sobre el aumento de la desigualdad de ingresos, del desempleo y de la vigilancia en el trabajo (α = 0,62), y las expectativas positivas, los ítems sobre más tiempo libre para la mayoría, trabajos menos aburridos, repetitivos, estresantes o mentalmente exigentes y la creación de más empleos (α = 0,69). El ítem sobre la necesidad de que muchas personas se reentrenen carga en el factor negativo, pero se excluye porque describe un requisito de adaptación y no un daño.</p>
+<p>El tercer conjunto corresponde al contexto institucional y comprende tres indicadores nacionales que corresponden a los repertorios. La protección del empleo se mide con el indicador de la OCDE sobre la rigidez de la regulación de los despidos individuales y colectivos de trabajadores con contrato indefinido (versión 4). La generosidad de la compensación se mide con el gasto público en prestaciones por desempleo, y el esfuerzo en inversión, con el gasto público en políticas activas del mercado laboral, ambos como porcentaje del PIB y tomados de la base de gasto social de la OCDE (SOCX). En los dos casos el gasto se divide por la tasa de desempleo, para distinguir la generosidad de las políticas de la magnitud del problema que atienden. Los modelos incluyen además el PIB per cápita (PPA, en logaritmo) del Banco Mundial como control del nivel de desarrollo. Para cada país se usa el valor más reciente disponible, y todos los indicadores se estandarizan entre los 27 países, de modo que sus coeficientes expresan la asociación con una diferencia de una desviación estándar entre países.</p>
+<p>Los modelos incluyen como controles la preocupación por perder el empleo o los ingresos del trabajo independiente en los próximos uno o dos años, medida en una escala de cuatro puntos desde nada preocupado hasta muy preocupado, el sexo, el grupo de edad, el nivel educacional y el decil de ingreso autorreportado. Incluyen también cuatro características del empleo. La posición en el mercado laboral distingue a los asalariados con contrato indefinido, a los asalariados con contrato temporal o sin contrato y a los trabajadores independientes. Los otros tres controles corresponden al trabajo mediado por plataformas digitales en el empleo principal, al empleo en el sector público y al sector de actividad.</p>
+<p>La <a href="#tbl-summary" class="quarto-xref">Table&nbsp;1</a> resume estas variables y sus principales estadísticos descriptivos en la muestra analítica.</p>
+<div id="tbl-summary" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-tbl-cap-location="top">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-summary-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;1: Principales estadísticos descriptivos
+</figcaption>
+<div aria-describedby="tbl-summary-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<table class="cell caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 35%">
+<col style="width: 31%">
+<col style="width: 22%">
+<col style="width: 10%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Label</th>
+<th style="text-align: left;">Stats / Values</th>
+<th style="text-align: left;">Freqs (% of Valid)</th>
+<th style="text-align: left;">Valid</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Volumen (apoyo general)</td>
+<td style="text-align: left;">Mean (sd) : 3.6 (0.5)<br>
+min &lt; med &lt; max:<br>
+1 &lt; 3.6 &lt; 5<br>
+IQR (CV) : 0.7 (0.2)</td>
+<td style="text-align: left;">155 distinct values</td>
+<td style="text-align: left;">19557<br>
+(100.0%)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Dirección: inversión</td>
+<td style="text-align: left;">Mean (sd) : 0.3 (0.5)<br>
+min &lt; med &lt; max:<br>
+-2.3 &lt; 0.3 &lt; 3.2<br>
+IQR (CV) : 0.7 (1.4)</td>
+<td style="text-align: left;">385 distinct values</td>
+<td style="text-align: left;">19557<br>
+(100.0%)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Dirección: compensación</td>
+<td style="text-align: left;">Mean (sd) : 0 (0.7)<br>
+min &lt; med &lt; max:<br>
+-3 &lt; 0 &lt; 2.7<br>
+IQR (CV) : 0.8 (-45.6)</td>
+<td style="text-align: left;">291 distinct values</td>
+<td style="text-align: left;">19557<br>
+(100.0%)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Dirección: protección</td>
+<td style="text-align: left;">Mean (sd) : 0.1 (0.5)<br>
+min &lt; med &lt; max:<br>
+-2.9 &lt; 0 &lt; 2.6<br>
+IQR (CV) : 0.5 (8.3)</td>
+<td style="text-align: left;">458 distinct values</td>
+<td style="text-align: left;">19557<br>
+(100.0%)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Amenaza tecnológica</td>
+<td style="text-align: left;">Mean (sd) : 2.1 (0.8)<br>
+min &lt; med &lt; max:<br>
+1 &lt; 2 &lt; 4<br>
+IQR (CV) : 1.5 (0.4)</td>
+<td style="text-align: left;">19 distinct values</td>
+<td style="text-align: left;">19557<br>
+(100.0%)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Beneficio esperado</td>
+<td style="text-align: left;">Mean (sd) : 2.6 (0.8)<br>
+min &lt; med &lt; max:<br>
+1 &lt; 2.7 &lt; 4<br>
+IQR (CV) : 1 (0.3)</td>
+<td style="text-align: left;">13 distinct values</td>
+<td style="text-align: left;">19557<br>
+(100.0%)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Expectativas negativas sobre la IA</td>
+<td style="text-align: left;">Mean (sd) : 3 (0.6)<br>
+min &lt; med &lt; max:<br>
+1 &lt; 3 &lt; 4<br>
+IQR (CV) : 0.7 (0.2)</td>
+<td style="text-align: left;">13 distinct values</td>
+<td style="text-align: left;">19557<br>
+(100.0%)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Expectativas positivas sobre la IA</td>
+<td style="text-align: left;">Mean (sd) : 2.7 (0.7)<br>
+min &lt; med &lt; max:<br>
+1 &lt; 2.7 &lt; 4<br>
+IQR (CV) : 0.7 (0.3)</td>
+<td style="text-align: left;">13 distinct values</td>
+<td style="text-align: left;">19557<br>
+(100.0%)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Amenaza asociada a la apertura</td>
+<td style="text-align: left;">Mean (sd) : 2.1 (0.9)<br>
+min &lt; med &lt; max:<br>
+1 &lt; 2 &lt; 4<br>
+IQR (CV) : 1.5 (0.4)</td>
+<td style="text-align: left;">1.00 : 4619 (23.6%)<br>
+1.50 : 2427 (12.4%)<br>
+2.00 : 4742 (24.2%)<br>
+2.50 : 2498 (12.8%)<br>
+3.00 : 2857 (14.6%)<br>
+3.50 : 1321 ( 6.8%)<br>
+4.00 : 1093 ( 5.6%)</td>
+<td style="text-align: left;">19557<br>
+(100.0%)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Preocupación por perder el empleo</td>
+<td style="text-align: left;">1. Nada preocupado<br>
+2. No muy preocupado<br>
+3. Algo preocupado<br>
+4. Muy preocupado</td>
+<td style="text-align: left;">2952 (15.1%)<br>
+5489 (28.1%)<br>
+6033 (30.8%)<br>
+5083 (26.0%)</td>
+<td style="text-align: left;">19557<br>
+(100.0%)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Sexo</td>
+<td style="text-align: left;">1. Hombre<br>
+2. Mujer</td>
+<td style="text-align: left;">10485 (53.6%)<br>
+9072 (46.4%)</td>
+<td style="text-align: left;">19557<br>
+(100.0%)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Grupo de edad</td>
+<td style="text-align: left;">1. 18-24<br>
+2. 25-34<br>
+3. 35-44<br>
+4. 45-54<br>
+5. 55-64</td>
+<td style="text-align: left;">2119 (10.8%)<br>
+4600 (23.5%)<br>
+4793 (24.5%)<br>
+4574 (23.4%)<br>
+3471 (17.7%)</td>
+<td style="text-align: left;">19557<br>
+(100.0%)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Nivel educacional</td>
+<td style="text-align: left;">1. Bajo<br>
+2. Medio<br>
+3. Alto</td>
+<td style="text-align: left;">1507 ( 7.7%)<br>
+8019 (41.0%)<br>
+10031 (51.3%)</td>
+<td style="text-align: left;">19557<br>
+(100.0%)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Decil de ingreso</td>
+<td style="text-align: left;">Mean (sd) : 4.9 (2.9)<br>
+min &lt; med &lt; max:<br>
+1 &lt; 5 &lt; 10<br>
+IQR (CV) : 5 (0.6)</td>
+<td style="text-align: left;">1 : 3270 (16.7%)<br>
+2 : 1800 ( 9.2%)<br>
+3 : 1785 ( 9.1%)<br>
+4 : 2648 (13.5%)<br>
+5 : 2326 (11.9%)<br>
+6 : 1816 ( 9.3%)<br>
+7 : 1513 ( 7.7%)<br>
+8 : 1442 ( 7.4%)<br>
+9 : 1307 ( 6.7%)<br>
+10 : 1650 ( 8.4%)</td>
+<td style="text-align: left;">19557<br>
+(100.0%)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Posición en el mercado laboral</td>
+<td style="text-align: left;">1. Asalariado con contrato i<br>
+2. Asalariado con contrato t<br>
+3. Independiente</td>
+<td style="text-align: left;">15036 (76.9%)<br>
+2432 (12.4%)<br>
+2089 (10.7%)</td>
+<td style="text-align: left;">19557<br>
+(100.0%)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Trabajo en plataformas</td>
+<td style="text-align: left;">1. No<br>
+2. Sí</td>
+<td style="text-align: left;">17728 (90.6%)<br>
+1829 ( 9.4%)</td>
+<td style="text-align: left;">19557<br>
+(100.0%)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Sector público</td>
+<td style="text-align: left;">1. No<br>
+2. Sí</td>
+<td style="text-align: left;">13335 (68.2%)<br>
+6222 (31.8%)</td>
+<td style="text-align: left;">19557<br>
+(100.0%)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Sector de actividad</td>
+<td style="text-align: left;">1. Agricultura y minería<br>
+2. Manufactura y servicios b<br>
+3. Construcción<br>
+4. Comercio, transporte y ho<br>
+5. TIC, finanzas y servicios<br>
+6. Administración pública, e<br>
+7. Otros servicios<br>
+8. Otro o no declarado</td>
+<td style="text-align: left;">441 ( 2.3%)<br>
+2237 (11.4%)<br>
+1161 ( 5.9%)<br>
+2811 (14.4%)<br>
+4552 (23.3%)<br>
+4445 (22.7%)<br>
+2856 (14.6%)<br>
+1054 ( 5.4%)</td>
+<td style="text-align: left;">19557<br>
+(100.0%)</td>
+</tr>
+</tbody>
+</table>
+</div>
+</figure>
+</div>
+</section>
+<section id="métodos" class="level2">
+<h2 class="anchored" data-anchor-id="métodos">Métodos</h2>
+<p>Los análisis se realizaron en R, versión 4.3.2. Para examinar la relación entre las percepciones sobre el cambio tecnológico y las preferencias se estiman modelos lineales multinivel con personas anidadas en países, mediante la función lmer del paquete lme4 <span class="citation" data-cites="bates_fitting_2015">[@bates_fitting_2015]</span>. Este enfoque considera la estructura jerárquica de los datos comparados y descompone la varianza de cada resultado en un componente individual y uno nacional <span class="citation" data-cites="snijders_multilevel_2012 hox_multilevel_2017">[@snijders_multilevel_2012; @hox_multilevel_2017]</span>, con interceptos aleatorios por país. Se estima un conjunto de modelos para el volumen y uno para la dirección de cada repertorio, y en cada caso un modelo nulo establece primero la proporción de la varianza que se ubica entre países. Todos los modelos incorporan los ponderadores de postestratificación de la OCDE en el nivel individual.</p>
+<p>Para separar las asociaciones dentro y entre países, las cuatro percepciones se centran en la media de cada país, de modo que sus coeficientes expresan diferencias entre personas de un mismo país <span class="citation" data-cites="hox_multilevel_2017">[@hox_multilevel_2017]</span>. Los modelos se estiman de forma secuencial. El modelo 1 incluye las cuatro percepciones, el modelo 2 agrega los controles sociodemográficos y laborales, el modelo 3 la amenaza asociada a la apertura y la preocupación por perder el empleo, y el modelo 4 el PIB per cápita. Un modelo contextual agrega, además, las medias nacionales de las cuatro percepciones como predictores de nivel 2. Este modelo se estima por separado, ya que entre los 27 países esas medias están fuertemente correlacionadas entre sí, lo que dificulta distinguir sus efectos.</p>
+<p>El contexto institucional se incorpora en dos pasos para la inversión, la compensación y la protección. Primero, cada modelo agrega el indicador institucional que corresponde al repertorio. Luego, se estiman las interacciones entre ese indicador y la amenaza tecnológica, y entre ese indicador y las expectativas negativas, una interacción por modelo y con una pendiente aleatoria para la percepción correspondiente <span class="citation" data-cites="heisig_why_2019">[@heisig_why_2019]</span>.</p>
+<p>Las hipótesis sobre el volumen (H1 y H4) se contrastan en los modelos del volumen, y las hipótesis sobre la dirección (H2a, H2b, H3, H5a y H5b), en los modelos de cada repertorio. La hipótesis de disponibilidad (H6a) se evalúa con las interacciones entre niveles y la hipótesis termostática (H6b), con los efectos principales de los indicadores institucionales. El apéndice descompone, además, la protección en sus cuatro medidas, para distinguir las dirigidas a la tecnología de las dirigidas a la competencia extranjera.</p>
+</section>
+
+
+<div id="quarto-appendix" class="default"><section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes"><h2 class="anchored quarto-appendix-heading">Footnotes</h2>
+
+<ol>
+<li id="fn1"><p>Las formulaciones de los ítems corresponden a traducciones propias del cuestionario en inglés.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section></div></main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
