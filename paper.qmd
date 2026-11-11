@@ -19,10 +19,15 @@ format:
         \renewcommand*{\Authand}{, }
         \renewcommand*{\Authands}{, }
         \renewcommand\Affilfont{\small}
+        \usepackage{etoolbox}
+        \AtBeginEnvironment{longtable}{\footnotesize}
     number-sections: true
+  plain:
+    output-file: paper.txt
 editor: source
-bibliography: "input/bib/digital-policy-preferences.bib"
-csl: "input/bib/sage-harvard.csl"
+bibliography:
+  - "input/bib/digital-policy-preferences.bib"
+csl: "input/bib/apa6.csl"
 lang: es
 author:
   - name: Kevin Carrasco
@@ -52,33 +57,33 @@ options(knitr.kable.NA = '')
 options(knitr.graphics.error = FALSE)
 ```
 
-# Introduction
+# Introducción
 
 {{< include 01-introduction.qmd >}}
 
-# Data, variables and methods
+# Datos, variables y métodos
 
-## Data
+## Datos
 
 {{< include 03-methods.qmd >}}
 
-# Analysis
+# Resultados
 
 {{< include 04-results.qmd >}}
 
-# Discussion
+# Discusión
 
 {{< include 05-discussion.qmd >}}
 
-# Conclusion
+# Conclusión
 
 {{< include 06-conclusion.qmd >}}
 
-# References
+# Referencias
 
 ::: {#refs}
 :::
 
-# Appendix
+# Apéndice
 
 {{< include 07-appendix.qmd >}}

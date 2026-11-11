@@ -1,0 +1,823 @@
+---
+title: "Otros indicadores de país y moderadores individuales"
+format:
+  html:
+    code-copy: true
+    code-tools: true
+    toc: true
+    toc-location: right
+    toc-depth: 4
+    toc-expand: 2
+    toc-title: Contents
+    number-sections: true
+    number-depth: 4
+    fig-width: 10
+    fig-height: 7
+  plain:
+    output-file: moderadores.txt
+editor_options:
+  chunk_output_type: console
+editor: source
+lang: es
+fontsize: 12pt
+---
+
+```{r}
+#| label: set
+#| echo: false
+#| message: false
+#| warning: false
+
+library(knitr)
+knitr::opts_chunk$set(echo = FALSE, include = TRUE, warning = FALSE, message = FALSE)
+
+options(knitr.kable.NA = "")
+options(knitr.table.format = "pipe")
+```
+
+```{r}
+if (!require("pacman")) install.packages("pacman") # instalar pacman
+                            # cargar librerias
+pacman::p_load(dplyr,       # Manipulacion de datos
+               tidyr,
+               knitr,
+               ggplot2,
+               sjlabelled,
+               lme4,
+               sjPlot,
+               texreg,
+               here
+               )
+
+# Preparación de datos: se evalúa el chunk setup-results de 04-results.qmd, sin copiarlo,
+# para usar la misma muestra analítica, el mismo weight_n y las mismas etiquetas del paper.
+lineas <- readLines(here::here("04-results.qmd"), encoding = "UTF-8")
+ini <- which(lineas == "#| label: setup-results")
+fin <- ini + which(lineas[ini:length(lineas)] == "```")[1] - 2
+eval(parse(text = lineas[(ini + 1):fin], encoding = "UTF-8"))
+
+# Modelos 4 del paper, tal como están escritos en 04-results.qmd
+eval(parse(text = lineas[grepl("^reg4_(lev|inv|com|pro) <- lmer", lineas)], encoding = "UTF-8"))
+
+# tab() se toma de analysis.qmd: tab_model en HTML y texreg en el .txt
+lineas <- readLines(here::here("procesamiento/analysis.qmd"), encoding = "UTF-8")
+ini <- which(lineas == "tab <- function(...) {")
+fin <- ini + which(lineas[ini:length(lineas)] == "}")[1] - 1
+eval(parse(text = lineas[ini:fin], encoding = "UTF-8"))
+
+# Lado derecho del modelo 4 actual: cuatro indicadores de nivel país e intercepto aleatorio
+form_m4 <- "ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + gini_z + ubcov_z + almp_z + (1|ctrcode)"
+
+# Variables dependientes
+dvs <- c(lev = "policy_mean", inv = "rel_investment", com = "rel_compensation", pro = "rel_protection")
+dv_es <- c(lev = "Volumen", inv = "Inversión", com = "Compensación", pro = "Protección")
+
+# Coeficientes, errores estándar y p de Wald en texto, el mismo criterio de las tablas del paper
+estrellas <- c(0, 0.001, 0.01, 0.05, 1)
+etiquetas_p <- c("\\*\\*\\*", "\\*\\*", "\\*", "")
+```
+
+## Verificación
+
+```{r}
+# Los modelos 4 de este archivo frente a los de 04-results.qmd
+reg4 <- lapply(dvs, function(y) lmer(as.formula(paste(y, "~", form_m4)), data = data, weights = weight_n))
+paper <- list(lev = reg4_lev, inv = reg4_inv, com = reg4_com, pro = reg4_pro)
+diferencias <- sapply(names(reg4), function(k) max(abs(fixef(reg4[[k]]) - fixef(paper[[k]])[names(fixef(reg4[[k]]))])))
+
+if (any(sapply(reg4, nobs) != sapply(paper, nobs)) || max(diferencias) >= 1e-6) {
+  print(diferencias)
+  stop("Los modelos 4 no reproducen la tabla principal del paper")
+}
+```
+
+Los cuatro modelos 4 tienen N = `r format(nobs(reg4$lev), big.mark = ".", decimal.mark = ",")` y reproducen los de `04-results.qmd` (mayor diferencia absoluta entre coeficientes: `r formatC(max(diferencias), format = "e", digits = 1, decimal.mark = ",")`).
+
+## Parte B. Otros indicadores de nivel país
+
+```{r}
+# Indicadores estandarizados disponibles en macro (procesamiento.qmd)
+disponibles <- grep("_z$", names(macro), value = TRUE)
+
+# Los que no están en el modelo 4 se agregan uno por uno
+otros <- c(unemp_z = "Tasa de desempleo",
+           socx_z = "Gasto social público total",
+           ind_emp_z = "Empleo en la industria",
+           epl_z = "Protección del empleo (EPL)")
+stopifnot(all(names(otros) %in% disponibles))
+
+data_b <- data %>% left_join(select(macro, ctrcode, all_of(names(otros))), by = "ctrcode")
+
+# Correlaciones entre países de los ocho indicadores
+indicadores_es <- c(gdp_pc_log_z = "PIB per cápita (log)", gini_z = "Gini",
+                    ubcov_z = "Prestaciones por desempleo", almp_z = "Políticas de mercado laboral", otros)
+correlaciones <- round(cor(macro[, names(indicadores_es)]), 2)
+dimnames(correlaciones) <- list(indicadores_es, indicadores_es)
+
+kable(correlaciones, format.args = list(decimal.mark = ","),
+      caption = "Correlaciones entre los indicadores de nivel país (27 países)")
+
+reg_b <- lapply(setNames(names(otros), names(otros)), function(x)
+  lapply(dvs, function(y) lmer(as.formula(paste(y, "~", x, "+", form_m4)), data = data_b, weights = weight_n)))
+
+tabla_b <- do.call(rbind, lapply(names(reg_b), function(x) {
+  data.frame(Indicador = otros[x],
+             t(sapply(reg_b[[x]], function(m) {
+               s <- summary(m)$coefficients
+               paste0(formatC(s[x, 1], format = "f", digits = 3, decimal.mark = ","),
+                      " (", formatC(s[x, 2], format = "f", digits = 3, decimal.mark = ","), ")",
+                      as.character(cut(2 * pnorm(-abs(s[x, 3])), estrellas, labels = etiquetas_p, include.lowest = TRUE)))
+             })), check.names = FALSE)
+}))
+
+kable(tabla_b, row.names = FALSE, col.names = c("Indicador agregado", dv_es),
+      caption = "Coeficiente de cada indicador agregado por separado al modelo 4")
+```
+
+*Nota*: cada celda es un modelo distinto: el modelo 4 actual, que ya incluye PIB per cápita, Gini, Prestaciones por desempleo y Políticas de mercado laboral, más el indicador de la fila. Todos los indicadores están estandarizados entre los 27 países. Errores estándar entre paréntesis. \*\*\* p < 0,001; \*\* p < 0,01; \* p < 0,05. Estos indicadores no forman parte de la especificación del paper.
+
+## Parte C. Interacciones con variables individuales
+
+### Hipótesis definidas antes de estimar
+
+- **Edad × amenaza tecnológica:** la amenaza reduce más la prioridad de la inversión a mayor edad, porque el horizonte para recuperar la formación es más corto. Signo esperado de las interacciones en inversión: negativo.
+- **Nivel educacional × amenaza tecnológica:** la amenaza reduce menos la prioridad de la inversión entre quienes tienen educación alta, por su mayor capacidad de reconvertirse. Signo esperado de la interacción con educación alta en inversión: positivo.
+- **Posición en el mercado laboral × amenaza tecnológica:** la amenaza aumenta más la prioridad de la protección entre los asalariados con contrato indefinido, y más la de la compensación entre los temporales y los independientes. Signo esperado de las interacciones: negativo en protección y positivo en compensación.
+
+### Modelos
+
+```{r}
+moderadores <- c(age = "Grupo de edad", educ = "Nivel educacional", lm_position = "Posición en el mercado laboral")
+
+# Categorías de cada moderador, con su término en el modelo (la primera es la de referencia)
+categorias <- list(age = c(`18 a 24 años` = "", `25 a 34 años` = "age2", `35 a 44 años` = "age3",
+                           `45 a 54 años` = "age4", `55 a 64 años` = "age5"),
+                   educ = c(`Educación baja` = "", `Educación media` = "educ2", `Educación alta` = "educ3"),
+                   lm_position = c(`Asalariado con contrato indefinido` = "",
+                                   `Asalariado temporal o sin contrato` = "lm_positionNon-standard",
+                                   `Independiente` = "lm_positionSelf-employed"))
+
+# Una interacción por modelo: amenaza × moderador, en las cuatro variables dependientes.
+# El moderador ya está en el modelo 4 como efecto principal.
+reg_c <- lapply(setNames(names(moderadores), names(moderadores)), function(z)
+  lapply(dvs, function(y) lmer(as.formula(paste(y, "~ ego_neg_cwc:", z, "+", form_m4)), data = data, weights = weight_n)))
+
+# Prueba conjunta de la interacción: razón de verosimilitud frente al modelo 4 (anova reajusta por ML)
+pruebas <- do.call(rbind, lapply(names(reg_c), function(z) do.call(rbind, lapply(names(dvs), function(k) {
+  a <- anova(reg4[[k]], reg_c[[z]][[k]])
+  data.frame(moderador = z, dv = k, chi2 = a$Chisq[2], gl = a$Df[2], p = a$`Pr(>Chisq)`[2])
+}))))
+
+# Pendiente de la amenaza en cada categoría: b(amenaza) + b(amenaza × categoría), con su error
+# estándar a partir de la matriz de varianzas (matriz de contrastes L)
+pendientes <- do.call(rbind, lapply(names(reg_c), function(z) do.call(rbind, lapply(names(dvs), function(k) {
+  m <- reg_c[[z]][[k]]
+  b <- fixef(m)
+  V <- as.matrix(vcov(m))
+  L <- matrix(0, nrow = length(categorias[[z]]), ncol = length(b), dimnames = list(names(categorias[[z]]), names(b)))
+  L[, "ego_neg_cwc"] <- 1
+  for (j in which(categorias[[z]] != "")) L[j, paste0("ego_neg_cwc:", categorias[[z]][j])] <- 1
+  est <- as.vector(L %*% b)
+  se <- sqrt(diag(L %*% V %*% t(L)))
+  data.frame(moderador = z, dv = k, categoria = names(categorias[[z]]), b = est, se = se,
+             p = 2 * pnorm(-abs(est / se)))
+}))))
+```
+
+```{r}
+# Pendientes por categoría en texto, para las tablas de cada moderador
+pendientes <- pendientes %>%
+  mutate(valor = paste0(formatC(b, format = "f", digits = 3, decimal.mark = ","),
+                        " (", formatC(se, format = "f", digits = 3, decimal.mark = ","), ")",
+                        as.character(cut(p, estrellas, labels = etiquetas_p, include.lowest = TRUE))))
+```
+
+#### Grupo de edad
+
+```{r}
+# Tabla compacta: amenaza, moderador e interacciones
+tab(reg_c$age$lev, reg_c$age$inv, reg_c$age$com, reg_c$age$pro,
+    terms = c("ego_neg_cwc", "age2", "age3", "age4", "age5",
+              "ego_neg_cwc:age2", "ego_neg_cwc:age3", "ego_neg_cwc:age4", "ego_neg_cwc:age5"),
+    pred.labels = c("Amenaza tecnológica", "25 a 34 años", "35 a 44 años", "45 a 54 años", "55 a 64 años",
+                    "Amenaza tecnológica × 25 a 34 años", "Amenaza tecnológica × 35 a 44 años",
+                    "Amenaza tecnológica × 45 a 54 años", "Amenaza tecnológica × 55 a 64 años"),
+    show.ci = FALSE, p.style = "stars", show.se = TRUE, digits = 3, dv.labels = unname(dv_es))
+
+kable(pruebas %>% filter(moderador == "age") %>% mutate(`Variable dependiente` = dv_es[dv]) %>%
+        select(`Variable dependiente`, `Chi cuadrado` = chi2, gl, p),
+      digits = c(0, 2, 0, 4), row.names = FALSE, format.args = list(decimal.mark = ","),
+      caption = "Prueba conjunta de la interacción con el grupo de edad")
+
+kable(pendientes %>% filter(moderador == "age") %>% mutate(dv = dv_es[dv]) %>%
+        select(categoria, dv, valor) %>% pivot_wider(names_from = dv, values_from = valor) %>%
+        rename(`Categoría` = categoria),
+      row.names = FALSE, caption = "Pendiente de la amenaza tecnológica en cada grupo de edad")
+```
+
+#### Nivel educacional
+
+```{r}
+tab(reg_c$educ$lev, reg_c$educ$inv, reg_c$educ$com, reg_c$educ$pro,
+    terms = c("ego_neg_cwc", "educ2", "educ3", "ego_neg_cwc:educ2", "ego_neg_cwc:educ3"),
+    pred.labels = c("Amenaza tecnológica", "Educación media", "Educación alta",
+                    "Amenaza tecnológica × Educación media", "Amenaza tecnológica × Educación alta"),
+    show.ci = FALSE, p.style = "stars", show.se = TRUE, digits = 3, dv.labels = unname(dv_es))
+
+kable(pruebas %>% filter(moderador == "educ") %>% mutate(`Variable dependiente` = dv_es[dv]) %>%
+        select(`Variable dependiente`, `Chi cuadrado` = chi2, gl, p),
+      digits = c(0, 2, 0, 4), row.names = FALSE, format.args = list(decimal.mark = ","),
+      caption = "Prueba conjunta de la interacción con el nivel educacional")
+
+kable(pendientes %>% filter(moderador == "educ") %>% mutate(dv = dv_es[dv]) %>%
+        select(categoria, dv, valor) %>% pivot_wider(names_from = dv, values_from = valor) %>%
+        rename(`Categoría` = categoria),
+      row.names = FALSE, caption = "Pendiente de la amenaza tecnológica en cada nivel educacional")
+```
+
+#### Posición en el mercado laboral
+
+```{r}
+tab(reg_c$lm_position$lev, reg_c$lm_position$inv, reg_c$lm_position$com, reg_c$lm_position$pro,
+    terms = c("ego_neg_cwc", "lm_positionNon-standard", "lm_positionSelf-employed",
+              "ego_neg_cwc:lm_positionNon-standard", "ego_neg_cwc:lm_positionSelf-employed"),
+    pred.labels = c("Amenaza tecnológica", "Asalariado temporal o sin contrato", "Independiente",
+                    "Amenaza tecnológica × Asalariado temporal o sin contrato", "Amenaza tecnológica × Independiente"),
+    show.ci = FALSE, p.style = "stars", show.se = TRUE, digits = 3, dv.labels = unname(dv_es))
+
+kable(pruebas %>% filter(moderador == "lm_position") %>% mutate(`Variable dependiente` = dv_es[dv]) %>%
+        select(`Variable dependiente`, `Chi cuadrado` = chi2, gl, p),
+      digits = c(0, 2, 0, 4), row.names = FALSE, format.args = list(decimal.mark = ","),
+      caption = "Prueba conjunta de la interacción con la posición en el mercado laboral")
+
+kable(pendientes %>% filter(moderador == "lm_position") %>% mutate(dv = dv_es[dv]) %>%
+        select(categoria, dv, valor) %>% pivot_wider(names_from = dv, values_from = valor) %>%
+        rename(`Categoría` = categoria),
+      row.names = FALSE, caption = "Pendiente de la amenaza tecnológica en cada posición en el mercado laboral")
+```
+
+*Nota*: la prueba conjunta compara cada modelo con el modelo 4 sin la interacción mediante una razón de verosimilitud (`anova()`, que reajusta ambos modelos por máxima verosimilitud). La pendiente de cada categoría es la suma del coeficiente de la amenaza y de su interacción con la categoría, con el error estándar de esa suma. Errores estándar entre paréntesis. \*\*\* p < 0,001; \*\* p < 0,01; \* p < 0,05.
+
+### Figura
+
+```{r}
+#| label: fig-pendientes
+#| fig-cap: "Pendiente de la amenaza tecnológica en cada categoría de los moderadores, modelo 4"
+#| fig-cap-location: top
+#| fig-height: 7
+
+pendientes %>%
+  mutate(moderador = factor(moderadores[moderador], levels = moderadores),
+         dv = factor(dv_es[dv], levels = dv_es),
+         categoria = factor(categoria, levels = rev(unlist(lapply(categorias, names))))) %>%
+  ggplot(aes(x = b, y = categoria)) +
+  geom_vline(xintercept = 0, linetype = "dashed", colour = "grey50") +
+  geom_errorbar(aes(xmin = b - 1.96 * se, xmax = b + 1.96 * se), orientation = "y", width = 0, colour = "grey40") +
+  geom_point(aes(shape = moderador, fill = moderador), size = 3, colour = "black", stroke = 0.8) +
+  facet_grid(moderador ~ dv, scales = "free_y", space = "free_y",
+             labeller = labeller(moderador = label_wrap_gen(15))) +
+  scale_shape_manual(values = c(21, 22, 24), name = NULL) +
+  scale_fill_manual(values = c("black", "grey55", "white"), name = NULL) +
+  scale_x_continuous(labels = scales::label_number(decimal.mark = ",")) +
+  labs(x = "Pendiente de la amenaza tecnológica e intervalo de 95 %", y = NULL) +
+  theme_bw() +
+  theme(legend.position = "bottom", strip.text.y = element_text(angle = 0))
+```
+
+### Resumen
+
+```{r}
+# Interacciones individuales, con el signo esperado donde hay hipótesis
+interacciones <- do.call(rbind, lapply(names(reg_c), function(z) do.call(rbind, lapply(names(dvs), function(k) {
+  s <- summary(reg_c[[z]][[k]])$coefficients
+  t <- paste0("ego_neg_cwc:", categorias[[z]][categorias[[z]] != ""])
+  data.frame(moderador = z, dv = k, categoria = names(categorias[[z]])[categorias[[z]] != ""], termino = t,
+             b = s[t, 1], se = s[t, 2], p = 2 * pnorm(-abs(s[t, 3])))
+})))) %>%
+  mutate(esperado = case_when(moderador == "age" & dv == "inv" ~ "Negativo",
+                              moderador == "educ" & dv == "inv" & categoria == "Educación alta" ~ "Positivo",
+                              moderador == "lm_position" & dv == "pro" ~ "Negativo",
+                              moderador == "lm_position" & dv == "com" ~ "Positivo",
+                              TRUE ~ ""),
+         coincide = case_when(esperado == "" ~ "",
+                              (esperado == "Positivo") == (b > 0) ~ "Sí",
+                              TRUE ~ "No"),
+         valor = paste0(formatC(b, format = "f", digits = 3, decimal.mark = ","),
+                        " (", formatC(se, format = "f", digits = 3, decimal.mark = ","), ")",
+                        as.character(cut(p, estrellas, labels = etiquetas_p, include.lowest = TRUE))))
+
+kable(interacciones %>%
+        left_join(pruebas, by = c("moderador", "dv"), suffix = c("", "_conjunta")) %>%
+        mutate(Moderador = moderadores[moderador], `Variable dependiente` = dv_es[dv],
+               `p conjunta` = formatC(p_conjunta, format = "f", digits = 4, decimal.mark = ",")) %>%
+        select(Moderador, `Variable dependiente`, `Categoría` = categoria, `Interacción (EE)` = valor,
+               `p conjunta`, `Signo esperado` = esperado, `Coincide` = coincide),
+      row.names = FALSE, caption = "Interacciones de la amenaza tecnológica con los moderadores individuales")
+```
+
+*Nota*: el signo esperado se indica solo para las combinaciones definidas antes de estimar. "Coincide" compara el signo del coeficiente, sea o no significativo. \*\*\* p < 0,001; \*\* p < 0,01; \* p < 0,05.
+
+```{r}
+signif_c <- interacciones %>% filter(p < 0.05)
+conjuntas_c <- pruebas %>% filter(p < 0.05)
+```
+
+- **Pruebas conjuntas significativas (p < 0,05):** `r if (nrow(conjuntas_c) == 0) "ninguna" else paste(paste0(moderadores[conjuntas_c$moderador], " en ", tolower(dv_es[conjuntas_c$dv]), " (p = ", formatC(conjuntas_c$p, format = "f", digits = 4, decimal.mark = ","), ")"), collapse = "; ")`.
+- **Coeficientes de interacción significativos (p < 0,05):** `r if (nrow(signif_c) == 0) "ninguno" else paste(paste0(signif_c$categoria, " en ", tolower(dv_es[signif_c$dv]), ": ", signif_c$valor, ifelse(signif_c$esperado == "", ", sin hipótesis", paste0(", esperado ", tolower(signif_c$esperado), ", coincide: ", tolower(signif_c$coincide)))), collapse = "; ")`.
+
+```{r}
+kable(pendientes %>%
+        mutate(Moderador = moderadores[moderador],
+               valor = paste0(formatC(b, format = "f", digits = 3, decimal.mark = ","),
+                              " (", formatC(se, format = "f", digits = 3, decimal.mark = ","), ")",
+                              as.character(cut(p, estrellas, labels = etiquetas_p, include.lowest = TRUE))),
+               dv = dv_es[dv]) %>%
+        select(Moderador, categoria, dv, valor) %>%
+        pivot_wider(names_from = dv, values_from = valor) %>%
+        rename(`Categoría` = categoria),
+      row.names = FALSE, caption = "Pendiente de la amenaza tecnológica en cada categoría")
+```
+
+## Gasto social público y prestaciones por desempleo
+
+### Efectos principales
+
+```{r}
+# El mismo gasto social de la parte B (socx_z, gasto social público total en % del PIB,
+# estandarizado entre los 27 países)
+indicadores_s <- c(gdp_pc_log_z = "PIB per cápita (log)", gini_z = "Gini", ubcov_z = "Prestaciones por desempleo",
+                   almp_z = "Políticas de mercado laboral", socx_z = "Gasto social público")
+
+# a) modelo 4 más el gasto social (es el modelo de la parte B); b) el gasto social en lugar
+# de las prestaciones por desempleo
+form_sin_ubcov <- sub("ubcov_z + ", "", form_m4, fixed = TRUE)
+stopifnot(!grepl("ubcov_z", form_sin_ubcov))
+
+reg_sa <- reg_b$socx_z
+reg_sb <- lapply(dvs, function(y) lmer(as.formula(paste(y, "~ socx_z +", form_sin_ubcov)), data = data_b, weights = weight_n))
+
+versiones_s <- c(m4 = "Modelo 4", a = "a) Modelo 4 + gasto social", b = "b) Gasto social en lugar de prestaciones")
+
+coef_s <- do.call(rbind, lapply(names(dvs), function(k) do.call(rbind, lapply(names(versiones_s), function(v) {
+  m <- list(m4 = reg4, a = reg_sa, b = reg_sb)[[v]][[k]]
+  s <- summary(m)$coefficients
+  data.frame(dv = k, version = v, termino = names(indicadores_s),
+             valor = sapply(names(indicadores_s), function(t)
+               if (t %in% rownames(s)) paste0(formatC(s[t, 1], format = "f", digits = 3, decimal.mark = ","),
+                                              " (", formatC(s[t, 2], format = "f", digits = 3, decimal.mark = ","), ")",
+                                              as.character(cut(2 * pnorm(-abs(s[t, 3])), estrellas, labels = etiquetas_p, include.lowest = TRUE)))
+               else ""))
+}))))
+
+kable(coef_s %>%
+        pivot_wider(names_from = version, values_from = valor) %>%
+        mutate(`Variable dependiente` = ifelse(duplicated(dv), "", dv_es[dv]), Indicador = indicadores_s[termino]) %>%
+        select(`Variable dependiente`, Indicador, all_of(names(versiones_s))) %>%
+        rename(all_of(setNames(names(versiones_s), versiones_s))),
+      row.names = FALSE, caption = "Indicadores de nivel país con y sin el gasto social público")
+
+# Modelo a), en el mismo formato de las demás tablas del archivo
+tab(reg_sa$lev, reg_sa$inv, reg_sa$com, reg_sa$pro,
+    terms = c("socx_z", "gdp_pc_log_z", "gini_z", "ubcov_z", "almp_z"),
+    pred.labels = c("Gasto social público", "PIB per cápita (log)", "Gini", "Prestaciones por desempleo", "Políticas de mercado laboral"),
+    show.ci = FALSE, p.style = "stars", show.se = TRUE, digits = 3, dv.labels = unname(dv_es))
+```
+
+*Nota*: errores estándar entre paréntesis. \*\*\* p < 0,001; \*\* p < 0,01; \* p < 0,05. Todos los modelos tienen los mismos controles individuales que el modelo 4 y la muestra analítica completa.
+
+### Interacción con la amenaza en la compensación
+
+```{r}
+# Pendiente aleatoria para la amenaza y bobyqa, como en los modelos de interacción del paper
+form_int <- sub("(1|ctrcode)", "(1 + ego_neg_cwc|ctrcode)", form_m4, fixed = TRUE)
+
+reg_si <- list(cov = lmer(as.formula(paste("rel_compensation ~ ego_neg_cwc:ubcov_z +", form_int)),
+                          data = data_b, weights = weight_n, control = lmerControl(optimizer = "bobyqa")),
+               cov_socx = lmer(as.formula(paste("rel_compensation ~ ego_neg_cwc:ubcov_z + socx_z +", form_int)),
+                               data = data_b, weights = weight_n, control = lmerControl(optimizer = "bobyqa")),
+               socx = lmer(as.formula(paste("rel_compensation ~ ego_neg_cwc:socx_z + socx_z +", form_int)),
+                           data = data_b, weights = weight_n, control = lmerControl(optimizer = "bobyqa")))
+
+# El primer modelo reproduce reg8_com_ego_cov de 04-results.qmd
+lineas_paper <- readLines(here::here("04-results.qmd"), encoding = "UTF-8")
+eval(parse(text = lineas_paper[grepl("^reg8_com_ego_cov <- lmer", lineas_paper)], encoding = "UTF-8"))
+dif_si <- abs(fixef(reg_si$cov)["ego_neg_cwc:ubcov_z"] - fixef(reg8_com_ego_cov)["ego_neg_cwc:ubcov_z"])
+
+modelos_si <- c(cov = "Amenaza × prestaciones (paper)", cov_socx = "Amenaza × prestaciones, con gasto social",
+                socx = "Amenaza × gasto social")
+interaccion_si <- c(cov = "ego_neg_cwc:ubcov_z", cov_socx = "ego_neg_cwc:ubcov_z", socx = "ego_neg_cwc:socx_z")
+
+# Pendiente de la amenaza con el indicador una desviación estándar (entre países) bajo y sobre
+# el promedio: b(amenaza) + b(interacción) × (−1 o +1), con su error estándar
+tabla_si <- do.call(rbind, lapply(names(reg_si), function(v) {
+  m <- reg_si[[v]]
+  b <- fixef(m)
+  V <- as.matrix(vcov(m))
+  L <- matrix(0, nrow = 2, ncol = length(b), dimnames = list(c("bajo", "sobre"), names(b)))
+  L[, "ego_neg_cwc"] <- 1
+  L[, interaccion_si[v]] <- c(-1, 1)
+  est <- as.vector(L %*% b)
+  se <- sqrt(diag(L %*% V %*% t(L)))
+  s <- summary(m)$coefficients
+  data.frame(version = v,
+             b_int = s[interaccion_si[v], 1], se_int = s[interaccion_si[v], 2], p_int = 2 * pnorm(-abs(s[interaccion_si[v], 3])),
+             b_bajo = est[1], se_bajo = se[1], p_bajo = 2 * pnorm(-abs(est[1] / se[1])),
+             b_sobre = est[2], se_sobre = se[2], p_sobre = 2 * pnorm(-abs(est[2] / se[2])),
+             N = nobs(m))
+}))
+
+kable(tabla_si %>%
+        mutate(Modelo = modelos_si[version],
+               `Interacción` = ifelse(version == "socx", "Amenaza tecnológica × Gasto social público",
+                                      "Amenaza tecnológica × Prestaciones por desempleo"),
+               `Coeficiente (EE)` = paste0(formatC(b_int, format = "f", digits = 3, decimal.mark = ","), " (",
+                                           formatC(se_int, format = "f", digits = 3, decimal.mark = ","), ")",
+                                           as.character(cut(p_int, estrellas, labels = etiquetas_p, include.lowest = TRUE))),
+               `Pendiente, −1 DE` = paste0(formatC(b_bajo, format = "f", digits = 3, decimal.mark = ","), " (",
+                                           formatC(se_bajo, format = "f", digits = 3, decimal.mark = ","), ")",
+                                           as.character(cut(p_bajo, estrellas, labels = etiquetas_p, include.lowest = TRUE))),
+               `Pendiente, +1 DE` = paste0(formatC(b_sobre, format = "f", digits = 3, decimal.mark = ","), " (",
+                                           formatC(se_sobre, format = "f", digits = 3, decimal.mark = ","), ")",
+                                           as.character(cut(p_sobre, estrellas, labels = etiquetas_p, include.lowest = TRUE))),
+               N = format(N, big.mark = ".", decimal.mark = ",")) %>%
+        select(Modelo, `Interacción`, `Coeficiente (EE)`, `Pendiente, −1 DE`, `Pendiente, +1 DE`, N),
+      row.names = FALSE, caption = "Interacción de la amenaza tecnológica con las prestaciones y con el gasto social, compensación")
+
+tab(reg_si$cov, reg_si$cov_socx, reg_si$socx,
+    terms = c("ego_neg_cwc", "ubcov_z", "socx_z", "ego_neg_cwc:ubcov_z", "ego_neg_cwc:socx_z"),
+    pred.labels = c("Amenaza tecnológica", "Prestaciones por desempleo", "Gasto social público",
+                    "Amenaza tecnológica × Prestaciones por desempleo", "Amenaza tecnológica × Gasto social público"),
+    show.ci = FALSE, p.style = "stars", show.se = TRUE, digits = 3, dv.labels = unname(modelos_si))
+```
+
+*Nota*: los tres modelos incluyen el bloque de nivel país del modelo 4 (PIB per cápita, Gini, Prestaciones por desempleo y Políticas de mercado laboral), una pendiente aleatoria por país para la amenaza y el optimizador bobyqa. En el tercero, la amenaza interactúa con el gasto social, que entra también como efecto principal; las prestaciones quedan solo como efecto principal. Las pendientes se calculan con el indicador una desviación estándar entre países bajo y sobre su promedio. El primer modelo reproduce el del paper (diferencia absoluta en la interacción: `r formatC(dif_si, format = "e", digits = 1, decimal.mark = ",")`). Errores estándar entre paréntesis. \*\*\* p < 0,001; \*\* p < 0,01; \* p < 0,05.
+
+### Colinealidad
+
+```{r}
+# Correlaciones entre los 27 países
+cor_socx <- cor(macro[, names(indicadores_s)])["socx_z", c("gdp_pc_log_z", "gini_z", "ubcov_z", "almp_z")]
+
+kable(data.frame(Indicador = indicadores_s[names(cor_socx)], `Correlación con el gasto social público` = cor_socx, check.names = FALSE),
+      digits = 2, row.names = FALSE, format.args = list(decimal.mark = ","),
+      caption = "Correlación del gasto social público con los demás indicadores (27 países)")
+
+# VIF de nivel país del modelo a)
+vif_s <- do.call(rbind, lapply(names(dvs), function(k) {
+  cc <- as.data.frame(performance::check_collinearity(reg_sa[[k]]))
+  cc <- cc[cc$Term %in% names(indicadores_s), c("Term", "VIF")]
+  data.frame(dv = k, Term = cc$Term, VIF = cc$VIF)
+}))
+
+kable(vif_s %>%
+        mutate(dv = dv_es[dv], Term = indicadores_s[Term]) %>%
+        pivot_wider(names_from = dv, values_from = VIF) %>%
+        rename(Indicador = Term),
+      digits = 2, row.names = FALSE, format.args = list(decimal.mark = ","),
+      caption = "VIF de los indicadores de nivel país en el modelo a)")
+```
+
+## Interacciones con el sector de actividad
+
+### Expectativa definida antes de estimar
+
+En la manufactura, expuesta a la competencia de las importaciones, la amenaza aumenta más la prioridad de la protección, en especial de la prioridad a los trabajadores del país y de los aranceles. Signo esperado de la interacción amenaza × manufactura: positivo en protección, en la prioridad a los trabajadores del país (`rel_item_11`) y en los aranceles (`rel_item_12`). Las demás interacciones por sector son exploratorias.
+
+### Todos los sectores
+
+```{r}
+sectores <- c(`1` = "Agricultura y minería", `2` = "Manufactura y servicios básicos", `3` = "Construcción",
+              `4` = "Comercio, transporte y hotelería", `5` = "TIC, finanzas y servicios a empresas",
+              `6` = "Administración pública, educación y salud", `7` = "Otros servicios", `8` = "Otro o no declarado")
+stopifnot(identical(levels(data$sector_cat), names(sectores)))
+
+# Amenaza × sector de actividad, en las cuatro variables dependientes. El sector ya está en el
+# modelo 4 como efecto principal.
+reg_sec <- lapply(dvs, function(y) lmer(as.formula(paste(y, "~ ego_neg_cwc:sector_cat +", form_m4)), data = data, weights = weight_n))
+
+pruebas_sec <- do.call(rbind, lapply(names(dvs), function(k) {
+  a <- anova(reg4[[k]], reg_sec[[k]])
+  data.frame(dv = k, chi2 = a$Chisq[2], gl = a$Df[2], p = a$`Pr(>Chisq)`[2])
+}))
+
+# Pendiente de la amenaza en cada sector (el sector 1 es la categoría de referencia)
+n_sector <- table(data$sector_cat)
+pendientes_sec <- do.call(rbind, lapply(names(dvs), function(k) {
+  m <- reg_sec[[k]]
+  b <- fixef(m)
+  V <- as.matrix(vcov(m))
+  L <- matrix(0, nrow = length(sectores), ncol = length(b), dimnames = list(names(sectores), names(b)))
+  L[, "ego_neg_cwc"] <- 1
+  for (j in names(sectores)[-1]) L[j, paste0("ego_neg_cwc:sector_cat", j)] <- 1
+  est <- as.vector(L %*% b)
+  se <- sqrt(diag(L %*% V %*% t(L)))
+  data.frame(dv = k, sector = names(sectores), b = est, se = se, p = 2 * pnorm(-abs(est / se)),
+             N = as.vector(n_sector[names(sectores)]))
+})) %>%
+  mutate(valor = paste0(formatC(b, format = "f", digits = 3, decimal.mark = ","),
+                        " (", formatC(se, format = "f", digits = 3, decimal.mark = ","), ")",
+                        as.character(cut(p, estrellas, labels = etiquetas_p, include.lowest = TRUE))))
+
+kable(pendientes_sec %>%
+        mutate(dv = dv_es[dv]) %>%
+        select(sector, N, dv, valor) %>%
+        pivot_wider(names_from = dv, values_from = valor) %>%
+        mutate(sector = sectores[sector], N = format(N, big.mark = ".", decimal.mark = ",")) %>%
+        rename(Sector = sector),
+      row.names = FALSE, caption = "Pendiente de la amenaza tecnológica en cada sector de actividad")
+
+kable(pruebas_sec %>% mutate(`Variable dependiente` = dv_es[dv]) %>%
+        select(`Variable dependiente`, `Chi cuadrado` = chi2, gl, p),
+      digits = c(0, 2, 0, 4), row.names = FALSE, format.args = list(decimal.mark = ","),
+      caption = "Prueba conjunta de la interacción amenaza × sector de actividad")
+```
+
+*Nota*: la pendiente de cada sector es la suma del coeficiente de la amenaza y de su interacción con el sector, con el error estándar de esa suma. La prueba conjunta compara cada modelo con el modelo 4 mediante una razón de verosimilitud (`anova()`). N: personas de cada sector en la muestra analítica. Errores estándar entre paréntesis. \*\*\* p < 0,001; \*\* p < 0,01; \* p < 0,05.
+
+```{r}
+#| label: fig-pendientes-sector
+#| fig-cap: "Pendiente de la amenaza tecnológica en cada sector de actividad, modelo 4"
+#| fig-cap-location: top
+#| fig-height: 6
+
+pendientes_sec %>%
+  mutate(dv = factor(dv_es[dv], levels = dv_es),
+         sector = factor(sectores[sector], levels = rev(sectores)),
+         grupo = factor(ifelse(sector == sectores["2"], "Manufactura y servicios básicos", "Resto de los sectores"),
+                        levels = c("Manufactura y servicios básicos", "Resto de los sectores"))) %>%
+  ggplot(aes(x = b, y = sector)) +
+  geom_vline(xintercept = 0, linetype = "dashed", colour = "grey50") +
+  geom_errorbar(aes(xmin = b - 1.96 * se, xmax = b + 1.96 * se), orientation = "y", width = 0, colour = "grey40") +
+  geom_point(aes(shape = grupo, fill = grupo), size = 3, colour = "black", stroke = 0.8) +
+  facet_wrap(~ dv, nrow = 1) +
+  scale_shape_manual(values = c(21, 22), name = NULL) +
+  scale_fill_manual(values = c("black", "white"), name = NULL) +
+  scale_x_continuous(labels = scales::label_number(decimal.mark = ",")) +
+  scale_y_discrete(labels = scales::label_wrap(30)) +
+  labs(x = "Pendiente de la amenaza tecnológica e intervalo de 95 %", y = NULL) +
+  theme_bw() +
+  theme(legend.position = "bottom")
+```
+
+### Manufactura frente al resto
+
+```{r}
+# Indicador de manufactura y medidas relativas de prioridad a nacionales (q27k) y aranceles
+# (q27l), construidas como en chequeos-direccion.qmd: cada ítem menos policy_mean.
+data_m <- data %>%
+  left_join(select(data_original, ctrcode, id, policy_11, policy_12), by = c("ctrcode", "id")) %>%
+  mutate(manuf = as.numeric(sector_cat == "2"),
+         rel_item_11 = as.numeric(policy_11) - as.numeric(policy_mean),
+         rel_item_12 = as.numeric(policy_12) - as.numeric(policy_mean))
+
+stopifnot(nrow(data_m) == nrow(data))
+
+dvs_m <- c(dvs, item11 = "rel_item_11", item12 = "rel_item_12")
+dv_m_es <- c(dv_es, item11 = "Prioridad a trabajadores del país", item12 = "Aranceles")
+
+# Cada variable se estima con quienes la tienen, con weight_n normalizado de nuevo en esa
+# submuestra. El efecto principal de la manufactura ya está en sector_cat; se agrega solo la
+# interacción, y la prueba conjunta se hace frente al modelo 4 en la misma submuestra.
+reg_m <- lapply(dvs_m, function(y) {
+  d <- data_m %>%
+    filter(!is.na(.data[[y]])) %>%
+    group_by(ctrcode) %>%
+    mutate(weight_n = weight / mean(weight)) %>%
+    ungroup()
+  list(base = lmer(as.formula(paste(y, "~", form_m4)), data = d, weights = weight_n),
+       manuf = lmer(as.formula(paste(y, "~ ego_neg_cwc:manuf +", form_m4)), data = d, weights = weight_n),
+       n_manuf = sum(d$manuf == 1), n_resto = sum(d$manuf == 0))
+})
+
+tabla_m <- do.call(rbind, lapply(names(reg_m), function(k) {
+  m <- reg_m[[k]]$manuf
+  b <- fixef(m)
+  V <- as.matrix(vcov(m))
+  a <- anova(reg_m[[k]]$base, m)
+  L <- matrix(0, nrow = 2, ncol = length(b), dimnames = list(c("resto", "manufactura"), names(b)))
+  L[, "ego_neg_cwc"] <- 1
+  L["manufactura", "ego_neg_cwc:manuf"] <- 1
+  est <- as.vector(L %*% b)
+  se <- sqrt(diag(L %*% V %*% t(L)))
+  s <- summary(m)$coefficients
+  data.frame(dv = k, b_int = s["ego_neg_cwc:manuf", 1], se_int = s["ego_neg_cwc:manuf", 2],
+             p_int = 2 * pnorm(-abs(s["ego_neg_cwc:manuf", 3])), p_conjunta = a$`Pr(>Chisq)`[2],
+             b_resto = est[1], se_resto = se[1], b_manuf = est[2], se_manuf = se[2],
+             n_resto = reg_m[[k]]$n_resto, n_manuf = reg_m[[k]]$n_manuf, N = nobs(m))
+})) %>%
+  mutate(esperado = ifelse(dv %in% c("pro", "item11", "item12"), "Positivo", ""),
+         coincide = case_when(esperado == "" ~ "", b_int > 0 ~ "Sí", TRUE ~ "No"))
+
+kable(tabla_m %>%
+        mutate(`Variable dependiente` = dv_m_es[dv],
+               `Amenaza × manufactura (EE)` = paste0(formatC(b_int, format = "f", digits = 3, decimal.mark = ","), " (",
+                                                     formatC(se_int, format = "f", digits = 3, decimal.mark = ","), ")",
+                                                     as.character(cut(p_int, estrellas, labels = etiquetas_p, include.lowest = TRUE))),
+               `p conjunta` = formatC(p_conjunta, format = "f", digits = 4, decimal.mark = ","),
+               `Pendiente, resto (EE)` = paste0(formatC(b_resto, format = "f", digits = 3, decimal.mark = ","), " (",
+                                                formatC(se_resto, format = "f", digits = 3, decimal.mark = ","), ")"),
+               `Pendiente, manufactura (EE)` = paste0(formatC(b_manuf, format = "f", digits = 3, decimal.mark = ","), " (",
+                                                      formatC(se_manuf, format = "f", digits = 3, decimal.mark = ","), ")"),
+               `N resto` = format(n_resto, big.mark = ".", decimal.mark = ","),
+               `N manufactura` = format(n_manuf, big.mark = ".", decimal.mark = ",")) %>%
+        select(`Variable dependiente`, `Amenaza × manufactura (EE)`, `p conjunta`, `Pendiente, resto (EE)`,
+               `Pendiente, manufactura (EE)`, `N resto`, `N manufactura`, `Signo esperado` = esperado, Coincide = coincide),
+      row.names = FALSE, caption = "Amenaza tecnológica × manufactura")
+
+tab(reg_m$lev$manuf, reg_m$inv$manuf, reg_m$com$manuf, reg_m$pro$manuf, reg_m$item11$manuf, reg_m$item12$manuf,
+    terms = c("ego_neg_cwc", "ego_neg_cwc:manuf"),
+    pred.labels = c("Amenaza tecnológica", "Amenaza tecnológica × Manufactura y servicios básicos"),
+    show.ci = FALSE, p.style = "stars", show.se = TRUE, digits = 3, dv.labels = unname(dv_m_es))
+```
+
+*Nota*: manufactura corresponde a "Manufactura y servicios básicos" (`sector_cat` = 2); el resto agrupa los otros siete sectores. Con una sola interacción, la prueba conjunta equivale a la prueba de ese coeficiente. "Coincide" compara el signo del coeficiente, sea o no significativo. Errores estándar entre paréntesis. \*\*\* p < 0,001; \*\* p < 0,01; \* p < 0,05.
+
+## Resumen de las pruebas adicionales
+
+```{r}
+# Valores para el resumen
+fila_s <- coef_s %>% filter(dv == "com")
+ubcov_m4 <- fila_s$valor[fila_s$version == "m4" & fila_s$termino == "ubcov_z"]
+ubcov_a <- fila_s$valor[fila_s$version == "a" & fila_s$termino == "ubcov_z"]
+socx_a <- fila_s$valor[fila_s$version == "a" & fila_s$termino == "socx_z"]
+socx_b <- fila_s$valor[fila_s$version == "b" & fila_s$termino == "socx_z"]
+
+# Ajuste por máxima verosimilitud de los modelos no anidados de compensación: modelo 4 frente a b)
+aic_com <- c(m4 = AIC(refitML(reg4$com)), b = AIC(refitML(reg_sb$com)), a = AIC(refitML(reg_sa$com)))
+aic_int <- sapply(reg_si, function(m) AIC(refitML(m)))
+
+int_si <- tabla_si %>%
+  mutate(valor = paste0(formatC(b_int, format = "f", digits = 3, decimal.mark = ","), " (",
+                        formatC(se_int, format = "f", digits = 3, decimal.mark = ","), ")",
+                        as.character(cut(p_int, estrellas, labels = etiquetas_p, include.lowest = TRUE))))
+
+sec_signif <- pruebas_sec %>% filter(p < 0.05)
+pend_signif <- pendientes_sec %>% filter(p < 0.05)
+```
+
+- **Prestaciones por desempleo en la compensación.** En el modelo 4 el coeficiente es `r ubcov_m4`. Al agregar el gasto social público queda en `r ubcov_a`, y el gasto social en `r socx_a`. Con el gasto social en lugar de las prestaciones, el gasto social es `r socx_b`. El AIC (máxima verosimilitud) del modelo de compensación es `r formatC(aic_com["m4"], format = "f", digits = 1, decimal.mark = ",")` con las prestaciones, `r formatC(aic_com["b"], format = "f", digits = 1, decimal.mark = ",")` con el gasto social en su lugar y `r formatC(aic_com["a"], format = "f", digits = 1, decimal.mark = ",")` con ambos.
+- **Interacción con la amenaza en la compensación.** Amenaza × prestaciones: `r int_si$valor[int_si$version == "cov"]` en el modelo del paper y `r int_si$valor[int_si$version == "cov_socx"]` al controlar por el gasto social. Amenaza × gasto social: `r int_si$valor[int_si$version == "socx"]`. AIC (máxima verosimilitud): `r formatC(aic_int["cov"], format = "f", digits = 1, decimal.mark = ",")`, `r formatC(aic_int["cov_socx"], format = "f", digits = 1, decimal.mark = ",")` y `r formatC(aic_int["socx"], format = "f", digits = 1, decimal.mark = ",")`, respectivamente.
+- **Colinealidad.** Entre los 27 países, el gasto social se correlaciona `r formatC(cor_socx["ubcov_z"], format = "f", digits = 2, decimal.mark = ",")` con las prestaciones, `r formatC(cor_socx["almp_z"], format = "f", digits = 2, decimal.mark = ",")` con las políticas de mercado laboral, `r formatC(cor_socx["gdp_pc_log_z"], format = "f", digits = 2, decimal.mark = ",")` con el PIB y `r formatC(cor_socx["gini_z"], format = "f", digits = 2, decimal.mark = ",")` con el Gini. El mayor VIF de nivel país en el modelo a) es `r formatC(max(vif_s$VIF), format = "f", digits = 2, decimal.mark = ",")`.
+- **Manufactura.** Amenaza × manufactura: `r paste(paste0(tolower(dv_m_es[tabla_m$dv]), " ", formatC(tabla_m$b_int, format = "f", digits = 3, decimal.mark = ","), " (p = ", formatC(tabla_m$p_int, format = "f", digits = 3, decimal.mark = ","), ")"), collapse = "; ")`. En las tres variables con expectativa (protección, prioridad a los trabajadores del país y aranceles), el signo coincide en `r sum(tabla_m$coincide == "Sí")` y la interacción es significativa en `r sum(tabla_m$esperado != "" & tabla_m$p_int < 0.05)`.
+- **Sector de actividad (exploratorio).** Pruebas conjuntas significativas (p < 0,05): `r if (nrow(sec_signif) == 0) "ninguna" else paste(paste0(tolower(dv_es[sec_signif$dv]), " (p = ", formatC(sec_signif$p, format = "f", digits = 4, decimal.mark = ","), ")"), collapse = "; ")`. `r if (all(pruebas_sec$p < 0.05)) "Las cuatro pruebas son significativas." else paste0("Pruebas no significativas: ", paste(paste0(tolower(dv_es[pruebas_sec$dv[pruebas_sec$p >= 0.05]]), " (p = ", formatC(pruebas_sec$p[pruebas_sec$p >= 0.05], format = "f", digits = 4, decimal.mark = ","), ")"), collapse = "; "), ".")` Sectores con una pendiente de la amenaza significativa (p < 0,05), por variable dependiente: `r paste(sapply(names(dvs), function(k) paste0(tolower(dv_es[k]), ": ", paste(sectores[pend_signif$sector[pend_signif$dv == k]], collapse = ", "))), collapse = "; ")`.
+
+## Nivel educacional × sector de actividad
+
+### Composición educacional de cada sector
+
+```{r}
+educacion <- c(`1` = "Educación baja", `2` = "Educación media", `3` = "Educación alta")
+stopifnot(identical(levels(data$educ), names(educacion)))
+
+# Porcentaje ponderado (weight_n) de cada nivel educacional dentro de cada sector, y N sin ponderar
+composicion <- data %>%
+  group_by(sector_cat, educ) %>%
+  summarise(N = n(), peso = sum(weight_n), .groups = "drop") %>%
+  group_by(sector_cat) %>%
+  mutate(porcentaje = 100 * peso / sum(peso)) %>%
+  ungroup() %>%
+  mutate(valor = paste0(formatC(porcentaje, format = "f", digits = 1, decimal.mark = ","), " % (",
+                        format(N, big.mark = ".", decimal.mark = ",", trim = TRUE), ")", ifelse(N < 100, " †", "")))
+
+kable(composicion %>%
+        mutate(Sector = sectores[as.character(sector_cat)], educ = educacion[as.character(educ)]) %>%
+        select(Sector, educ, valor) %>%
+        pivot_wider(names_from = educ, values_from = valor),
+      row.names = FALSE, caption = "Nivel educacional en cada sector de actividad: porcentaje ponderado (N)")
+```
+
+*Nota*: porcentajes ponderados con `weight_n` dentro de cada sector; entre paréntesis, el N sin ponderar. † Menos de 100 casos.
+
+### Modelos y prueba conjunta
+
+```{r}
+# Modelo 4 más educ × sector_cat, sin interacciones con las percepciones. Ambos efectos
+# principales ya están en el modelo 4.
+reg_es <- lapply(dvs, function(y) lmer(as.formula(paste(y, "~ educ:sector_cat +", form_m4)), data = data, weights = weight_n))
+
+pruebas_es <- do.call(rbind, lapply(names(dvs), function(k) {
+  a <- anova(reg4[[k]], reg_es[[k]])
+  data.frame(dv = k, chi2 = a$Chisq[2], gl = a$Df[2], p = a$`Pr(>Chisq)`[2])
+}))
+
+kable(pruebas_es %>% mutate(`Variable dependiente` = dv_es[dv]) %>%
+        select(`Variable dependiente`, `Chi cuadrado` = chi2, gl, p),
+      digits = c(0, 2, 0, 4), row.names = FALSE, format.args = list(decimal.mark = ","),
+      caption = "Prueba conjunta de la interacción nivel educacional × sector de actividad")
+```
+
+*Nota*: razón de verosimilitud frente al modelo 4 (`anova()`, que reajusta ambos modelos por máxima verosimilitud).
+
+### Brecha entre educación alta y baja en cada sector
+
+```{r}
+# Diferencia entre los valores predichos con educación alta y baja dentro de cada sector
+# (emmeans). Con grados de libertad asintóticos, porque Kenward-Roger es muy lento con este N.
+emmeans::emm_options(lmer.df = "asymptotic")
+
+brecha <- do.call(rbind, lapply(names(dvs), function(k) {
+  em <- emmeans::emmeans(reg_es[[k]], ~ educ | sector_cat)
+  ct <- as.data.frame(emmeans::contrast(em, method = list(`Alta − baja` = c(-1, 0, 1))))
+  data.frame(dv = k, sector = as.character(ct$sector_cat), b = ct$estimate, se = ct$SE, p = ct$p.value)
+})) %>%
+  left_join(composicion %>%
+              filter(educ %in% c("1", "3")) %>%
+              group_by(sector = as.character(sector_cat)) %>%
+              summarise(n_baja = N[educ == "1"], n_alta = N[educ == "3"]),
+            by = "sector") %>%
+  mutate(pocos = n_baja < 100 | n_alta < 100,
+         valor = paste0(formatC(b, format = "f", digits = 3, decimal.mark = ","),
+                        " (", formatC(se, format = "f", digits = 3, decimal.mark = ","), ")",
+                        as.character(cut(p, estrellas, labels = etiquetas_p, include.lowest = TRUE))))
+
+kable(brecha %>%
+        mutate(dv = dv_es[dv]) %>%
+        select(sector, n_baja, n_alta, pocos, dv, valor) %>%
+        pivot_wider(names_from = dv, values_from = valor) %>%
+        mutate(Sector = paste0(sectores[sector], ifelse(pocos, " †", "")),
+               `N baja` = format(n_baja, big.mark = ".", decimal.mark = ","),
+               `N alta` = format(n_alta, big.mark = ".", decimal.mark = ",")) %>%
+        select(Sector, `N baja`, `N alta`, all_of(unname(dv_es))),
+      row.names = FALSE, caption = "Diferencia entre educación alta y baja en cada sector de actividad")
+
+# Misma tabla en el formato de tab(): coeficientes de educación alta y su interacción con cada sector
+tab(reg_es$lev, reg_es$inv, reg_es$com, reg_es$pro,
+    terms = c("educ3", paste0("educ3:sector_cat", 2:8)),
+    pred.labels = c("Educación alta (agricultura y minería)", paste("Educación alta ×", sectores[2:8])),
+    show.ci = FALSE, p.style = "stars", show.se = TRUE, digits = 3, dv.labels = unname(dv_es))
+```
+
+*Nota*: la brecha es la diferencia entre los valores predichos con educación alta y baja dentro de cada sector, con el resto de las variables en sus valores de referencia de `emmeans`. Como el modelo no tiene otras interacciones con la educación, la brecha no depende de esos valores. † Menos de 100 casos con educación baja o alta en el sector. En la tabla de `tab()`, la primera fila es la brecha en agricultura y minería (categoría de referencia) y las demás, la diferencia de cada sector respecto de esa brecha. Errores estándar entre paréntesis. \*\*\* p < 0,001; \*\* p < 0,01; \* p < 0,05.
+
+```{r}
+#| label: fig-brecha-educacional
+#| fig-cap: "Diferencia entre educación alta y baja en cada sector de actividad, modelo 4 más nivel educacional × sector"
+#| fig-cap-location: top
+#| fig-height: 6
+
+brecha %>%
+  mutate(dv = factor(dv_es[dv], levels = dv_es),
+         sector = factor(sectores[sector], levels = rev(sectores)),
+         casos = factor(ifelse(pocos, "Menos de 100 casos en educación baja o alta", "100 casos o más"),
+                        levels = c("100 casos o más", "Menos de 100 casos en educación baja o alta"))) %>%
+  ggplot(aes(x = b, y = sector)) +
+  geom_vline(xintercept = 0, linetype = "dashed", colour = "grey50") +
+  geom_errorbar(aes(xmin = b - 1.96 * se, xmax = b + 1.96 * se), orientation = "y", width = 0, colour = "grey40") +
+  geom_point(aes(shape = casos, fill = casos), size = 3, colour = "black", stroke = 0.8) +
+  facet_wrap(~ dv, nrow = 1) +
+  scale_shape_manual(values = c(21, 22), name = NULL, drop = FALSE) +
+  scale_fill_manual(values = c("black", "white"), name = NULL, drop = FALSE) +
+  scale_x_continuous(labels = scales::label_number(decimal.mark = ",")) +
+  scale_y_discrete(labels = scales::label_wrap(30)) +
+  labs(x = "Educación alta menos educación baja, e intervalo de 95 %", y = NULL) +
+  theme_bw() +
+  theme(legend.position = "bottom")
+```
+
+### Resumen
+
+```{r}
+# Sectores con la mayor y la menor brecha en cada variable dependiente
+extremos_es <- brecha %>%
+  group_by(dv) %>%
+  summarise(mayor = sector[which.max(b)], b_mayor = max(b),
+            menor = sector[which.min(b)], b_menor = min(b),
+            n_signif = sum(p < 0.05))
+pocos_es <- unique(brecha$sector[brecha$pocos])
+conv_es <- sum(sapply(reg_es, function(m) length(c(m@optinfo$conv$lme4$messages, m@optinfo$warnings)) > 0 || isSingular(m)))
+```
+
+- **Prueba conjunta.** `r paste(paste0(tolower(dv_es[pruebas_es$dv]), ": χ² = ", formatC(pruebas_es$chi2, format = "f", digits = 2, decimal.mark = ","), ", gl = ", pruebas_es$gl, ", p = ", formatC(pruebas_es$p, format = "f", digits = 4, decimal.mark = ","), ifelse(pruebas_es$p < 0.05, " (significativa)", " (no significativa)")), collapse = "; ")`.
+- **Brecha por sector.** `r paste(paste0(dv_es[extremos_es$dv], ": mayor en ", sectores[extremos_es$mayor], " (", formatC(extremos_es$b_mayor, format = "f", digits = 3, decimal.mark = ","), ") y menor en ", sectores[extremos_es$menor], " (", formatC(extremos_es$b_menor, format = "f", digits = 3, decimal.mark = ","), "); significativa en ", extremos_es$n_signif, " de 8 sectores"), collapse = ". ")`.
+- **Casos escasos.** Sectores con menos de 100 casos en educación baja o alta: `r if (length(pocos_es) == 0) "ninguno" else paste(sectores[pocos_es], collapse = ", ")`.
+- **Convergencia.** `r conv_es` de los cuatro modelos tienen advertencias de convergencia o un ajuste singular.
+
+## N y advertencias
+
+```{r}
+# N y advertencias de todos los modelos del archivo
+modelos <- c(setNames(reg4, paste("Modelo 4:", tolower(dv_es))),
+             unlist(lapply(names(reg_b), function(x) setNames(reg_b[[x]], paste0(otros[x], ": ", tolower(dv_es[names(reg_b[[x]])])))), recursive = FALSE),
+             unlist(lapply(names(reg_c), function(z) setNames(reg_c[[z]], paste0("Amenaza × ", tolower(moderadores[z]), ": ", tolower(dv_es[names(reg_c[[z]])])))), recursive = FALSE),
+             setNames(reg_sb, paste("Gasto social en lugar de prestaciones:", tolower(dv_es))),
+             setNames(reg_si, paste("Compensación,", tolower(modelos_si))),
+             setNames(reg_sec, paste("Amenaza × sector de actividad:", tolower(dv_es))),
+             setNames(lapply(reg_m, function(x) x$base), paste("Modelo 4 en la submuestra:", tolower(dv_m_es))),
+             setNames(lapply(reg_m, function(x) x$manuf), paste("Amenaza × manufactura:", tolower(dv_m_es))),
+             setNames(reg_es, paste("Nivel educacional × sector:", tolower(dv_es))))
+
+diagnostico <- data.frame(Modelo = names(modelos),
+                          N = sapply(modelos, nobs),
+                          Convergencia = sapply(modelos, function(m) {
+                            avisos <- c(m@optinfo$conv$lme4$messages, m@optinfo$warnings)
+                            if (length(avisos) == 0) "Sin advertencias" else paste(avisos, collapse = "; ")
+                          }),
+                          Singular = ifelse(sapply(modelos, isSingular), "Sí", "No"))
+```
+
+De los `r nrow(diagnostico)` modelos del archivo, `r sum(diagnostico$Convergencia != "Sin advertencias")` tienen advertencias de convergencia y `r sum(diagnostico$Singular == "Sí")` tienen un ajuste singular.
+
+```{r}
+kable(diagnostico, row.names = FALSE, format.args = list(big.mark = ".", decimal.mark = ","),
+      caption = "N y advertencias de cada modelo")
+```

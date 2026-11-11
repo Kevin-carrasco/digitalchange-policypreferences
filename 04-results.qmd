@@ -1,0 +1,409 @@
+
+```{r}
+#| label: setup-results
+#| echo: false
+#| include: false
+
+if (! require("pacman")) install.packages("pacman")
+
+pacman::p_load(dplyr,
+               lme4,
+               performance,
+               sjPlot,
+               sjlabelled,
+               texreg,
+               ggplot2,
+               ggpubr,
+               knitr,
+               here)
+
+load(file=here::here("input/proc/data.RData"))
+load(file=here::here("input/proc/macro.RData"))
+
+# Indicadores macro de nivel país (27 filas, por ctrcode)
+data <- dplyr::left_join(data, dplyr::select(macro, -country_name), by = "ctrcode")
+
+# Tablas de modelos: texreg::matrixreg y knitr::kable en formato pipe, que Quarto convierte
+# en tablas nativas de HTML, Word y PDF. custom.coef.map renombra los coeficientes, fija su
+# orden y omite los que no figuran. Todas las tablas de modelos muestran los controles
+# individuales y omiten solo el sector de actividad.
+# Categorías de referencia: hombre (sex = 1), 18 a 24 años (age = 1), educación baja (educ = 1),
+# asalariado con contrato indefinido (lm_position = Standard), sin trabajo en plataformas
+# (platform = 1) y no empleado en el sector público (public = 0, que incluye a los independientes).
+controles_es <- list(
+  "sex2" = "Mujer",
+  "age2" = "25 a 34 años",
+  "age3" = "35 a 44 años",
+  "age4" = "45 a 54 años",
+  "age5" = "55 a 64 años",
+  "educ2" = "Educación media",
+  "educ3" = "Educación alta",
+  "income" = "Decil de ingreso",
+  "lm_positionNon-standard" = "Asalariado temporal o sin contrato",
+  "lm_positionSelf-employed" = "Independiente",
+  "platform2" = "Trabajo en plataformas",
+  "public" = "Sector público"
+)
+
+coef_es <- c(list(
+  "(Intercept)" = "Intercepto",
+  "ego_neg_cwc" = "Amenaza tecnológica",
+  "ego_pos_cwc" = "Beneficio esperado",
+  "socio_neg_cwc" = "Expectativas negativas sobre la IA",
+  "socio_pos_cwc" = "Expectativas positivas sobre la IA",
+  "unnemployment" = "Preocupación por perder el empleo"),
+  controles_es,
+  list(
+  "gdp_pc_log_z" = "PIB per cápita (log)",
+  "gini_z" = "Gini",
+  "ubcov_z" = "Prestaciones por desempleo",
+  "almp_z" = "Políticas de mercado laboral",
+  "socx_z" = "Gasto social público",
+  "ego_neg_cwc:almp_z" = "Amenaza tecnológica × Políticas de mercado laboral",
+  "socio_neg_cwc:almp_z" = "Expectativas negativas × Políticas de mercado laboral",
+  "ego_neg_cwc:ubcov_z" = "Amenaza tecnológica × Prestaciones por desempleo",
+  "socio_neg_cwc:ubcov_z" = "Expectativas negativas × Prestaciones por desempleo",
+  # Moderación de la amenaza por grupo de edad y nivel educacional
+  "ego_neg_cwc:age2" = "Amenaza tecnológica × 25 a 34 años",
+  "ego_neg_cwc:age3" = "Amenaza tecnológica × 35 a 44 años",
+  "ego_neg_cwc:age4" = "Amenaza tecnológica × 45 a 54 años",
+  "ego_neg_cwc:age5" = "Amenaza tecnológica × 55 a 64 años",
+  "ego_neg_cwc:educ2" = "Amenaza tecnológica × Educación media",
+  "ego_neg_cwc:educ3" = "Amenaza tecnológica × Educación alta"
+))
+
+# Estadísticos de ajuste y componentes de varianza
+gof_es <- c("Log Likelihood" = "Log verosimilitud",
+            "Num. obs." = "N",
+            "Num. groups: ctrcode" = "Países",
+            "Var: ctrcode (Intercept)" = "Varianza del intercepto (país)",
+            "Var: Residual" = "Varianza residual",
+            "Var: ctrcode ego_neg_cwc" = "Varianza de la pendiente de la amenaza tecnológica",
+            "Var: ctrcode socio_neg_cwc" = "Varianza de la pendiente de las expectativas negativas",
+            "Cov: ctrcode (Intercept) ego_neg_cwc" = "Covarianza entre intercepto y pendiente (amenaza)",
+            "Cov: ctrcode (Intercept) socio_neg_cwc" = "Covarianza entre intercepto y pendiente (expectativas)")
+
+# Bloques de filas: el subtítulo se inserta antes de la primera fila de cada bloque presente
+bloques <- list("**Nivel individual**" = c("Amenaza tecnológica", "Beneficio esperado",
+                                           "Expectativas negativas sobre la IA",
+                                           "Expectativas positivas sobre la IA",
+                                           "Preocupación por perder el empleo",
+                                           unlist(controles_es)),
+                "**Nivel país**" = c("PIB per cápita (log)", "Gini",
+                                     "Prestaciones por desempleo",
+                                     "Políticas de mercado laboral",
+                                     "Gasto social público"),
+                "**Interacciones entre niveles**" = c("Amenaza tecnológica × Políticas de mercado laboral",
+                                                      "Expectativas negativas × Políticas de mercado laboral",
+                                                      "Amenaza tecnológica × Prestaciones por desempleo",
+                                                      "Expectativas negativas × Prestaciones por desempleo"),
+                "**Interacciones con variables individuales**" = c("Amenaza tecnológica × 25 a 34 años",
+                                                                   "Amenaza tecnológica × 35 a 44 años",
+                                                                   "Amenaza tecnológica × 45 a 54 años",
+                                                                   "Amenaza tecnológica × 55 a 64 años",
+                                                                   "Amenaza tecnológica × Educación media",
+                                                                   "Amenaza tecnológica × Educación alta"))
+
+# Nota de las tablas que muestran los controles
+nota_modelos <- paste("Categorías de referencia: hombre, 18 a 24 años, educación baja, asalariado con contrato",
+                      "indefinido, sin trabajo en plataformas y no empleado en el sector público (asalariados del",
+                      "sector privado e independientes). Todos los modelos controlan además por sector de actividad.",
+                      "Errores estándar entre paréntesis. \\*\\*\\* p < 0,001; \\*\\* p < 0,01; \\* p < 0,05.")
+# Tablas secuenciales del apéndice: el modelo 1 no tiene controles
+nota_secuencial <- sub("Todos los modelos controlan además por sector de actividad.",
+                       "Los modelos 2 a 4 controlan además por sector de actividad.", nota_modelos, fixed = TRUE)
+# Nota de los indicadores de nivel país (tabla principal y tabla de interacciones)
+nota_pais <- paste("Los indicadores de nivel país están estandarizados entre los 27 países. PIB per cápita en paridad",
+                   "de poder adquisitivo, en logaritmo, y coeficiente de Gini, ambos del Banco Mundial. Prestaciones",
+                   "por desempleo: porcentaje de personas desempleadas que reciben prestaciones monetarias por",
+                   "desempleo (OIT, indicador 1.3.1 de los ODS). Políticas de mercado laboral: gasto público en",
+                   "políticas activas del mercado laboral como porcentaje del PIB, dividido por la tasa de desempleo",
+                   "(OCDE, SOCX).")
+# Tabla del apéndice con el gasto social público
+nota_pais_socx <- paste(nota_pais, "Gasto social público: gasto social público total como porcentaje del PIB (OCDE, SOCX).")
+nota_interacciones <- paste(nota_modelos, nota_pais,
+                            "Cada modelo incluye una pendiente aleatoria por país para la percepción que interactúa.")
+
+data_original <- data
+
+# Muestra analítica: ocupados con información completa en las variables de los modelos,
+# la misma de métodos. Las medias de país y los indicadores macro no tienen perdidos.
+data <- data %>% filter(employed == 1) %>%
+  select(ctrcode, id, weight,
+         policy_mean, rel_investment, rel_compensation, rel_protection,
+         ego_neg_cwc, ego_pos_cwc, socio_neg_cwc, socio_pos_cwc,
+         ego_neg_mean, ego_pos_mean, socio_neg_mean, socio_pos_mean,
+         unnemployment,
+         sex, age, educ, income, lm_position, platform, public, sector_cat,
+         almp_z, ubcov_z, gdp_pc_log_z, gini_z) %>%
+  na.omit()
+
+# Ponderador de postestratificación normalizado para que su media sea 1 en cada país
+data <- data %>%
+  group_by(ctrcode) %>%
+  mutate(weight_n = weight / mean(weight)) %>%
+  ungroup()
+
+data$policy_mean  <- set_label(x = data$policy_mean, label = "Volumen")
+data$rel_investment  <- set_label(x = data$rel_investment, label = "Inversión")
+data$rel_compensation  <- set_label(x = data$rel_compensation, label = "Compensación")
+data$rel_protection  <- set_label(x = data$rel_protection, label = "Protección")
+data$ego_neg_cwc  <- set_label(x = data$ego_neg_cwc, label = "Amenaza tecnológica")
+data$ego_pos_cwc  <- set_label(x = data$ego_pos_cwc, label = "Beneficio esperado")
+data$socio_neg_cwc  <- set_label(x = data$socio_neg_cwc, label = "Expectativas negativas sobre la IA")
+data$socio_pos_cwc  <- set_label(x = data$socio_pos_cwc, label = "Expectativas positivas sobre la IA")
+data$ego_neg_mean  <- set_label(x = data$ego_neg_mean, label = "Amenaza tecnológica (media del país)")
+data$ego_pos_mean  <- set_label(x = data$ego_pos_mean, label = "Beneficio esperado (media del país)")
+data$socio_neg_mean  <- set_label(x = data$socio_neg_mean, label = "Expectativas negativas sobre la IA (media del país)")
+data$socio_pos_mean  <- set_label(x = data$socio_pos_mean, label = "Expectativas positivas sobre la IA (media del país)")
+data$unnemployment  <- set_label(x = data$unnemployment, label = "Preocupación por perder el empleo")
+data$sex  <- set_label(x = data$sex, label = "Sexo")
+data$age  <- set_label(x = data$age, label = "Grupo de edad")
+data$educ  <- set_label(x = data$educ, label = "Nivel educacional")
+data$income  <- set_label(x = data$income, label = "Decil de ingreso")
+data$lm_position  <- set_label(x = data$lm_position, label = "Posición en el mercado laboral")
+data$platform  <- set_label(x = data$platform, label = "Trabajo en plataformas")
+data$public  <- set_label(x = data$public, label = "Sector público")
+data$sector_cat  <- set_label(x = data$sector_cat, label = "Sector de actividad")
+data$almp_z  <- set_label(x = data$almp_z, label = "Políticas de mercado laboral")
+data$ubcov_z  <- set_label(x = data$ubcov_z, label = "Prestaciones por desempleo")
+data$gdp_pc_log_z  <- set_label(x = data$gdp_pc_log_z, label = "PIB per cápita (log)")
+data$gini_z  <- set_label(x = data$gini_z, label = "Gini")
+
+data$platform <- set_labels(data$platform,
+            labels=c( "No"=1,
+                      "Sí"=2))
+
+```
+
+```{r}
+#| label: modelos-nulos
+#| include: false
+
+reg0_lev <- lmer(policy_mean ~ 1 + (1|ctrcode), data=data, weights=weight_n)
+reg0_inv <- lmer(rel_investment ~ 1 + (1|ctrcode), data=data, weights=weight_n)
+reg0_com <- lmer(rel_compensation ~ 1 + (1|ctrcode), data=data, weights=weight_n)
+reg0_pro <- lmer(rel_protection ~ 1 + (1|ctrcode), data=data, weights=weight_n)
+
+# Proporción de la varianza entre países, para el texto
+icc_lev <- performance::icc(reg0_lev)$ICC_adjusted
+icc_inv <- performance::icc(reg0_inv)$ICC_adjusted
+icc_com <- performance::icc(reg0_com)$ICC_adjusted
+icc_pro <- performance::icc(reg0_pro)$ICC_adjusted
+```
+
+```{r}
+#| label: modelos-secuenciales
+#| include: false
+
+# M1: cuatro percepciones; M2: + controles sociodemográficos y laborales;
+# M3: + preocupación por perder el empleo; M4: + bloque de nivel país (PIB per cápita, Gini,
+# prestaciones por desempleo y políticas de mercado laboral). H6b se lee en el modelo 4.
+
+# Volumen
+reg1_lev <- lmer(policy_mean ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + (1|ctrcode), data=data, weights=weight_n)
+reg2_lev <- lmer(policy_mean ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + sex + age + educ + income + lm_position + platform + public + sector_cat + (1|ctrcode), data=data, weights=weight_n)
+reg3_lev <- lmer(policy_mean ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + (1|ctrcode), data=data, weights=weight_n)
+reg4_lev <- lmer(policy_mean ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + gini_z + ubcov_z + almp_z + (1|ctrcode), data=data, weights=weight_n)
+
+# Dirección: inversión
+reg1_inv <- lmer(rel_investment ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + (1|ctrcode), data=data, weights=weight_n)
+reg2_inv <- lmer(rel_investment ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + sex + age + educ + income + lm_position + platform + public + sector_cat + (1|ctrcode), data=data, weights=weight_n)
+reg3_inv <- lmer(rel_investment ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + (1|ctrcode), data=data, weights=weight_n)
+reg4_inv <- lmer(rel_investment ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + gini_z + ubcov_z + almp_z + (1|ctrcode), data=data, weights=weight_n)
+
+# Dirección: compensación
+reg1_com <- lmer(rel_compensation ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + (1|ctrcode), data=data, weights=weight_n)
+reg2_com <- lmer(rel_compensation ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + sex + age + educ + income + lm_position + platform + public + sector_cat + (1|ctrcode), data=data, weights=weight_n)
+reg3_com <- lmer(rel_compensation ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + (1|ctrcode), data=data, weights=weight_n)
+reg4_com <- lmer(rel_compensation ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + gini_z + ubcov_z + almp_z + (1|ctrcode), data=data, weights=weight_n)
+
+# Dirección: protección
+reg1_pro <- lmer(rel_protection ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + (1|ctrcode), data=data, weights=weight_n)
+reg2_pro <- lmer(rel_protection ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + sex + age + educ + income + lm_position + platform + public + sector_cat + (1|ctrcode), data=data, weights=weight_n)
+reg3_pro <- lmer(rel_protection ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + (1|ctrcode), data=data, weights=weight_n)
+reg4_pro <- lmer(rel_protection ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + gini_z + ubcov_z + almp_z + (1|ctrcode), data=data, weights=weight_n)
+```
+
+```{r}
+#| label: modelos-moderacion
+#| include: false
+
+# Moderación de la amenaza tecnológica por grupo de edad y por nivel educacional: modelo 4 más
+# una interacción por modelo, con intercepto aleatorio por país
+# Grupo de edad
+reg22_lev_age <- lmer(policy_mean ~ ego_neg_cwc*age + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + unnemployment + sex + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + gini_z + ubcov_z + almp_z + (1|ctrcode), data=data, weights=weight_n)
+reg22_inv_age <- lmer(rel_investment ~ ego_neg_cwc*age + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + unnemployment + sex + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + gini_z + ubcov_z + almp_z + (1|ctrcode), data=data, weights=weight_n)
+reg22_com_age <- lmer(rel_compensation ~ ego_neg_cwc*age + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + unnemployment + sex + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + gini_z + ubcov_z + almp_z + (1|ctrcode), data=data, weights=weight_n)
+reg22_pro_age <- lmer(rel_protection ~ ego_neg_cwc*age + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + unnemployment + sex + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + gini_z + ubcov_z + almp_z + (1|ctrcode), data=data, weights=weight_n)
+
+# Nivel educacional
+reg22_lev_educ <- lmer(policy_mean ~ ego_neg_cwc*educ + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + unnemployment + sex + age + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + gini_z + ubcov_z + almp_z + (1|ctrcode), data=data, weights=weight_n)
+reg22_inv_educ <- lmer(rel_investment ~ ego_neg_cwc*educ + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + unnemployment + sex + age + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + gini_z + ubcov_z + almp_z + (1|ctrcode), data=data, weights=weight_n)
+reg22_com_educ <- lmer(rel_compensation ~ ego_neg_cwc*educ + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + unnemployment + sex + age + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + gini_z + ubcov_z + almp_z + (1|ctrcode), data=data, weights=weight_n)
+reg22_pro_educ <- lmer(rel_protection ~ ego_neg_cwc*educ + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + unnemployment + sex + age + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + gini_z + ubcov_z + almp_z + (1|ctrcode), data=data, weights=weight_n)
+
+reg22 <- list(age = list(lev = reg22_lev_age, inv = reg22_inv_age, com = reg22_com_age, pro = reg22_pro_age),
+              educ = list(lev = reg22_lev_educ, inv = reg22_inv_educ, com = reg22_com_educ, pro = reg22_pro_educ))
+reg4 <- list(lev = reg4_lev, inv = reg4_inv, com = reg4_com, pro = reg4_pro)
+dv_es <- c(lev = "Volumen", inv = "Inversión", com = "Compensación", pro = "Protección")
+moderadores_es <- c(age = "Grupo de edad", educ = "Nivel educacional")
+
+# Categorías de cada moderador y su término de interacción (la primera es la de referencia)
+categorias <- list(age = c(`18 a 24 años` = "", `25 a 34 años` = "age2", `35 a 44 años` = "age3",
+                           `45 a 54 años` = "age4", `55 a 64 años` = "age5"),
+                   educ = c(`Educación baja` = "", `Educación media` = "educ2", `Educación alta` = "educ3"))
+
+# Pendiente de la amenaza en cada categoría: b(amenaza) + b(amenaza × categoría), con su error
+# estándar a partir de la matriz de varianzas (matriz de contrastes L)
+pendientes_mod <- do.call(rbind, lapply(names(reg22), function(z) do.call(rbind, lapply(names(dv_es), function(k) {
+  m <- reg22[[z]][[k]]
+  b <- fixef(m)
+  V <- as.matrix(vcov(m))
+  L <- matrix(0, nrow = length(categorias[[z]]), ncol = length(b), dimnames = list(names(categorias[[z]]), names(b)))
+  L[, "ego_neg_cwc"] <- 1
+  for (j in which(categorias[[z]] != "")) L[j, paste0("ego_neg_cwc:", categorias[[z]][j])] <- 1
+  est <- as.vector(L %*% b)
+  se <- sqrt(diag(L %*% V %*% t(L)))
+  data.frame(moderador = z, dv = k, categoria = names(categorias[[z]]), b = est, se = se,
+             p = 2 * pnorm(-abs(est / se)))
+}))))
+
+# Prueba conjunta de cada interacción: razón de verosimilitud frente al modelo 4
+# (anova reajusta ambos modelos por máxima verosimilitud)
+pruebas_mod <- do.call(rbind, lapply(names(reg22), function(z) do.call(rbind, lapply(names(dv_es), function(k) {
+  a <- anova(reg4[[k]], reg22[[z]][[k]])
+  data.frame(moderador = z, dv = k, chi2 = a$Chisq[2], gl = a$Df[2], p = a$`Pr(>Chisq)`[2])
+}))))
+```
+
+```{r}
+#| label: modelos-institucionales
+#| include: false
+
+# Interacciones entre niveles (H6a): una por modelo, con pendiente aleatoria para la percepción
+# y el bloque completo de nivel país (el indicador que interactúa entra como efecto principal)
+# Amenaza tecnológica
+reg8_inv_ego_almp <- lmer(rel_investment ~ ego_neg_cwc*almp_z + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + gini_z + ubcov_z + (1 + ego_neg_cwc|ctrcode), data=data, weights=weight_n, control = lmerControl(optimizer = "bobyqa"))
+reg8_com_ego_cov <- lmer(rel_compensation ~ ego_neg_cwc*ubcov_z + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + gini_z + almp_z + (1 + ego_neg_cwc|ctrcode), data=data, weights=weight_n, control = lmerControl(optimizer = "bobyqa"))
+
+# Expectativas negativas sobre la IA
+reg8_inv_soc_almp <- lmer(rel_investment ~ socio_neg_cwc*almp_z + ego_neg_cwc + ego_pos_cwc + socio_pos_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + gini_z + ubcov_z + (1 + socio_neg_cwc|ctrcode), data=data, weights=weight_n, control = lmerControl(optimizer = "bobyqa"))
+reg8_com_soc_cov <- lmer(rel_compensation ~ socio_neg_cwc*ubcov_z + ego_neg_cwc + ego_pos_cwc + socio_pos_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + gini_z + almp_z + (1 + socio_neg_cwc|ctrcode), data=data, weights=weight_n, control = lmerControl(optimizer = "bobyqa"))
+```
+
+```{r}
+#| label: tablas-resultados
+#| include: false
+
+# Cada tabla: matrixreg con coma decimal (OutDec), N con punto de miles, estadísticos en
+# español, asteriscos escapados para markdown y subtítulos de bloque.
+tablas <- list(modelos = list(modelos = list(reg4_lev, reg4_inv, reg4_com, reg4_pro),
+                              nombres = c("Volumen", "Inversión", "Compensación", "Protección")),
+               interacciones = list(modelos = list(reg8_inv_ego_almp, reg8_inv_soc_almp,
+                                                   reg8_com_ego_cov, reg8_com_soc_cov),
+                                    nombres = c("Inversión × amenaza", "Inversión × expectativas",
+                                                "Compensación × amenaza", "Compensación × expectativas")))
+
+for (t in names(tablas)) {
+  op <- options(OutDec = ",")
+  mr <- matrixreg(tablas[[t]]$modelos, custom.model.names = tablas[[t]]$nombres,
+                  custom.coef.map = coef_es, digits = 3, include.aic = FALSE, include.bic = FALSE, trim = TRUE)
+  options(op)
+  fila_n <- which(mr[, 1] == "Num. obs.")
+  mr[fila_n, -1] <- format(as.numeric(mr[fila_n, -1]), big.mark = ".", decimal.mark = ",", trim = TRUE)
+  mr[, 1] <- ifelse(mr[, 1] %in% names(gof_es), gof_es[mr[, 1]], mr[, 1])
+  mr <- gsub("*", "\\*", mr, fixed = TRUE)
+  for (b in names(bloques)) {
+    i <- which(mr[, 1] %in% bloques[[b]])[1]
+    if (!is.na(i)) mr <- rbind(mr[seq_len(i - 1), , drop = FALSE], c(b, rep("", ncol(mr) - 1)), mr[i:nrow(mr), , drop = FALSE])
+  }
+  tablas[[t]]$tabla <- mr
+}
+```
+
+```{r}
+#| label: tbl-modelos
+#| tbl-cap: "Modelos multinivel del volumen y la dirección de las preferencias frente al cambio tecnológico"
+#| tbl-cap-location: top
+
+mr <- tablas$modelos$tabla
+kable(mr[-1, ], col.names = mr[1, ], format = "pipe", align = c("l", rep("c", ncol(mr) - 1)))
+```
+
+*Nota*: `r nota_modelos` `r nota_pais`
+
+```{r}
+#| label: tbl-interacciones
+#| tbl-cap: "Interacciones entre las percepciones y los indicadores institucionales"
+#| tbl-cap-location: top
+
+mr <- tablas$interacciones$tabla
+kable(mr[-1, ], col.names = mr[1, ], format = "pipe", align = c("l", rep("c", ncol(mr) - 1)))
+```
+
+*Nota*: `r nota_interacciones`
+
+```{r}
+#| label: fig-interacciones
+#| fig-cap: "Asociación de la amenaza tecnológica y de las expectativas negativas sobre la IA con la dirección de las preferencias, según el indicador institucional de cada repertorio"
+#| fig-cap-location: top
+#| fig-height: 6
+
+# Filas: amenaza tecnológica y expectativas negativas. Columnas: inversión y compensación.
+# Leyenda abajo, con el título sobre las claves (moderador en -1 DE, media y +1 DE).
+tema_int <- list(guides(colour = guide_legend(title.position = "top"),
+                        linetype = guide_legend(title.position = "top"),
+                        fill = guide_legend(title.position = "top")),
+                 theme_bw(),
+                 theme(legend.position = "bottom",
+                       legend.title = element_text(size = 8),
+                       legend.text = element_text(size = 8)))
+
+int1 <- plot_model(reg8_inv_ego_almp, type="int", mdrt.values="meansd", colors="bw",
+                   title="Inversión", axis.title=c("Amenaza tecnológica", "Dirección")) +
+  labs(colour="Políticas de mercado laboral (z)", linetype="Políticas de mercado laboral (z)", fill="Políticas de mercado laboral (z)") + tema_int
+int2 <- plot_model(reg8_com_ego_cov, type="int", mdrt.values="meansd", colors="bw",
+                   title="Compensación", axis.title=c("Amenaza tecnológica", "Dirección")) +
+  labs(colour="Prestaciones por desempleo (z)", linetype="Prestaciones por desempleo (z)", fill="Prestaciones por desempleo (z)") + tema_int
+int3 <- plot_model(reg8_inv_soc_almp, type="int", mdrt.values="meansd", colors="bw",
+                   title="Inversión", axis.title=c("Expectativas negativas", "Dirección")) +
+  labs(colour="Políticas de mercado laboral (z)", linetype="Políticas de mercado laboral (z)", fill="Políticas de mercado laboral (z)") + tema_int
+int4 <- plot_model(reg8_com_soc_cov, type="int", mdrt.values="meansd", colors="bw",
+                   title="Compensación", axis.title=c("Expectativas negativas", "Dirección")) +
+  labs(colour="Prestaciones por desempleo (z)", linetype="Prestaciones por desempleo (z)", fill="Prestaciones por desempleo (z)") + tema_int
+
+ggarrange(int1, int2, int3, int4,
+          ncol=2,
+          nrow=2)
+```
+
+<!-- Texto de resultados: moderación por edad y educación -->
+
+```{r}
+#| label: fig-moderacion
+#| fig-pos: "H"
+#| fig-cap: "Pendiente de la amenaza tecnológica según grupo de edad y nivel educacional"
+#| fig-cap-location: top
+#| fig-height: 5.5
+
+# Filas: grupo de edad y nivel educacional. Paneles: las cuatro variables dependientes.
+pendientes_mod %>%
+  mutate(moderador = factor(moderadores_es[moderador], levels = moderadores_es),
+         dv = factor(dv_es[dv], levels = dv_es),
+         categoria = factor(categoria, levels = rev(unlist(lapply(categorias, names))))) %>%
+  ggplot(aes(x = b, y = categoria)) +
+  geom_vline(xintercept = 0, linetype = "dashed", colour = "grey50") +
+  geom_errorbar(aes(xmin = b - 1.96 * se, xmax = b + 1.96 * se), orientation = "y", width = 0, colour = "grey40") +
+  geom_point(aes(shape = moderador, fill = moderador), size = 3, colour = "black", stroke = 0.8) +
+  facet_grid(moderador ~ dv, scales = "free_y", space = "free_y",
+             labeller = labeller(moderador = label_wrap_gen(12))) +
+  scale_shape_manual(values = c(21, 22), name = NULL) +
+  scale_fill_manual(values = c("black", "grey55"), name = NULL) +
+  scale_x_continuous(labels = scales::label_number(decimal.mark = ",")) +
+  labs(x = "Pendiente de la amenaza tecnológica e intervalo de 95 %", y = NULL) +
+  theme_bw() +
+  theme(legend.position = "bottom", strip.text.y = element_text(angle = 0))
+```
+
+*Nota*: Pendientes estimadas a partir de modelos con una interacción entre la amenaza tecnológica y cada moderador. Intervalos de confianza de 95 %.

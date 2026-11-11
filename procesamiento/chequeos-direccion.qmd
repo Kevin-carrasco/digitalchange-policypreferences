@@ -1,0 +1,620 @@
+---
+title: "Chequeos de la dirección"
+format:
+  html:
+    code-copy: true
+    code-tools: true
+    toc: true
+    toc-location: right
+    toc-depth: 4
+    toc-expand: 2
+    toc-title: Contents
+    number-sections: true
+    number-depth: 4
+    fig-width: 10
+    fig-height: 7
+  plain:
+    output-file: chequeos-direccion.txt
+editor_options:
+  chunk_output_type: console
+editor: source
+lang: es
+fontsize: 12pt
+---
+
+```{r}
+#| label: set
+#| echo: false
+#| message: false
+#| warning: false
+
+library(knitr)
+knitr::opts_chunk$set(echo = FALSE, include = TRUE, warning = FALSE, message = FALSE)
+
+options(knitr.kable.NA = "")
+options(knitr.table.format = "pipe")
+```
+
+```{r}
+if (!require("pacman")) install.packages("pacman") # instalar pacman
+                            # cargar librerias
+pacman::p_load(dplyr,       # Manipulacion de datos
+               tidyr,
+               knitr,
+               ggplot2,
+               ggrepel,
+               haven,
+               sjlabelled,
+               lme4,
+               sjPlot,
+               texreg,
+               here
+               )
+
+# Preparación de datos: se evalúa el chunk setup-results de 04-results.qmd, sin copiarlo,
+# para usar la misma muestra analítica, el mismo weight_n y las mismas etiquetas del paper.
+lineas <- readLines(here::here("04-results.qmd"), encoding = "UTF-8")
+ini <- which(lineas == "#| label: setup-results")
+fin <- ini + which(lineas[ini:length(lineas)] == "```")[1] - 2
+eval(parse(text = lineas[(ini + 1):fin], encoding = "UTF-8"))
+
+# tab() se toma de analysis.qmd: tab_model en HTML y texreg en el .txt
+lineas <- readLines(here::here("procesamiento/analysis.qmd"), encoding = "UTF-8")
+ini <- which(lineas == "tab <- function(...) {")
+fin <- ini + which(lineas[ini:length(lineas)] == "}")[1] - 1
+eval(parse(text = lineas[ini:fin], encoding = "UTF-8"))
+
+# Ítems, etiquetas y repertorios de fig-policies (03-methods.qmd)
+lineas <- readLines(here::here("03-methods.qmd"), encoding = "UTF-8")
+ini <- which(lineas == "items <- tibble::tribble(")
+fin <- ini + which(lineas[ini:length(lineas)] == ")")[1] - 1
+eval(parse(text = lineas[ini:fin], encoding = "UTF-8"))
+
+# Lado derecho del modelo 4, igual al de 04-results.qmd. Solo cambia la variable dependiente.
+form_m4 <- "ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + gini_z + (1|ctrcode)"
+
+# Predictores que se muestran en las tablas y en la figura
+focales <- c(ego_neg_cwc = "Amenaza tecnológica",
+             ego_pos_cwc = "Beneficio esperado",
+             socio_neg_cwc = "Expectativas negativas",
+             socio_pos_cwc = "Expectativas positivas",
+             unnemployment = "Preocupación por perder el empleo")
+
+items_12 <- paste0("policy_", 1:12)
+```
+
+## Paso 0. Verificación
+
+### Reproducción de los modelos 4
+
+```{r}
+reg4 <- lapply(c(lev = "policy_mean", inv = "rel_investment", com = "rel_compensation", pro = "rel_protection"),
+               function(y) lmer(as.formula(paste(y, "~", form_m4)), data = data, weights = weight_n))
+
+# Coeficientes de la tabla principal del paper
+publicados <- rbind(ego_neg_cwc = c(lev = 0.005, inv = -0.157, com = -0.042, pro = 0.009),
+                    socio_neg_cwc = c(lev = 0.192, inv = -0.011, com = 0.058, pro = 0.108))
+estimados <- sapply(reg4, function(m) fixef(m)[rownames(publicados)])
+diferencias <- estimados - publicados[, colnames(estimados)]
+
+# Si no coinciden, el render se detiene e informa la diferencia
+if (nrow(data) != 19731 || any(sapply(reg4, nobs) != 19731) || max(abs(diferencias)) >= 0.001) {
+  print(diferencias)
+  stop("Los modelos 4 no reproducen la tabla principal del paper")
+}
+
+verificacion <- data.frame(Predictor = rep(focales[rownames(publicados)], each = 4),
+                           Modelo = rep(c("Volumen", "Inversión", "Compensación", "Protección"), 2),
+                           Publicado = as.vector(t(publicados)),
+                           Estimado = as.vector(t(estimados)),
+                           Diferencia = as.vector(t(diferencias)))
+
+kable(verificacion, digits = c(0, 0, 3, 5, 5), row.names = FALSE,
+      format.args = list(decimal.mark = ","),
+      caption = "Modelos 4 reestimados y tabla principal del paper")
+```
+
+Los cuatro modelos tienen N = `r format(nobs(reg4$lev), big.mark = ".", decimal.mark = ",")`. La mayor diferencia absoluta con la tabla del paper es `r formatC(max(abs(diferencias)), format = "f", digits = 5, decimal.mark = ",")`. Las diferencias corresponden al redondeo a tres decimales de la tabla publicada.
+
+### Muestra analítica
+
+```{r}
+# Muestra fija para todo el archivo: se agregan los ítems y los índices a las personas de
+# data, sin eliminar casos. Los ítems pasan a numérico antes de cualquier cálculo.
+data_chk <- data %>%
+  left_join(select(data_original, ctrcode, id, all_of(items_12),
+                   investment, compensation, protection, ego_neg),
+            by = c("ctrcode", "id")) %>%
+  mutate(across(all_of(items_12), as.numeric),
+         across(c(policy_mean, rel_investment, rel_compensation, rel_protection,
+                  investment, compensation, protection, ego_neg), as.numeric),
+         n_items = rowSums(!is.na(pick(all_of(items_12)))))
+
+stopifnot(nrow(data_chk) == nrow(data), !anyDuplicated(data_chk[, c("ctrcode", "id")]))
+
+# Los "no sabe" figuran con el código 98 en la base original (Q27)
+original_q27 <- haven::read_dta(here::here("input/original/OECD_RTM_2024.dta"),
+                                col_select = all_of(paste0("q27", letters[1:12])))
+
+no_sabe <- data.frame(`Ítem` = items_12,
+                      `Código 98 en la base original` = colSums(sapply(original_q27, as.numeric) == 98, na.rm = TRUE),
+                      `NA en la base procesada` = colSums(is.na(data_original[items_12])),
+                      `NA en la muestra analítica` = colSums(is.na(data_chk[items_12])),
+                      `Valores fuera de 1 a 5` = colSums(data_chk[items_12] < 1 | data_chk[items_12] > 5, na.rm = TRUE),
+                      check.names = FALSE)
+
+stopifnot(all(no_sabe[[2]] == no_sabe[[3]]), all(no_sabe[[5]] == 0))
+
+kable(no_sabe, row.names = FALSE, format.args = list(big.mark = ".", decimal.mark = ","),
+      caption = "Tratamiento de los no sabe en los doce ítems")
+
+# Número de ítems respondidos
+n_respondidos <- data_chk %>%
+  count(n_items, name = "n") %>%
+  mutate(porcentaje = 100 * n / sum(n)) %>%
+  rename(`Ítems respondidos` = n_items, Personas = n, `%` = porcentaje)
+
+kable(n_respondidos, digits = c(0, 0, 1), format.args = list(big.mark = ".", decimal.mark = ","),
+      caption = "Personas según el número de medidas respondidas")
+
+# Los índices usan los ítems disponibles: se recalculan para confirmarlo
+recalculo <- c(policy_mean = max(abs(rowMeans(data_chk[items_12], na.rm = TRUE) - data_chk$policy_mean)),
+               investment = max(abs(rowMeans(data_chk[paste0("policy_", 1:3)], na.rm = TRUE) - data_chk$investment)),
+               compensation = max(abs(rowMeans(data_chk[paste0("policy_", 6:7)], na.rm = TRUE) - data_chk$compensation)),
+               protection = max(abs(rowMeans(data_chk[paste0("policy_", c(4, 8, 11, 12))], na.rm = TRUE) - data_chk$protection)))
+```
+
+La correspondencia de los ítems con los repertorios coincide con `procesamiento.qmd`. Los valores están entre 1 y 5, y los conteos del código 98 de la base original son iguales a los NA de la base procesada.
+
+Responden las doce medidas `r format(sum(data_chk$n_items == 12), big.mark = ".", decimal.mark = ",")` personas, el `r formatC(100 * mean(data_chk$n_items == 12), format = "f", digits = 1, decimal.mark = ",")` % de la muestra analítica. El mínimo es de `r min(data_chk$n_items)` ítems.
+
+`policy_mean` y los índices se calculan en `procesamiento.qmd` con `mean(c(...), na.rm = TRUE)` por fila, es decir, con los ítems disponibles de cada persona, sin un mínimo de ítems. Solo quedan sin valor quienes no responden ningún ítem del índice, y `na.omit()` los elimina de la muestra analítica. Al recalcularlos con los ítems disponibles, la mayor diferencia absoluta es `r format(max(recalculo), digits = 2, decimal.mark = ",")`. Quienes omiten ítems tienen un `policy_mean` y unos índices calculados sobre conjuntos distintos de medidas.
+
+## Chequeo 1. Punto de referencia de la dirección
+
+### Medidas excluidas
+
+```{r}
+# rel_other queda sin valor para quienes no responden ninguna de las tres medidas: su modelo
+# se estima en esa submuestra, con weight_n normalizado de nuevo dentro de cada país.
+data_chk <- data_chk %>%
+  mutate(other = rowMeans(pick(policy_5, policy_9, policy_10), na.rm = TRUE),
+         rel_other = other - policy_mean)
+
+data_other <- data_chk %>%
+  filter(!is.na(rel_other)) %>%
+  group_by(ctrcode) %>%
+  mutate(weight_n = weight / mean(weight)) %>%
+  ungroup()
+
+reg_other <- lmer(as.formula(paste("rel_other ~", form_m4)), data = data_other, weights = weight_n)
+
+tab(reg4$inv, reg4$com, reg4$pro, reg_other, terms = names(focales), show.ci = FALSE, p.style = "stars", show.se = TRUE, digits = 3,
+    dv.labels = c("Inversión", "Compensación", "Protección", "Otras medidas"))
+```
+
+`rel_other` se estima con N = `r format(nobs(reg_other), big.mark = ".", decimal.mark = ",")`: `r nrow(data_chk) - nrow(data_other)` personas no responden ninguna de las tres medidas.
+
+### Identidad
+
+```{r}
+# Identidad en las personas: solo se cumple con las doce medidas respondidas
+identidad <- data_chk %>%
+  filter(n_items == 12) %>%
+  mutate(suma = 3 * rel_investment + 2 * rel_compensation + 4 * rel_protection + 3 * rel_other)
+
+# Identidad en los coeficientes
+b_dir <- sapply(c(reg4[c("inv", "com", "pro")], list(other = reg_other)),
+                function(m) fixef(m)[names(focales)])
+suma_b <- 3 * b_dir[, "inv"] + 2 * b_dir[, "com"] + 4 * b_dir[, "pro"] + 3 * b_dir[, "other"]
+
+# Mismos modelos entre quienes responden las doce medidas, donde la identidad se cumple en
+# las personas. Queda la diferencia que proviene de la varianza del intercepto de cada modelo.
+data_12 <- data_chk %>%
+  filter(n_items == 12) %>%
+  group_by(ctrcode) %>%
+  mutate(weight_n = weight / mean(weight)) %>%
+  ungroup()
+
+reg_12 <- lapply(c(inv = "rel_investment", com = "rel_compensation", pro = "rel_protection", other = "rel_other"),
+                 function(y) lmer(as.formula(paste(y, "~", form_m4)), data = data_12, weights = weight_n))
+
+b_12 <- sapply(reg_12, function(m) fixef(m)[names(focales)])
+suma_12 <- 3 * b_12[, "inv"] + 2 * b_12[, "com"] + 4 * b_12[, "pro"] + 3 * b_12[, "other"]
+
+kable(data.frame(Predictor = focales, b_dir, `3·inv + 2·com + 4·pro + 3·otras` = suma_b,
+                 `Suma con las doce medidas` = suma_12, check.names = FALSE),
+      digits = c(0, 3, 3, 3, 3, 5, 5), row.names = FALSE,
+      col.names = c("Predictor", "b inversión", "b compensación", "b protección", "b otras",
+                    "3·inv + 2·com + 4·pro + 3·otras", "Suma, solo doce medidas"),
+      format.args = list(decimal.mark = ","),
+      caption = "Identidad en los coeficientes de la dirección")
+```
+
+Entre las `r format(nrow(identidad), big.mark = ".", decimal.mark = ",")` personas que responden las doce medidas, el máximo valor absoluto de 3·`rel_investment` + 2·`rel_compensation` + 4·`rel_protection` + 3·`rel_other` es `r formatC(max(abs(identidad$suma)), format = "e", digits = 1, decimal.mark = ",")`.
+
+*Nota*: en la muestra completa la suma de los coeficientes no es exactamente cero por tres razones: quienes omiten ítems no cumplen la identidad, `rel_other` usa otra submuestra y cada modelo estima su propia varianza del intercepto. La última columna elimina las dos primeras (N = `r format(nrow(data_12), big.mark = ".", decimal.mark = ",")`), y estos cuatro modelos solo se usan en esa columna.
+
+### Volumen alternativo
+
+```{r}
+# Igual peso por repertorio. Los tres repertorios tienen valor en toda la muestra analítica,
+# que exige rel_investment, rel_compensation y rel_protection.
+data_chk <- data_chk %>%
+  mutate(policy_mean_rep = (investment + compensation + protection) / 3,
+         rel_rep_investment = investment - policy_mean_rep,
+         rel_rep_compensation = compensation - policy_mean_rep,
+         rel_rep_protection = protection - policy_mean_rep,
+         # Contrastes por pares
+         diff_com_inv = compensation - investment,
+         diff_pro_inv = protection - investment,
+         diff_pro_com = protection - compensation)
+
+reg_rep <- lapply(c(lev = "policy_mean_rep", inv = "rel_rep_investment", com = "rel_rep_compensation", pro = "rel_rep_protection"),
+                  function(y) lmer(as.formula(paste(y, "~", form_m4)), data = data_chk, weights = weight_n))
+
+tab(reg_rep$lev, reg_rep$inv, reg_rep$com, reg_rep$pro, terms = names(focales), show.ci = FALSE, p.style = "stars", show.se = TRUE, digits = 3,
+    dv.labels = c("Volumen alternativo", "Inversión", "Compensación", "Protección"))
+
+suma_rep <- rowSums(sapply(reg_rep[c("inv", "com", "pro")], function(m) fixef(m)[names(focales)]))
+```
+
+*Nota*: por construcción, los coeficientes de las tres direcciones suman aproximadamente cero. Las tres variables suman cero en cada persona, pero cada modelo estima su propia varianza del intercepto. La mayor suma absoluta entre los cinco predictores es `r formatC(max(abs(suma_rep)), format = "e", digits = 1, decimal.mark = ",")`.
+
+### Contrastes por pares
+
+```{r}
+reg_dif <- lapply(c(com_inv = "diff_com_inv", pro_inv = "diff_pro_inv", pro_com = "diff_pro_com"),
+                  function(y) lmer(as.formula(paste(y, "~", form_m4)), data = data_chk, weights = weight_n))
+
+tab(reg_dif$com_inv, reg_dif$pro_inv, reg_dif$pro_com, terms = names(focales), show.ci = FALSE, p.style = "stars", show.se = TRUE, digits = 3,
+    dv.labels = c("Compensación − inversión", "Protección − inversión", "Protección − compensación"))
+```
+
+### Comparación de especificaciones
+
+```{r}
+# Cada columna de la especificación actual junto a la alternativa
+tab(reg4$lev, reg_rep$lev, reg4$inv, reg_rep$inv, terms = names(focales), show.ci = FALSE, p.style = "stars", show.se = TRUE, digits = 3,
+    dv.labels = c("Volumen: actual", "Volumen: alternativa", "Inversión: actual", "Inversión: alternativa"))
+
+tab(reg4$com, reg_rep$com, reg4$pro, reg_rep$pro, reg_other, terms = names(focales), show.ci = FALSE, p.style = "stars", show.se = TRUE, digits = 3,
+    dv.labels = c("Compensación: actual", "Compensación: alternativa", "Protección: actual", "Protección: alternativa", "Otras medidas: actual"))
+```
+
+*Nota*: en la especificación actual, el punto de referencia es el promedio de las doce medidas; en la alternativa, el promedio simple de los tres repertorios. Por construcción, los coeficientes de las tres direcciones de la alternativa suman aproximadamente cero. La especificación alternativa no tiene una columna para las otras medidas, que no entran en su punto de referencia.
+
+## Chequeo 2. Diferenciación intrapersonal
+
+### Desviación estándar de las doce medidas
+
+```{r}
+# Con los ítems disponibles de cada persona; en la muestra analítica el mínimo es cuatro
+data_chk <- data_chk %>%
+  mutate(policy_sd = apply(pick(all_of(items_12)), 1, sd, na.rm = TRUE))
+
+reg_sd <- lmer(as.formula(paste("policy_sd ~", form_m4)), data = data_chk, weights = weight_n)
+reg_sd_cuad <- lmer(as.formula(paste("policy_sd ~ policy_mean + I(policy_mean^2) +", form_m4)), data = data_chk, weights = weight_n)
+
+tab(reg_sd, reg_sd_cuad, terms = names(focales), show.ci = FALSE, p.style = "stars", show.se = TRUE, digits = 3,
+    dv.labels = c("Modelo 4", "Modelo 4 + policy_mean y su cuadrado"))
+```
+
+### Puntajes estandarizados
+
+```{r}
+# Solo con policy_sd > 0. weight_n se normaliza de nuevo en la submuestra.
+data_z <- data_chk %>%
+  filter(policy_sd > 0) %>%
+  mutate(across(all_of(items_12), ~ (.x - policy_mean) / policy_sd, .names = "z_{.col}"),
+         z_investment = rowMeans(pick(z_policy_1, z_policy_2, z_policy_3), na.rm = TRUE),
+         z_compensation = rowMeans(pick(z_policy_6, z_policy_7), na.rm = TRUE),
+         z_protection = rowMeans(pick(z_policy_4, z_policy_8, z_policy_11, z_policy_12), na.rm = TRUE),
+         z_other = rowMeans(pick(z_policy_5, z_policy_9, z_policy_10), na.rm = TRUE))
+
+reg_z <- lapply(c(inv = "z_investment", com = "z_compensation", pro = "z_protection", other = "z_other"),
+                function(y) {
+                  d <- data_z %>%
+                    filter(!is.na(.data[[y]])) %>%
+                    group_by(ctrcode) %>%
+                    mutate(weight_n = weight / mean(weight)) %>%
+                    ungroup()
+                  lmer(as.formula(paste(y, "~", form_m4)), data = d, weights = weight_n)
+                })
+
+tab(reg_z$inv, reg_z$com, reg_z$pro, reg_z$other, terms = names(focales), show.ci = FALSE, p.style = "stars", show.se = TRUE, digits = 3,
+    dv.labels = c("Inversión", "Compensación", "Protección", "Otras medidas"))
+```
+
+### Respuestas idénticas
+
+```{r}
+data_chk <- data_chk %>%
+  mutate(igual = policy_sd == 0,
+         tercil_amenaza = cut(ego_neg, breaks = quantile(ego_neg, probs = 0:3 / 3), include.lowest = TRUE,
+                              labels = c("Tercil 1 (baja)", "Tercil 2", "Tercil 3 (alta)")))
+
+identicas <- data_chk %>%
+  summarise(Personas = n(),
+            `Con policy_sd = 0` = sum(igual),
+            `Doce medidas respondidas` = sum(igual & n_items == 12),
+            `Menos de doce` = sum(igual & n_items < 12),
+            `%` = 100 * mean(igual),
+            `% ponderado` = 100 * weighted.mean(igual, weight_n))
+
+kable(identicas, digits = c(0, 0, 0, 0, 1, 1), format.args = list(big.mark = ".", decimal.mark = ","),
+      caption = "Personas con la misma respuesta en todas las medidas respondidas")
+
+kable(data_chk %>%
+        group_by(`País` = ctrcode) %>%
+        summarise(Personas = n(), `Con policy_sd = 0` = sum(igual),
+                  `%` = 100 * mean(igual), `% ponderado` = 100 * weighted.mean(igual, weight_n)) %>%
+        arrange(desc(`%`)),
+      digits = c(0, 0, 0, 1, 1), format.args = list(big.mark = ".", decimal.mark = ","),
+      caption = "Respuestas idénticas por país")
+
+kable(data_chk %>%
+        group_by(`Tercil de amenaza` = tercil_amenaza) %>%
+        summarise(`Mínimo` = min(ego_neg), `Máximo` = max(ego_neg), Personas = n(), `Con policy_sd = 0` = sum(igual),
+                  `%` = 100 * mean(igual), `% ponderado` = 100 * weighted.mean(igual, weight_n)),
+      digits = c(0, 2, 2, 0, 0, 1, 1), format.args = list(big.mark = ".", decimal.mark = ","),
+      caption = "Respuestas idénticas por tercil de la amenaza tecnológica sin centrar")
+```
+
+*Nota*: los terciles se calculan en la muestra analítica completa con `ego_neg`, sin centrar. Como el índice toma pocos valores, los grupos no tienen el mismo tamaño. El porcentaje ponderado usa `weight_n`.
+
+```{r}
+# Modelos 4 de dirección sin quienes responden igual. Se excluye a todas las personas con
+# policy_sd = 0, también a las que respondieron menos de doce medidas.
+reg_dif_sd <- lapply(c(inv = "rel_investment", com = "rel_compensation", pro = "rel_protection", other = "rel_other"),
+                     function(y) {
+                       d <- data_chk %>%
+                         filter(policy_sd > 0, !is.na(.data[[y]])) %>%
+                         group_by(ctrcode) %>%
+                         mutate(weight_n = weight / mean(weight)) %>%
+                         ungroup()
+                       lmer(as.formula(paste(y, "~", form_m4)), data = d, weights = weight_n)
+                     })
+
+tab(reg_dif_sd$inv, reg_dif_sd$com, reg_dif_sd$pro, reg_dif_sd$other, terms = names(focales), show.ci = FALSE, p.style = "stars", show.se = TRUE, digits = 3,
+    dv.labels = c("Inversión", "Compensación", "Protección", "Otras medidas"))
+```
+
+## Chequeo 3. Descomposición de las doce medidas
+
+### Modelos por ítem
+
+```{r}
+data_chk <- data_chk %>%
+  mutate(across(all_of(items_12), ~ .x - policy_mean, .names = "rel_item_{sub('policy_', '', .col)}"))
+
+# Cada ítem se estima con quienes lo responden, con weight_n normalizado en esa submuestra
+reg_item <- lapply(setNames(1:12, items_12), function(j) {
+  y <- paste0("rel_item_", j)
+  d <- data_chk %>%
+    filter(!is.na(.data[[y]])) %>%
+    group_by(ctrcode) %>%
+    mutate(weight_n = weight / mean(weight)) %>%
+    ungroup()
+  lmer(as.formula(paste(y, "~", form_m4)), data = d, weights = weight_n)
+})
+
+# Coeficientes y errores estándar de los cinco predictores en los doce modelos
+coef_items <- do.call(rbind, lapply(names(reg_item), function(j) {
+  m <- reg_item[[j]]
+  data.frame(item = j, termino = names(focales),
+             b = unname(fixef(m)[names(focales)]),
+             se = unname(sqrt(diag(as.matrix(vcov(m))))[names(focales)]))
+})) %>%
+  left_join(items, by = "item") %>%
+  mutate(predictor = factor(focales[termino], levels = focales),
+         repertorio = factor(repertorio, levels = c("Inversión", "Compensación", "Protección", "Otras medidas")),
+         etiqueta = factor(etiqueta, levels = rev(items$etiqueta)))
+
+kable(items %>%
+        mutate(N = sapply(reg_item[item], nobs)) %>%
+        select(`Ítem` = item, Medida = etiqueta, Repertorio = repertorio, N),
+      format.args = list(big.mark = ".", decimal.mark = ","),
+      caption = "N de los modelos por ítem")
+```
+
+#### Inversión
+
+```{r}
+tab(reg_item$policy_1, reg_item$policy_2, reg_item$policy_3, terms = names(focales), show.ci = FALSE, p.style = "stars", show.se = TRUE, digits = 3,
+    dv.labels = items$etiqueta[match(c("policy_1", "policy_2", "policy_3"), items$item)])
+```
+
+#### Compensación
+
+```{r}
+tab(reg_item$policy_6, reg_item$policy_7, terms = names(focales), show.ci = FALSE, p.style = "stars", show.se = TRUE, digits = 3,
+    dv.labels = items$etiqueta[match(c("policy_6", "policy_7"), items$item)])
+```
+
+#### Protección
+
+```{r}
+tab(reg_item$policy_4, reg_item$policy_8, reg_item$policy_11, reg_item$policy_12, terms = names(focales), show.ci = FALSE, p.style = "stars", show.se = TRUE, digits = 3,
+    dv.labels = items$etiqueta[match(c("policy_4", "policy_8", "policy_11", "policy_12"), items$item)])
+```
+
+#### Otras medidas
+
+```{r}
+tab(reg_item$policy_5, reg_item$policy_9, reg_item$policy_10, terms = names(focales), show.ci = FALSE, p.style = "stars", show.se = TRUE, digits = 3,
+    dv.labels = items$etiqueta[match(c("policy_5", "policy_9", "policy_10"), items$item)])
+```
+
+### Figura de coeficientes
+
+```{r}
+#| label: fig-items
+#| fig-cap: "Coeficientes de cada medida respecto del promedio de las doce, modelo 4"
+#| fig-cap-location: top
+#| fig-width: 11
+#| fig-height: 7.5
+
+coef_items %>%
+  ggplot(aes(x = b, y = etiqueta)) +
+  geom_vline(xintercept = 0, linetype = "dashed", colour = "grey50") +
+  geom_pointrange(aes(xmin = b - 1.96 * se, xmax = b + 1.96 * se), colour = "black", size = 0.25) +
+  facet_grid(repertorio ~ predictor, scales = "free_y", space = "free_y",
+             labeller = labeller(predictor = label_wrap_gen(20))) +
+  scale_x_continuous(labels = scales::label_number(decimal.mark = ",")) +
+  scale_y_discrete(labels = label_wrap_gen(38)) +
+  labs(x = "Coeficiente e intervalo de 95 %", y = NULL) +
+  theme_bw() +
+  theme(strip.text.y = element_text(angle = 0))
+```
+
+### Promedio de los ítems y coeficiente de la dirección
+
+```{r}
+# Los modelos de dirección son los de la especificación actual
+b_direccion <- sapply(list(`Inversión` = reg4$inv, `Compensación` = reg4$com, `Protección` = reg4$pro, `Otras medidas` = reg_other),
+                      function(m) fixef(m)[names(focales)])
+
+promedio_items <- coef_items %>%
+  group_by(repertorio, termino) %>%
+  summarise(promedio = mean(b), .groups = "drop") %>%
+  mutate(direccion = b_direccion[cbind(as.character(termino), as.character(repertorio))],
+         diferencia = promedio - direccion,
+         predictor = focales[termino])
+
+kable(promedio_items %>%
+        arrange(repertorio, match(termino, names(focales))) %>%
+        select(Repertorio = repertorio, Predictor = predictor, `Promedio de los ítems` = promedio,
+               `Coeficiente de la dirección` = direccion, Diferencia = diferencia),
+      digits = c(0, 0, 3, 3, 4), format.args = list(decimal.mark = ","),
+      caption = "Promedio de los coeficientes por ítem y coeficiente de la dirección")
+```
+
+La mayor diferencia absoluta es `r formatC(max(abs(promedio_items$diferencia)), format = "f", digits = 4, decimal.mark = ",")`.
+
+### Media y amenaza por ítem
+
+```{r}
+media_amenaza <- items %>%
+  mutate(media = sapply(paste0("rel_item_", sub("policy_", "", item)), function(y) mean(data_chk[[y]], na.rm = TRUE)),
+         b_amenaza = coef_items$b[coef_items$termino == "ego_neg_cwc"][match(item, coef_items$item[coef_items$termino == "ego_neg_cwc"])],
+         repertorio = factor(repertorio, levels = c("Inversión", "Compensación", "Protección", "Otras medidas")))
+
+cor_media <- cor(media_amenaza$media, media_amenaza$b_amenaza)
+
+kable(media_amenaza %>%
+        arrange(media) %>%
+        select(`Ítem` = item, Medida = etiqueta, Repertorio = repertorio,
+               `Media de rel_item` = media, `Coeficiente de la amenaza` = b_amenaza),
+      digits = c(0, 0, 0, 3, 3), format.args = list(decimal.mark = ","),
+      caption = "Media de rel_item_j y coeficiente de la amenaza tecnológica")
+```
+
+```{r}
+#| label: fig-media-amenaza
+#| fig-cap: "Media relativa de cada medida y coeficiente de la amenaza tecnológica"
+#| fig-cap-location: top
+
+media_amenaza %>%
+  ggplot(aes(x = media, y = b_amenaza, label = stringr::str_wrap(etiqueta, 30))) +
+  geom_hline(yintercept = 0, linetype = "dashed", colour = "grey50") +
+  geom_vline(xintercept = 0, linetype = "dashed", colour = "grey50") +
+  geom_point(aes(shape = repertorio, fill = repertorio), size = 3, colour = "black", stroke = 0.8) +
+  geom_text_repel(size = 3, lineheight = 0.9, min.segment.length = 0, box.padding = 0.8, point.padding = 0.5, force = 4, max.overlaps = Inf, seed = 123) +
+  scale_x_continuous(labels = scales::label_number(decimal.mark = ","), expand = expansion(mult = c(0.08, 0.3))) +
+  scale_y_continuous(labels = scales::label_number(decimal.mark = ","), expand = expansion(mult = 0.12)) +
+  scale_shape_manual(values = c(21, 22, 24, 23), name = NULL) +
+  scale_fill_manual(values = c("black", "grey55", "white", "grey85"), name = NULL) +
+  labs(x = "Media de la medida respecto del promedio de las doce", y = "Coeficiente de la amenaza tecnológica") +
+  theme_bw() +
+  theme(legend.position = "bottom")
+```
+
+La correlación entre ambos valores en los doce ítems es `r formatC(cor_media, format = "f", digits = 3, decimal.mark = ",")`. La media no usa ponderadores.
+
+### N del apéndice
+
+```{r}
+n_prot4 <- sum(complete.cases(data_chk[, c("policy_4", "policy_8", "policy_11", "policy_12")]))
+n_core <- sum(rowSums(!is.na(data_chk[, c("policy_4", "policy_11", "policy_12")])) > 0)
+n_solo_sub <- sum(rowSums(!is.na(data_chk[, c("policy_4", "policy_11", "policy_12")])) == 0 & !is.na(data_chk$policy_8))
+```
+
+Los dos N se explican por el código de `07-appendix.qmd` y se reproducen en la muestra analítica:
+
+- **`r format(n_prot4, big.mark = ".", decimal.mark = ",")` casos en los modelos por ítem.** `data_items` se filtra con `!is.na()` sobre las cuatro variables relativas a la vez, de modo que se eliminan quienes omiten cualquiera de los cuatro ítems de protección. Los cuatro modelos comparten esa muestra, aunque cada ítem por separado tiene más casos, como muestra la tabla de N de este archivo.
+- **`r format(n_core, big.mark = ".", decimal.mark = ",")` casos en la protección sin subsidios.** `data_core` solo exige que `rel_protection_core` tenga valor, y ese índice usa los ítems disponibles de `policy_4`, `policy_11` y `policy_12`. Solo se pierden las `r n_solo_sub` personas que no responden ninguno de esos tres ítems. Siguen en la muestra analítica porque responden `policy_8`, y por eso tienen valor en `protection`.
+
+## Resumen
+
+```{r}
+# Modelos que se reportan
+modelos <- c(setNames(reg4, paste("Actual:", c("volumen", "inversión", "compensación", "protección"))),
+             list(`Actual: otras medidas` = reg_other),
+             setNames(reg_rep, paste("Alternativa:", c("volumen", "inversión", "compensación", "protección"))),
+             setNames(reg_dif, c("Compensación − inversión", "Protección − inversión", "Protección − compensación")),
+             list(`policy_sd: modelo 4` = reg_sd, `policy_sd: con policy_mean y su cuadrado` = reg_sd_cuad),
+             setNames(reg_z, paste("Estandarizado:", c("inversión", "compensación", "protección", "otras medidas"))),
+             setNames(reg_dif_sd, paste("Sin respuestas idénticas:", c("inversión", "compensación", "protección", "otras medidas"))),
+             setNames(reg_item, paste0("Ítem: ", items$etiqueta[match(items_12, items$item)])),
+             setNames(reg_12, paste("Solo doce medidas:", c("inversión", "compensación", "protección", "otras medidas"))))
+
+# Coeficientes, errores estándar y p de Wald, el mismo criterio de las tablas
+focal <- do.call(rbind, lapply(names(modelos), function(n) {
+  m <- modelos[[n]]
+  t <- c("ego_neg_cwc", "socio_neg_cwc", "socio_pos_cwc")
+  b <- fixef(m)[t]
+  se <- sqrt(diag(as.matrix(vcov(m))))[t]
+  data.frame(modelo = n, termino = t, b = unname(b), se = unname(se), p = unname(2 * pnorm(-abs(b / se))))
+})) %>%
+  mutate(valor = paste0(formatC(b, format = "f", digits = 3, decimal.mark = ","),
+                        " (", formatC(se, format = "f", digits = 3, decimal.mark = ","), ")",
+                        as.character(cut(p, c(0, 0.001, 0.01, 0.05, 1), labels = c("\\*\\*\\*", "\\*\\*", "\\*", ""), include.lowest = TRUE))))
+
+tabla_focal <- focal %>%
+  select(modelo, termino, valor) %>%
+  pivot_wider(names_from = termino, values_from = valor) %>%
+  mutate(N = sapply(modelos[modelo], nobs))
+
+# Comparación de la amenaza sobre la inversión
+base_inv <- focal %>% filter(modelo == "Actual: inversión", termino == "ego_neg_cwc")
+z_inv <- focal %>% filter(modelo == "Estandarizado: inversión", termino == "ego_neg_cwc")
+sin_inv <- focal %>% filter(modelo == "Sin respuestas idénticas: inversión", termino == "ego_neg_cwc")
+
+# Advertencias de cada modelo
+diagnostico <- data.frame(Modelo = names(modelos),
+                          N = sapply(modelos, nobs),
+                          Convergencia = sapply(modelos, function(m) {
+                            avisos <- c(m@optinfo$conv$lme4$messages, m@optinfo$warnings)
+                            if (length(avisos) == 0) "Sin advertencias" else paste(avisos, collapse = "; ")
+                          }),
+                          Singular = ifelse(sapply(modelos, isSingular), "Sí", "No"))
+```
+
+**Verificación.** Los cuatro modelos 4 reproducen la tabla principal del paper con N = `r format(nobs(reg4$lev), big.mark = ".", decimal.mark = ",")`. La mayor diferencia absoluta es `r formatC(max(abs(diferencias)), format = "f", digits = 5, decimal.mark = ",")`. Los ítems están en numérico y los "no sabe" están como NA.
+
+```{r}
+kable(tabla_focal %>%
+        filter(modelo %in% c("Actual: otras medidas",
+                             paste("Alternativa:", c("volumen", "inversión", "compensación", "protección")),
+                             "Compensación − inversión", "Protección − inversión", "Protección − compensación")) %>%
+        select(Modelo = modelo, `Amenaza tecnológica` = ego_neg_cwc, `Expectativas negativas` = socio_neg_cwc,
+               `Expectativas positivas` = socio_pos_cwc, N),
+      format.args = list(big.mark = ".", decimal.mark = ","),
+      caption = "Coeficientes en rel_other, en la especificación alternativa y en los contrastes por pares")
+```
+
+*Nota*: errores estándar entre paréntesis. \*\*\* p < 0,001; \*\* p < 0,01; \* p < 0,05.
+
+**Diferenciación.** El coeficiente de la amenaza tecnológica sobre `policy_sd` es `r focal$valor[focal$modelo == "policy_sd: modelo 4" & focal$termino == "ego_neg_cwc"]` en el modelo 4 y `r focal$valor[focal$modelo == "policy_sd: con policy_mean y su cuadrado" & focal$termino == "ego_neg_cwc"]` al agregar `policy_mean` y su cuadrado.
+
+**Amenaza sobre la inversión.** El coeficiente es `r base_inv$valor` en la especificación actual. Con los puntajes estandarizados es `r z_inv$valor`, en otra escala: `r ifelse(sign(z_inv$b) == sign(base_inv$b), "no cambia de signo", "cambia de signo")` y `r ifelse(z_inv$p < 0.05, "no pierde significación", "pierde significación")`. Al excluir a quienes responden igual es `r sin_inv$valor`: `r ifelse(sign(sin_inv$b) == sign(base_inv$b), "no cambia de signo", "cambia de signo")` y `r ifelse(sin_inv$p < 0.05, "no pierde significación", "pierde significación")`.
+
+**Media y amenaza por ítem.** La correlación es `r formatC(cor_media, format = "f", digits = 3, decimal.mark = ",")`.
+
+**N y convergencia.** De los `r nrow(diagnostico)` modelos de la tabla, `r sum(diagnostico$Convergencia != "Sin advertencias")` tienen advertencias de convergencia y `r sum(diagnostico$Singular == "Sí")` tienen un ajuste singular.
+
+```{r}
+kable(diagnostico, row.names = FALSE, format.args = list(big.mark = ".", decimal.mark = ","),
+      caption = "N y advertencias de cada modelo")
+```

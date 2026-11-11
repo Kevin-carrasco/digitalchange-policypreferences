@@ -1,0 +1,1504 @@
+Otros indicadores de país y moderadores individuales
+
+
+Verificación
+
+Los cuatro modelos 4 tienen N = 19.731 y reproducen los de
+04-results.qmd (mayor diferencia absoluta entre coeficientes: 0,0e+00).
+
+Parte B. Otros indicadores de nivel país
+
+  ---------------------------------------------------------------------------------------------------------
+                  PIB per    Gini   Prestaciones   Políticas     Tasa de     Gasto   Empleo en   Protección
+                   cápita          por desempleo  de mercado   desempleo    social          la   del empleo
+                    (log)                            laboral               público   industria        (EPL)
+                                                                             total             
+  -------------- -------- ------- -------------- ----------- ----------- --------- ----------- ------------
+  PIB per cápita     1,00   -0,54           0,57        0,55       -0,32      0,31       -0,37        -0,32
+  (log)                                                                                        
+
+  Gini              -0,54    1,00          -0,46       -0,59        0,18     -0,56        0,07        -0,07
+
+  Prestaciones       0,57   -0,46           1,00        0,50       -0,15      0,55       -0,19        -0,12
+  por desempleo                                                                                
+
+  Políticas de       0,55   -0,59           0,50        1,00       -0,33      0,26       -0,22         0,10
+  mercado                                                                                      
+  laboral                                                                                      
+
+  Tasa de           -0,32    0,18          -0,15       -0,33        1,00      0,16       -0,07         0,14
+  desempleo                                                                                    
+
+  Gasto social       0,31   -0,56           0,55        0,26        0,16      1,00       -0,02         0,08
+  público total                                                                                
+
+  Empleo en la      -0,37    0,07          -0,19       -0,22       -0,07     -0,02        1,00         0,13
+  industria                                                                                    
+
+  Protección del    -0,32   -0,07          -0,12        0,10        0,14      0,08        0,13         1,00
+  empleo (EPL)                                                                                 
+  ---------------------------------------------------------------------------------------------------------
+
+  : Correlaciones entre los indicadores de nivel país (27 países)
+
+  -------------------------------------------------------------------------
+  Indicador agregado    Volumen     Inversión   Compensación   Protección
+  --------------------- ----------- ----------- -------------- ------------
+  Tasa de desempleo     -0,015      -0,011      0,002 (0,019)  -0,007
+                        (0,018)     (0,020)                    (0,014)
+
+  Gasto social público  -0,035      0,023       -0,054         -0,003
+  total                 (0,022)     (0,026)     (0,021)**      (0,018)
+
+  Empleo en la          -0,008      -0,005      -0,001 (0,019) -0,019
+  industria             (0,018)     (0,021)                    (0,014)
+
+  Protección del empleo -0,005      0,035       -0,032 (0,019) 0,009
+  (EPL)                 (0,019)     (0,020)                    (0,015)
+  -------------------------------------------------------------------------
+
+  : Coeficiente de cada indicador agregado por separado al modelo 4
+
+Nota: cada celda es un modelo distinto: el modelo 4 actual, que ya
+incluye PIB per cápita, Gini, Prestaciones por desempleo y Políticas de
+mercado laboral, más el indicador de la fila. Todos los indicadores
+están estandarizados entre los 27 países. Errores estándar entre
+paréntesis. *** p < 0,001; ** p < 0,01; * p < 0,05. Estos indicadores no
+forman parte de la especificación del paper.
+
+Parte C. Interacciones con variables individuales
+
+Hipótesis definidas antes de estimar
+
+- Edad × amenaza tecnológica: la amenaza reduce más la prioridad de la
+  inversión a mayor edad, porque el horizonte para recuperar la
+  formación es más corto. Signo esperado de las interacciones en
+  inversión: negativo.
+- Nivel educacional × amenaza tecnológica: la amenaza reduce menos la
+  prioridad de la inversión entre quienes tienen educación alta, por su
+  mayor capacidad de reconvertirse. Signo esperado de la interacción con
+  educación alta en inversión: positivo.
+- Posición en el mercado laboral × amenaza tecnológica: la amenaza
+  aumenta más la prioridad de la protección entre los asalariados con
+  contrato indefinido, y más la de la compensación entre los temporales
+  y los independientes. Signo esperado de las interacciones: negativo en
+  protección y positivo en compensación.
+
+Modelos
+
+Grupo de edad
+
+
+    ==========================================================================================
+                              policy_mean     rel_investment  rel_compensation  rel_protection
+    ------------------------------------------------------------------------------------------
+    (Intercept)                    3.297 ***       0.149 ***      -0.129 **          0.081 ** 
+                                  (0.035)         (0.035)         (0.046)           (0.031)   
+    ego_neg_cwc                    0.019          -0.119 ***      -0.110 ***         0.014    
+                                  (0.014)         (0.013)         (0.019)           (0.012)   
+    ego_pos_cwc                    0.091 ***       0.058 ***       0.023 **         -0.044 ***
+                                  (0.006)         (0.005)         (0.008)           (0.005)   
+    socio_neg_cwc                  0.192 ***      -0.011 *         0.059 ***         0.108 ***
+                                  (0.006)         (0.006)         (0.008)           (0.005)   
+    socio_pos_cwc                  0.142 ***      -0.004          -0.044 ***        -0.082 ***
+                                  (0.006)         (0.006)         (0.008)           (0.006)   
+    unnemployment                  0.042 ***      -0.017 ***       0.050 ***         0.007 *  
+                                  (0.004)         (0.004)         (0.005)           (0.003)   
+    sex2                           0.025 ***      -0.016 *         0.035 ***         0.021 ** 
+                                  (0.007)         (0.007)         (0.010)           (0.007)   
+    age2                           0.068 ***       0.047 ***       0.020             0.006    
+                                  (0.014)         (0.013)         (0.019)           (0.013)   
+    age3                           0.068 ***       0.096 ***       0.019             0.009    
+                                  (0.014)         (0.013)         (0.019)           (0.013)   
+    age4                           0.068 ***       0.148 ***       0.020             0.029 *  
+                                  (0.014)         (0.013)         (0.019)           (0.013)   
+    age5                           0.075 ***       0.183 ***       0.037             0.015    
+                                  (0.015)         (0.014)         (0.020)           (0.013)   
+    educ2                         -0.009           0.070 ***      -0.015            -0.010    
+                                  (0.015)         (0.014)         (0.020)           (0.013)   
+    educ3                          0.009           0.133 ***      -0.072 ***        -0.101 ***
+                                  (0.015)         (0.014)         (0.021)           (0.014)   
+    income                        -0.002           0.008 ***      -0.016 ***        -0.001    
+                                  (0.001)         (0.001)         (0.002)           (0.001)   
+    lm_positionNon-standard        0.012           0.027 **        0.001            -0.019 *  
+                                  (0.011)         (0.010)         (0.015)           (0.010)   
+    lm_positionSelf-employed      -0.066 ***       0.012           0.003            -0.029 ** 
+                                  (0.011)         (0.011)         (0.015)           (0.010)   
+    platform2                      0.122 ***      -0.102 ***      -0.040 *           0.012    
+                                  (0.013)         (0.012)         (0.017)           (0.011)   
+    public                        -0.026 **       -0.049 ***       0.007             0.009    
+                                  (0.009)         (0.009)         (0.012)           (0.008)   
+    sector_cat2                    0.086 **        0.012           0.023             0.014    
+                                  (0.026)         (0.025)         (0.036)           (0.024)   
+    sector_cat3                    0.098 ***      -0.056 *         0.056             0.055 *  
+                                  (0.028)         (0.027)         (0.038)           (0.025)   
+    sector_cat4                    0.108 ***       0.010           0.092 **          0.024    
+                                  (0.026)         (0.025)         (0.035)           (0.023)   
+    sector_cat5                    0.082 **        0.074 **        0.041            -0.007    
+                                  (0.025)         (0.024)         (0.035)           (0.023)   
+    sector_cat6                    0.137 ***       0.041           0.080 *          -0.024    
+                                  (0.026)         (0.025)         (0.035)           (0.023)   
+    sector_cat7                    0.113 ***       0.012           0.149 ***        -0.012    
+                                  (0.026)         (0.025)         (0.035)           (0.023)   
+    sector_cat8                    0.062 *        -0.023           0.083 *           0.021    
+                                  (0.028)         (0.027)         (0.039)           (0.026)   
+    gdp_pc_log_z                   0.005          -0.003           0.008            -0.010    
+                                  (0.022)         (0.025)         (0.023)           (0.017)   
+    gini_z                         0.037           0.029          -0.012             0.004    
+                                  (0.022)         (0.024)         (0.022)           (0.017)   
+    ubcov_z                       -0.024           0.010          -0.043 *           0.001    
+                                  (0.021)         (0.023)         (0.022)           (0.016)   
+    almp_z                        -0.035           0.025          -0.038            -0.013    
+                                  (0.022)         (0.025)         (0.023)           (0.017)   
+    ego_neg_cwc:age2              -0.022          -0.029           0.034            -0.001    
+                                  (0.016)         (0.015)         (0.022)           (0.014)   
+    ego_neg_cwc:age3              -0.005          -0.049 **        0.076 ***        -0.011    
+                                  (0.016)         (0.015)         (0.022)           (0.014)   
+    ego_neg_cwc:age4              -0.022          -0.055 ***       0.084 ***         0.001    
+                                  (0.016)         (0.015)         (0.022)           (0.015)   
+    ego_neg_cwc:age5              -0.009          -0.034 *         0.132 ***        -0.009    
+                                  (0.017)         (0.017)         (0.024)           (0.016)   
+    ------------------------------------------------------------------------------------------
+    AIC                        30254.446       28377.498       42588.443         26306.230    
+    BIC                        30530.594       28653.646       42864.591         26582.378    
+    Log Likelihood            -15092.223      -14153.749      -21259.222        -13118.115    
+    Num. obs.                  19731           19731           19731             19731        
+    Num. groups: ctrcode          27              27              27                27        
+    Var: ctrcode (Intercept)       0.007           0.008           0.007             0.004    
+    Var: Residual                  0.239           0.217           0.447             0.196    
+    ==========================================================================================
+    *** p < 0.001; ** p < 0.01; * p < 0.05
+
+  Variable dependiente     Chi cuadrado   gl        p
+  ---------------------- -------------- ---- --------
+  Volumen                          4,12    4   0,3902
+  Inversión                       15,96    4   0,0031
+  Compensación                    41,27    4   0,0000
+  Protección                       1,71    4   0,7893
+
+  : Prueba conjunta de la interacción con el grupo de edad
+
+  -------------------------------------------------------------------------
+  Categoría   Volumen      Inversión         Compensación      Protección
+  ----------- ------------ ----------------- ----------------- ------------
+  18 a 24     0,019        -0,119 (0,013)*** -0,110 (0,019)*** 0,014
+  años        (0,014)                                          (0,012)
+
+  25 a 34     -0,003       -0,148 (0,009)*** -0,076 (0,012)*** 0,012
+  años        (0,009)                                          (0,008)
+
+  35 a 44     0,014        -0,168 (0,008)*** -0,034 (0,012)**  0,002
+  años        (0,009)                                          (0,008)
+
+  45 a 54     -0,004       -0,174 (0,009)*** -0,026 (0,013)*   0,014
+  años        (0,010)                                          (0,009)
+
+  55 a 64     0,009        -0,153 (0,011)*** 0,021 (0,016)     0,004
+  años        (0,012)                                          (0,010)
+  -------------------------------------------------------------------------
+
+  : Pendiente de la amenaza tecnológica en cada grupo de edad
+
+Nivel educacional
+
+
+    ==========================================================================================
+                              policy_mean     rel_investment  rel_compensation  rel_protection
+    ------------------------------------------------------------------------------------------
+    (Intercept)                    3.307 ***       0.152 ***      -0.146 **          0.090 ** 
+                                  (0.035)         (0.035)         (0.046)           (0.031)   
+    ego_neg_cwc                   -0.015          -0.086 ***      -0.093 ***        -0.039 ** 
+                                  (0.016)         (0.015)         (0.022)           (0.014)   
+    ego_pos_cwc                    0.093 ***       0.056 ***       0.025 **         -0.042 ***
+                                  (0.006)         (0.005)         (0.008)           (0.005)   
+    socio_neg_cwc                  0.190 ***      -0.009           0.057 ***         0.106 ***
+                                  (0.006)         (0.006)         (0.008)           (0.005)   
+    socio_pos_cwc                  0.141 ***      -0.003          -0.045 ***        -0.083 ***
+                                  (0.006)         (0.006)         (0.008)           (0.006)   
+    unnemployment                  0.041 ***      -0.016 ***       0.050 ***         0.006    
+                                  (0.004)         (0.004)         (0.005)           (0.003)   
+    sex2                           0.027 ***      -0.020 **        0.040 ***         0.023 ***
+                                  (0.007)         (0.007)         (0.010)           (0.007)   
+    age2                           0.063 ***       0.038 **        0.035             0.005    
+                                  (0.014)         (0.013)         (0.019)           (0.012)   
+    age3                           0.063 ***       0.087 ***       0.036             0.006    
+                                  (0.013)         (0.013)         (0.018)           (0.012)   
+    age4                           0.065 ***       0.140 ***       0.036             0.028 *  
+                                  (0.014)         (0.013)         (0.019)           (0.012)   
+    age5                           0.070 ***       0.173 ***       0.040 *           0.014    
+                                  (0.014)         (0.014)         (0.020)           (0.013)   
+    educ2                         -0.011           0.072 ***      -0.016            -0.012    
+                                  (0.015)         (0.014)         (0.020)           (0.013)   
+    educ3                          0.008           0.136 ***      -0.074 ***        -0.103 ***
+                                  (0.015)         (0.014)         (0.021)           (0.014)   
+    income                        -0.002           0.008 ***      -0.016 ***        -0.002    
+                                  (0.001)         (0.001)         (0.002)           (0.001)   
+    lm_positionNon-standard        0.013           0.026 **        0.002            -0.018    
+                                  (0.011)         (0.010)         (0.015)           (0.010)   
+    lm_positionSelf-employed      -0.065 ***       0.010           0.002            -0.026 ** 
+                                  (0.011)         (0.011)         (0.015)           (0.010)   
+    platform2                      0.119 ***      -0.099 ***      -0.046 **          0.009    
+                                  (0.013)         (0.012)         (0.017)           (0.011)   
+    public                        -0.024 **       -0.049 ***       0.005             0.011    
+                                  (0.009)         (0.009)         (0.012)           (0.008)   
+    sector_cat2                    0.084 **        0.015           0.022             0.012    
+                                  (0.026)         (0.025)         (0.036)           (0.024)   
+    sector_cat3                    0.095 ***      -0.052 *         0.055             0.051 *  
+                                  (0.028)         (0.027)         (0.038)           (0.025)   
+    sector_cat4                    0.105 ***       0.014           0.092 **          0.020    
+                                  (0.026)         (0.025)         (0.035)           (0.023)   
+    sector_cat5                    0.079 **        0.077 **        0.043            -0.010    
+                                  (0.025)         (0.024)         (0.035)           (0.023)   
+    sector_cat6                    0.137 ***       0.040           0.084 *          -0.025    
+                                  (0.026)         (0.025)         (0.035)           (0.023)   
+    sector_cat7                    0.110 ***       0.014           0.150 ***        -0.015    
+                                  (0.026)         (0.025)         (0.035)           (0.023)   
+    sector_cat8                    0.058 *        -0.019           0.083 *           0.017    
+                                  (0.028)         (0.027)         (0.039)           (0.026)   
+    gdp_pc_log_z                   0.005          -0.003           0.008            -0.010    
+                                  (0.022)         (0.025)         (0.023)           (0.017)   
+    gini_z                         0.038           0.028          -0.011             0.005    
+                                  (0.021)         (0.024)         (0.022)           (0.017)   
+    ubcov_z                       -0.024           0.011          -0.044 *          -0.000    
+                                  (0.021)         (0.024)         (0.022)           (0.016)   
+    almp_z                        -0.035           0.025          -0.038            -0.014    
+                                  (0.022)         (0.025)         (0.023)           (0.017)   
+    ego_neg_cwc:educ2             -0.013          -0.050 **        0.043             0.020    
+                                  (0.017)         (0.016)         (0.023)           (0.015)   
+    ego_neg_cwc:educ3              0.055 ***      -0.102 ***       0.065 **          0.082 ***
+                                  (0.017)         (0.016)         (0.023)           (0.015)   
+    ------------------------------------------------------------------------------------------
+    AIC                        30179.728       28312.788       42603.826         26217.453    
+    BIC                        30440.096       28573.157       42864.194         26477.821    
+    Log Likelihood            -15056.864      -14123.394      -21268.913        -13075.727    
+    Num. obs.                  19731           19731           19731             19731        
+    Num. groups: ctrcode          27              27              27                27        
+    Var: ctrcode (Intercept)       0.007           0.009           0.007             0.004    
+    Var: Residual                  0.238           0.217           0.448             0.195    
+    ==========================================================================================
+    *** p < 0.001; ** p < 0.01; * p < 0.05
+
+  Variable dependiente     Chi cuadrado   gl        p
+  ---------------------- -------------- ---- --------
+  Volumen                         61,11    2   0,0000
+  Inversión                       62,69    2   0,0000
+  Compensación                     9,25    2   0,0098
+  Protección                      72,38    2   0,0000
+
+  : Prueba conjunta de la interacción con el nivel educacional
+
+  --------------------------------------------------------------------------
+  Categoría   Volumen         Inversión       Compensación    Protección
+  ----------- --------------- --------------- --------------- --------------
+  Educación   -0,015 (0,016)  -0,086          -0,093          -0,039
+  baja                        (0,015)***      (0,022)***      (0,014)**
+
+  Educación   -0,028          -0,137          -0,049          -0,019
+  media       (0,007)***      (0,007)***      (0,010)***      (0,006)**
+
+  Educación   0,041           -0,188          -0,028          0,043
+  alta        (0,007)***      (0,007)***      (0,009)**       (0,006)***
+  --------------------------------------------------------------------------
+
+  : Pendiente de la amenaza tecnológica en cada nivel educacional
+
+Posición en el mercado laboral
+
+
+    ======================================================================================================
+                                          policy_mean     rel_investment  rel_compensation  rel_protection
+    ------------------------------------------------------------------------------------------------------
+    (Intercept)                                3.299 ***       0.158 ***      -0.151 ***         0.084 ** 
+                                              (0.035)         (0.035)         (0.046)           (0.031)   
+    ego_neg_cwc                                0.001          -0.163 ***      -0.040 ***         0.014 *  
+                                              (0.006)         (0.006)         (0.008)           (0.005)   
+    ego_pos_cwc                                0.091 ***       0.058 ***       0.024 **         -0.044 ***
+                                              (0.006)         (0.005)         (0.008)           (0.005)   
+    socio_neg_cwc                              0.192 ***      -0.011 *         0.058 ***         0.108 ***
+                                              (0.006)         (0.006)         (0.008)           (0.005)   
+    socio_pos_cwc                              0.142 ***      -0.004          -0.045 ***        -0.082 ***
+                                              (0.006)         (0.006)         (0.008)           (0.006)   
+    unnemployment                              0.042 ***      -0.017 ***       0.050 ***         0.007 *  
+                                              (0.004)         (0.004)         (0.005)           (0.003)   
+    sex2                                       0.025 ***      -0.018 *         0.039 ***         0.021 ** 
+                                              (0.007)         (0.007)         (0.010)           (0.007)   
+    age2                                       0.064 ***       0.037 **        0.035             0.005    
+                                              (0.014)         (0.013)         (0.019)           (0.012)   
+    age3                                       0.065 ***       0.086 ***       0.036 *           0.007    
+                                              (0.014)         (0.013)         (0.018)           (0.012)   
+    age4                                       0.065 ***       0.140 ***       0.036             0.028 *  
+                                              (0.014)         (0.013)         (0.019)           (0.012)   
+    age5                                       0.071 ***       0.172 ***       0.041 *           0.014    
+                                              (0.014)         (0.014)         (0.020)           (0.013)   
+    educ2                                     -0.009           0.069 ***      -0.014            -0.010    
+                                              (0.015)         (0.014)         (0.020)           (0.013)   
+    educ3                                      0.009           0.133 ***      -0.071 ***        -0.102 ***
+                                              (0.015)         (0.014)         (0.021)           (0.014)   
+    income                                    -0.002           0.008 ***      -0.016 ***        -0.002    
+                                              (0.001)         (0.001)         (0.002)           (0.001)   
+    lm_positionNon-standard                    0.011           0.027 **        0.002            -0.018    
+                                              (0.011)         (0.010)         (0.015)           (0.010)   
+    lm_positionSelf-employed                  -0.066 ***       0.013           0.001            -0.029 ** 
+                                              (0.011)         (0.011)         (0.015)           (0.010)   
+    platform2                                  0.122 ***      -0.102 ***      -0.046 **          0.012    
+                                              (0.013)         (0.012)         (0.017)           (0.011)   
+    public                                    -0.025 **       -0.047 ***       0.004             0.009    
+                                              (0.009)         (0.009)         (0.012)           (0.008)   
+    sector_cat2                                0.085 **        0.013           0.024             0.014    
+                                              (0.026)         (0.025)         (0.036)           (0.024)   
+    sector_cat3                                0.098 ***      -0.055 *         0.057             0.054 *  
+                                              (0.028)         (0.027)         (0.038)           (0.025)   
+    sector_cat4                                0.107 ***       0.010           0.094 **          0.024    
+                                              (0.026)         (0.025)         (0.035)           (0.023)   
+    sector_cat5                                0.082 **        0.076 **        0.045            -0.008    
+                                              (0.025)         (0.024)         (0.035)           (0.023)   
+    sector_cat6                                0.137 ***       0.040           0.084 *          -0.024    
+                                              (0.026)         (0.025)         (0.035)           (0.023)   
+    sector_cat7                                0.112 ***       0.013           0.152 ***        -0.012    
+                                              (0.026)         (0.025)         (0.035)           (0.023)   
+    sector_cat8                                0.061 *        -0.022           0.086 *           0.021    
+                                              (0.028)         (0.027)         (0.039)           (0.026)   
+    gdp_pc_log_z                               0.005          -0.003           0.008            -0.010    
+                                              (0.022)         (0.025)         (0.023)           (0.017)   
+    gini_z                                     0.037           0.029          -0.012             0.004    
+                                              (0.022)         (0.024)         (0.022)           (0.017)   
+    ubcov_z                                   -0.024           0.010          -0.044 *           0.001    
+                                              (0.021)         (0.024)         (0.022)           (0.016)   
+    almp_z                                    -0.035           0.026          -0.038            -0.014    
+                                              (0.022)         (0.025)         (0.023)           (0.017)   
+    ego_neg_cwc:lm_positionNon-standard        0.022           0.011          -0.009            -0.021    
+                                              (0.012)         (0.012)         (0.017)           (0.011)   
+    ego_neg_cwc:lm_positionSelf-employed       0.008           0.029 *        -0.004            -0.012    
+                                              (0.012)         (0.012)         (0.017)           (0.011)   
+    ------------------------------------------------------------------------------------------------------
+    AIC                                    30237.211       28368.941       42612.687         26285.634    
+    BIC                                    30497.580       28629.309       42873.055         26546.002    
+    Log Likelihood                        -15085.606      -14151.470      -21273.343        -13109.817    
+    Num. obs.                              19731           19731           19731             19731        
+    Num. groups: ctrcode                      27              27              27                27        
+    Var: ctrcode (Intercept)                   0.007           0.009           0.007             0.004    
+    Var: Residual                              0.239           0.217           0.448             0.196    
+    ======================================================================================================
+    *** p < 0.001; ** p < 0.01; * p < 0.05
+
+  Variable dependiente     Chi cuadrado   gl        p
+  ---------------------- -------------- ---- --------
+  Volumen                          3,37    2   0,1852
+  Inversión                        6,33    2   0,0421
+  Compensación                     0,31    2   0,8577
+  Protección                       3,96    2   0,1381
+
+  : Prueba conjunta de la interacción con la posición en el mercado
+  laboral
+
+  ---------------------------------------------------------------------------
+  Categoría              Volumen    Inversión     Compensación   Protección
+  ---------------------- ---------- ------------- -------------- ------------
+  Asalariado con         0,001      -0,163        -0,040         0,014
+  contrato indefinido    (0,006)    (0,006)***    (0,008)***     (0,005)*
+
+  Asalariado temporal o  0,024      -0,152        -0,049         -0,007
+  sin contrato           (0,012)*   (0,011)***    (0,016)**      (0,011)
+
+  Independiente          0,009      -0,134        -0,044         0,002
+                         (0,012)    (0,011)***    (0,016)**      (0,011)
+  ---------------------------------------------------------------------------
+
+  : Pendiente de la amenaza tecnológica en cada posición en el mercado
+  laboral
+
+Nota: la prueba conjunta compara cada modelo con el modelo 4 sin la
+interacción mediante una razón de verosimilitud (anova(), que reajusta
+ambos modelos por máxima verosimilitud). La pendiente de cada categoría
+es la suma del coeficiente de la amenaza y de su interacción con la
+categoría, con el error estándar de esa suma. Errores estándar entre
+paréntesis. *** p < 0,001; ** p < 0,01; * p < 0,05.
+
+Figura
+
+[]
+
+Resumen
+
+  -----------------------------------------------------------------------------------------------
+  Moderador       Variable       Categoría         Interacción   p conjunta Signo      Coincide
+                  dependiente                      (EE)                     esperado   
+  --------------- -------------- ----------------- ------------- ---------- ---------- ----------
+  Grupo de edad   Volumen        25 a 34 años      -0,022        0,3902                
+                                                   (0,016)                             
+
+  Grupo de edad   Volumen        35 a 44 años      -0,005        0,3902                
+                                                   (0,016)                             
+
+  Grupo de edad   Volumen        45 a 54 años      -0,022        0,3902                
+                                                   (0,016)                             
+
+  Grupo de edad   Volumen        55 a 64 años      -0,009        0,3902                
+                                                   (0,017)                             
+
+  Grupo de edad   Inversión      25 a 34 años      -0,029        0,0031     Negativo   Sí
+                                                   (0,015)                             
+
+  Grupo de edad   Inversión      35 a 44 años      -0,049        0,0031     Negativo   Sí
+                                                   (0,015)**                           
+
+  Grupo de edad   Inversión      45 a 54 años      -0,055        0,0031     Negativo   Sí
+                                                   (0,015)***                          
+
+  Grupo de edad   Inversión      55 a 64 años      -0,034        0,0031     Negativo   Sí
+                                                   (0,017)*                            
+
+  Grupo de edad   Compensación   25 a 34 años      0,034 (0,022) 0,0000                
+
+  Grupo de edad   Compensación   35 a 44 años      0,076         0,0000                
+                                                   (0,022)***                          
+
+  Grupo de edad   Compensación   45 a 54 años      0,084         0,0000                
+                                                   (0,022)***                          
+
+  Grupo de edad   Compensación   55 a 64 años      0,132         0,0000                
+                                                   (0,024)***                          
+
+  Grupo de edad   Protección     25 a 34 años      -0,001        0,7893                
+                                                   (0,014)                             
+
+  Grupo de edad   Protección     35 a 44 años      -0,011        0,7893                
+                                                   (0,014)                             
+
+  Grupo de edad   Protección     45 a 54 años      0,001 (0,015) 0,7893                
+
+  Grupo de edad   Protección     55 a 64 años      -0,009        0,7893                
+                                                   (0,016)                             
+
+  Nivel           Volumen        Educación media   -0,013        0,0000                
+  educacional                                      (0,017)                             
+
+  Nivel           Volumen        Educación alta    0,055         0,0000                
+  educacional                                      (0,017)***                          
+
+  Nivel           Inversión      Educación media   -0,050        0,0000                
+  educacional                                      (0,016)**                           
+
+  Nivel           Inversión      Educación alta    -0,102        0,0000     Positivo   No
+  educacional                                      (0,016)***                          
+
+  Nivel           Compensación   Educación media   0,043 (0,023) 0,0098                
+  educacional                                                                          
+
+  Nivel           Compensación   Educación alta    0,065         0,0098                
+  educacional                                      (0,023)**                           
+
+  Nivel           Protección     Educación media   0,020 (0,015) 0,0000                
+  educacional                                                                          
+
+  Nivel           Protección     Educación alta    0,082         0,0000                
+  educacional                                      (0,015)***                          
+
+  Posición en el  Volumen        Asalariado        0,022 (0,012) 0,1852                
+  mercado laboral                temporal o sin                                        
+                                 contrato                                              
+
+  Posición en el  Volumen        Independiente     0,008 (0,012) 0,1852                
+  mercado laboral                                                                      
+
+  Posición en el  Inversión      Asalariado        0,011 (0,012) 0,0421                
+  mercado laboral                temporal o sin                                        
+                                 contrato                                              
+
+  Posición en el  Inversión      Independiente     0,029         0,0421                
+  mercado laboral                                  (0,012)*                            
+
+  Posición en el  Compensación   Asalariado        -0,009        0,8577     Positivo   No
+  mercado laboral                temporal o sin    (0,017)                             
+                                 contrato                                              
+
+  Posición en el  Compensación   Independiente     -0,004        0,8577     Positivo   No
+  mercado laboral                                  (0,017)                             
+
+  Posición en el  Protección     Asalariado        -0,021        0,1381     Negativo   Sí
+  mercado laboral                temporal o sin    (0,011)                             
+                                 contrato                                              
+
+  Posición en el  Protección     Independiente     -0,012        0,1381     Negativo   Sí
+  mercado laboral                                  (0,011)                             
+  -----------------------------------------------------------------------------------------------
+
+  : Interacciones de la amenaza tecnológica con los moderadores
+  individuales
+
+Nota: el signo esperado se indica solo para las combinaciones definidas
+antes de estimar. “Coincide” compara el signo del coeficiente, sea o no
+significativo. *** p < 0,001; ** p < 0,01; * p < 0,05.
+
+- Pruebas conjuntas significativas (p < 0,05): Grupo de edad en
+  inversión (p = 0,0031); Grupo de edad en compensación (p = 0,0000);
+  Nivel educacional en volumen (p = 0,0000); Nivel educacional en
+  inversión (p = 0,0000); Nivel educacional en compensación (p =
+  0,0098); Nivel educacional en protección (p = 0,0000); Posición en el
+  mercado laboral en inversión (p = 0,0421).
+- Coeficientes de interacción significativos (p < 0,05): 35 a 44 años en
+  inversión: -0,049 (0,015)**, esperado negativo, coincide: sí; 45 a 54
+  años en inversión: -0,055 (0,015)***, esperado negativo, coincide: sí;
+  55 a 64 años en inversión: -0,034 (0,017)*, esperado negativo,
+  coincide: sí; 35 a 44 años en compensación: 0,076 (0,022)***, sin
+  hipótesis; 45 a 54 años en compensación: 0,084 (0,022)***, sin
+  hipótesis; 55 a 64 años en compensación: 0,132 (0,024)***, sin
+  hipótesis; Educación alta en volumen: 0,055 (0,017)***, sin hipótesis;
+  Educación media en inversión: -0,050 (0,016)**, sin hipótesis;
+  Educación alta en inversión: -0,102 (0,016)***, esperado positivo,
+  coincide: no; Educación alta en compensación: 0,065 (0,023)**, sin
+  hipótesis; Educación alta en protección: 0,082 (0,015)***, sin
+  hipótesis; Independiente en inversión: 0,029 (0,012)*, sin hipótesis.
+
+  -------------------------------------------------------------------------------------
+  Moderador      Categoría        Volumen      Inversión    Compensación   Protección
+  -------------- ---------------- ------------ ------------ -------------- ------------
+  Grupo de edad  18 a 24 años     0,019        -0,119       -0,110         0,014
+                                  (0,014)      (0,013)***   (0,019)***     (0,012)
+
+  Grupo de edad  25 a 34 años     -0,003       -0,148       -0,076         0,012
+                                  (0,009)      (0,009)***   (0,012)***     (0,008)
+
+  Grupo de edad  35 a 44 años     0,014        -0,168       -0,034         0,002
+                                  (0,009)      (0,008)***   (0,012)**      (0,008)
+
+  Grupo de edad  45 a 54 años     -0,004       -0,174       -0,026         0,014
+                                  (0,010)      (0,009)***   (0,013)*       (0,009)
+
+  Grupo de edad  55 a 64 años     0,009        -0,153       0,021 (0,016)  0,004
+                                  (0,012)      (0,011)***                  (0,010)
+
+  Nivel          Educación baja   -0,015       -0,086       -0,093         -0,039
+  educacional                     (0,016)      (0,015)***   (0,022)***     (0,014)**
+
+  Nivel          Educación media  -0,028       -0,137       -0,049         -0,019
+  educacional                     (0,007)***   (0,007)***   (0,010)***     (0,006)**
+
+  Nivel          Educación alta   0,041        -0,188       -0,028         0,043
+  educacional                     (0,007)***   (0,007)***   (0,009)**      (0,006)***
+
+  Posición en el Asalariado con   0,001        -0,163       -0,040         0,014
+  mercado        contrato         (0,006)      (0,006)***   (0,008)***     (0,005)*
+  laboral        indefinido                                                
+
+  Posición en el Asalariado       0,024        -0,152       -0,049         -0,007
+  mercado        temporal o sin   (0,012)*     (0,011)***   (0,016)**      (0,011)
+  laboral        contrato                                                  
+
+  Posición en el Independiente    0,009        -0,134       -0,044         0,002
+  mercado                         (0,012)      (0,011)***   (0,016)**      (0,011)
+  laboral                                                                  
+  -------------------------------------------------------------------------------------
+
+  : Pendiente de la amenaza tecnológica en cada categoría
+
+Gasto social público y prestaciones por desempleo
+
+Efectos principales
+
+  ------------------------------------------------------------------------------
+  Variable       Indicador       Modelo 4   a) Modelo 4 +  b) Gasto social en
+  dependiente                               gasto social   lugar de prestaciones
+  -------------- --------------- ---------- -------------- ---------------------
+  Volumen        PIB per cápita  0,005      -0,000 (0,022) -0,003 (0,020)
+                 (log)           (0,022)                   
+
+                 Gini            0,037      0,018 (0,024)  0,017 (0,023)
+                                 (0,022)                   
+
+                 Prestaciones    -0,024     -0,006 (0,023) 
+                 por desempleo   (0,021)                   
+
+                 Políticas de    -0,035     -0,043 (0,022) -0,044 (0,020)*
+                 mercado laboral (0,022)                   
+
+                 Gasto social               -0,035 (0,022) -0,037 (0,019)*
+                 público                                   
+
+  Inversión      PIB per cápita  -0,003     0,001 (0,025)  0,000 (0,023)
+                 (log)           (0,025)                   
+
+                 Gini            0,029      0,041 (0,028)  0,041 (0,027)
+                                 (0,024)                   
+
+                 Prestaciones    0,010      -0,001 (0,027) 
+                 por desempleo   (0,024)                   
+
+                 Políticas de    0,025      0,031 (0,025)  0,030 (0,024)
+                 mercado laboral (0,025)                   
+
+                 Gasto social               0,023 (0,026)  0,022 (0,022)
+                 público                                   
+
+  Compensación   PIB per cápita  0,008      -0,000 (0,021) -0,007 (0,019)
+                 (log)           (0,023)                   
+
+                 Gini            -0,011     -0,041 (0,023) -0,044 (0,022)
+                                 (0,022)                   
+
+                 Prestaciones    -0,044     -0,017 (0,022) 
+                 por desempleo   (0,022)*                  
+
+                 Políticas de    -0,038     -0,050         -0,055 (0,020)**
+                 mercado laboral (0,023)    (0,021)*       
+
+                 Gasto social               -0,054         -0,062 (0,018)***
+                 público                    (0,021)**      
+
+  Protección     PIB per cápita  -0,010     -0,010 (0,018) -0,010 (0,016)
+                 (log)           (0,017)                   
+
+                 Gini            0,004      0,003 (0,020)  0,003 (0,019)
+                                 (0,017)                   
+
+                 Prestaciones    0,001      0,002 (0,019)  
+                 por desempleo   (0,016)                   
+
+                 Políticas de    -0,014     -0,014 (0,018) -0,014 (0,017)
+                 mercado laboral (0,017)                   
+
+                 Gasto social               -0,003 (0,018) -0,002 (0,015)
+                 público                                   
+  ------------------------------------------------------------------------------
+
+  : Indicadores de nivel país con y sin el gasto social público
+
+
+    ==========================================================================================
+                              policy_mean     rel_investment  rel_compensation  rel_protection
+    ------------------------------------------------------------------------------------------
+    (Intercept)                    3.301 ***       0.161 ***      -0.151 ***         0.082 ** 
+                                  (0.035)         (0.035)         (0.045)           (0.031)   
+    socx_z                        -0.035           0.023          -0.054 **         -0.003    
+                                  (0.022)         (0.026)         (0.021)           (0.018)   
+    ego_neg_cwc                    0.006          -0.157 ***      -0.042 ***         0.009    
+                                  (0.005)         (0.005)         (0.007)           (0.005)   
+    ego_pos_cwc                    0.091 ***       0.058 ***       0.024 **         -0.044 ***
+                                  (0.006)         (0.005)         (0.008)           (0.005)   
+    socio_neg_cwc                  0.192 ***      -0.011           0.058 ***         0.108 ***
+                                  (0.006)         (0.006)         (0.008)           (0.005)   
+    socio_pos_cwc                  0.142 ***      -0.004          -0.045 ***        -0.082 ***
+                                  (0.006)         (0.006)         (0.008)           (0.006)   
+    unnemployment                  0.042 ***      -0.017 ***       0.050 ***         0.007 *  
+                                  (0.004)         (0.004)         (0.005)           (0.003)   
+    sex2                           0.025 ***      -0.018 *         0.039 ***         0.020 ** 
+                                  (0.007)         (0.007)         (0.010)           (0.007)   
+    age2                           0.063 ***       0.037 **        0.035             0.005    
+                                  (0.014)         (0.013)         (0.019)           (0.012)   
+    age3                           0.065 ***       0.086 ***       0.037 *           0.008    
+                                  (0.013)         (0.013)         (0.018)           (0.012)   
+    age4                           0.065 ***       0.140 ***       0.036             0.028 *  
+                                  (0.014)         (0.013)         (0.019)           (0.012)   
+    age5                           0.071 ***       0.172 ***       0.041 *           0.015    
+                                  (0.014)         (0.014)         (0.020)           (0.013)   
+    educ2                         -0.009           0.069 ***      -0.014            -0.009    
+                                  (0.015)         (0.014)         (0.020)           (0.013)   
+    educ3                          0.009           0.133 ***      -0.072 ***        -0.101 ***
+                                  (0.015)         (0.014)         (0.021)           (0.014)   
+    income                        -0.002           0.008 ***      -0.016 ***        -0.001    
+                                  (0.001)         (0.001)         (0.002)           (0.001)   
+    lm_positionNon-standard        0.012           0.028 **        0.001            -0.019 *  
+                                  (0.011)         (0.010)         (0.015)           (0.010)   
+    lm_positionSelf-employed      -0.066 ***       0.013           0.000            -0.028 ** 
+                                  (0.011)         (0.011)         (0.015)           (0.010)   
+    platform2                      0.122 ***      -0.101 ***      -0.046 **          0.012    
+                                  (0.013)         (0.012)         (0.017)           (0.011)   
+    public                        -0.026 **       -0.048 ***       0.004             0.009    
+                                  (0.009)         (0.009)         (0.012)           (0.008)   
+    sector_cat2                    0.085 **        0.012           0.023             0.014    
+                                  (0.026)         (0.025)         (0.036)           (0.024)   
+    sector_cat3                    0.098 ***      -0.057 *         0.057             0.055 *  
+                                  (0.028)         (0.027)         (0.038)           (0.025)   
+    sector_cat4                    0.107 ***       0.010           0.094 **          0.024    
+                                  (0.026)         (0.025)         (0.035)           (0.023)   
+    sector_cat5                    0.082 **        0.074 **        0.044            -0.007    
+                                  (0.025)         (0.024)         (0.035)           (0.023)   
+    sector_cat6                    0.137 ***       0.039           0.084 *          -0.024    
+                                  (0.026)         (0.025)         (0.035)           (0.023)   
+    sector_cat7                    0.112 ***       0.011           0.152 ***        -0.012    
+                                  (0.026)         (0.025)         (0.035)           (0.023)   
+    sector_cat8                    0.061 *        -0.023           0.086 *           0.021    
+                                  (0.028)         (0.027)         (0.039)           (0.026)   
+    gdp_pc_log_z                  -0.000           0.001          -0.000            -0.010    
+                                  (0.022)         (0.025)         (0.021)           (0.018)   
+    gini_z                         0.018           0.041          -0.041             0.003    
+                                  (0.024)         (0.028)         (0.023)           (0.020)   
+    ubcov_z                       -0.006          -0.001          -0.017             0.002    
+                                  (0.023)         (0.027)         (0.022)           (0.019)   
+    almp_z                        -0.043           0.031          -0.050 *          -0.014    
+                                  (0.022)         (0.025)         (0.021)           (0.018)   
+    ------------------------------------------------------------------------------------------
+    AIC                        30228.044       28363.878       42598.176         26279.486    
+    BIC                        30480.522       28616.356       42850.654         26531.964    
+    Log Likelihood            -15082.022      -14149.939      -21267.088        -13107.743    
+    Num. obs.                  19731           19731           19731             19731        
+    Num. groups: ctrcode          27              27              27                27        
+    Var: ctrcode (Intercept)       0.006           0.009           0.005             0.004    
+    Var: Residual                  0.239           0.217           0.448             0.196    
+    ==========================================================================================
+    *** p < 0.001; ** p < 0.01; * p < 0.05
+
+Nota: errores estándar entre paréntesis. *** p < 0,001; ** p < 0,01; * p
+< 0,05. Todos los modelos tienen los mismos controles individuales que
+el modelo 4 y la muestra analítica completa.
+
+Interacción con la amenaza en la compensación
+
+  ------------------------------------------------------------------------------------------
+  Modelo             Interacción            Coeficiente   Pendiente,   Pendiente,   N
+                                            (EE)          −1 DE        +1 DE        
+  ------------------ ---------------------- ------------- ------------ ------------ --------
+  Amenaza ×          Amenaza tecnológica ×  0,047         -0,088       0,006        19.731
+  prestaciones       Prestaciones por       (0,011)***    (0,016)***   (0,016)      
+  (paper)            desempleo                                                      
+
+  Amenaza ×          Amenaza tecnológica ×  0,047         -0,088       0,006        19.731
+  prestaciones, con  Prestaciones por       (0,011)***    (0,016)***   (0,016)      
+  gasto social       desempleo                                                      
+
+  Amenaza × gasto    Amenaza tecnológica ×  0,035         -0,076       -0,006       19.731
+  social             Gasto social público   (0,013)**     (0,019)***   (0,018)      
+  ------------------------------------------------------------------------------------------
+
+  : Interacción de la amenaza tecnológica con las prestaciones y con el
+  gasto social, compensación
+
+
+    ==========================================================================================
+                                          rel_compensation  rel_compensation  rel_compensation
+    ------------------------------------------------------------------------------------------
+    (Intercept)                               -0.147 **         -0.147 **         -0.147 **   
+                                              (0.046)           (0.045)           (0.045)     
+    ego_neg_cwc                               -0.041 ***        -0.041 ***        -0.041 **   
+                                              (0.012)           (0.012)           (0.013)     
+    ego_pos_cwc                                0.022 **          0.022 **          0.023 **   
+                                              (0.008)           (0.008)           (0.008)     
+    socio_neg_cwc                              0.058 ***         0.058 ***         0.058 ***  
+                                              (0.008)           (0.008)           (0.008)     
+    socio_pos_cwc                             -0.045 ***        -0.044 ***        -0.045 ***  
+                                              (0.008)           (0.008)           (0.008)     
+    unnemployment                              0.049 ***         0.049 ***         0.049 ***  
+                                              (0.005)           (0.005)           (0.005)     
+    sex2                                       0.038 ***         0.038 ***         0.038 ***  
+                                              (0.010)           (0.010)           (0.010)     
+    age2                                       0.038 *           0.038 *           0.037 *    
+                                              (0.019)           (0.019)           (0.019)     
+    age3                                       0.039 *           0.039 *           0.038 *    
+                                              (0.018)           (0.018)           (0.018)     
+    age4                                       0.039 *           0.039 *           0.038 *    
+                                              (0.019)           (0.019)           (0.019)     
+    age5                                       0.044 *           0.044 *           0.042 *    
+                                              (0.020)           (0.020)           (0.020)     
+    educ2                                     -0.017            -0.017            -0.018      
+                                              (0.020)           (0.020)           (0.020)     
+    educ3                                     -0.076 ***        -0.076 ***        -0.077 ***  
+                                              (0.020)           (0.020)           (0.020)     
+    income                                    -0.016 ***        -0.016 ***        -0.016 ***  
+                                              (0.002)           (0.002)           (0.002)     
+    lm_positionNon-standard                    0.002             0.001             0.001      
+                                              (0.015)           (0.015)           (0.015)     
+    lm_positionSelf-employed                   0.002             0.001             0.001      
+                                              (0.015)           (0.015)           (0.015)     
+    platform2                                 -0.042 *          -0.042 *          -0.041 *    
+                                              (0.017)           (0.017)           (0.017)     
+    public                                     0.001             0.001             0.001      
+                                              (0.012)           (0.012)           (0.012)     
+    sector_cat2                                0.025             0.024             0.025      
+                                              (0.036)           (0.036)           (0.036)     
+    sector_cat3                                0.057             0.057             0.058      
+                                              (0.038)           (0.038)           (0.038)     
+    sector_cat4                                0.095 **          0.095 **          0.095 **   
+                                              (0.035)           (0.035)           (0.035)     
+    sector_cat5                                0.045             0.045             0.045      
+                                              (0.035)           (0.035)           (0.035)     
+    sector_cat6                                0.089 *           0.089 *           0.089 *    
+                                              (0.035)           (0.035)           (0.035)     
+    sector_cat7                                0.153 ***         0.153 ***         0.153 ***  
+                                              (0.035)           (0.035)           (0.035)     
+    sector_cat8                                0.087 *           0.087 *           0.088 *    
+                                              (0.039)           (0.039)           (0.039)     
+    gdp_pc_log_z                               0.003            -0.002            -0.002      
+                                              (0.018)           (0.017)           (0.017)     
+    gini_z                                    -0.002            -0.022            -0.022      
+                                              (0.017)           (0.019)           (0.018)     
+    ubcov_z                                   -0.041 *          -0.023             0.012      
+                                              (0.019)           (0.020)           (0.018)     
+    almp_z                                    -0.027            -0.037 *          -0.037 *    
+                                              (0.017)           (0.017)           (0.017)     
+    ego_neg_cwc:ubcov_z                        0.047 ***         0.047 ***                    
+                                              (0.011)           (0.011)                       
+    socx_z                                                      -0.036 *          -0.062 **   
+                                                                (0.017)           (0.019)     
+    ego_neg_cwc:socx_z                                                             0.035 **   
+                                                                                  (0.013)     
+    ------------------------------------------------------------------------------------------
+    AIC                                    42511.186         42515.690         42522.391      
+    BIC                                    42779.445         42791.838         42798.539      
+    Log Likelihood                        -21221.593        -21222.845        -21226.195      
+    Num. obs.                              19731             19731             19731          
+    Num. groups: ctrcode                      27                27                27          
+    Var: ctrcode (Intercept)                   0.006             0.005             0.006      
+    Var: ctrcode ego_neg_cwc                   0.002             0.002             0.003      
+    Cov: ctrcode (Intercept) ego_neg_cwc      -0.003            -0.002            -0.003      
+    Var: Residual                              0.446             0.446             0.446      
+    ==========================================================================================
+    *** p < 0.001; ** p < 0.01; * p < 0.05
+
+Nota: los tres modelos incluyen el bloque de nivel país del modelo 4
+(PIB per cápita, Gini, Prestaciones por desempleo y Políticas de mercado
+laboral), una pendiente aleatoria por país para la amenaza y el
+optimizador bobyqa. En el tercero, la amenaza interactúa con el gasto
+social, que entra también como efecto principal; las prestaciones quedan
+solo como efecto principal. Las pendientes se calculan con el indicador
+una desviación estándar entre países bajo y sobre su promedio. El primer
+modelo reproduce el del paper (diferencia absoluta en la interacción:
+1,4e-09). Errores estándar entre paréntesis. *** p < 0,001; ** p <
+0,01; * p < 0,05.
+
+Colinealidad
+
+  Indicador                        Correlación con el gasto social público
+  ------------------------------ -----------------------------------------
+  PIB per cápita (log)                                                0,31
+  Gini                                                               -0,56
+  Prestaciones por desempleo                                          0,55
+  Políticas de mercado laboral                                        0,26
+
+  : Correlación del gasto social público con los demás indicadores (27
+  países)
+
+  -------------------------------------------------------------------------------
+  Indicador                       Volumen   Inversión   Compensación   Protección
+  ----------------------------- --------- ----------- -------------- ------------
+  Gasto social público               1,90        1,90           1,90         1,90
+
+  PIB per cápita (log)               1,89        1,89           1,89         1,89
+
+  Gini                               2,29        2,29           2,28         2,29
+
+  Prestaciones por desempleo         2,11        2,11           2,10         2,10
+
+  Políticas de mercado laboral       1,90        1,90           1,90         1,90
+  -------------------------------------------------------------------------------
+
+  : VIF de los indicadores de nivel país en el modelo a)
+
+Interacciones con el sector de actividad
+
+Expectativa definida antes de estimar
+
+En la manufactura, expuesta a la competencia de las importaciones, la
+amenaza aumenta más la prioridad de la protección, en especial de la
+prioridad a los trabajadores del país y de los aranceles. Signo esperado
+de la interacción amenaza × manufactura: positivo en protección, en la
+prioridad a los trabajadores del país (rel_item_11) y en los aranceles
+(rel_item_12). Las demás interacciones por sector son exploratorias.
+
+Todos los sectores
+
+  ------------------------------------------------------------------------------------
+  Sector                 N       Volumen      Inversión    Compensación   Protección
+  ---------------------- ------- ------------ ------------ -------------- ------------
+  Agricultura y minería  445     0,060        -0,121       -0,033 (0,037) -0,039
+                                 (0,027)*     (0,026)***                  (0,024)
+
+  Manufactura y          2.264   0,012        -0,165       -0,084         0,002
+  servicios básicos              (0,013)      (0,013)***   (0,018)***     (0,012)
+
+  Construcción           1.167   0,006        -0,126       -0,061         -0,032
+                                 (0,017)      (0,016)***   (0,023)**      (0,015)*
+
+  Comercio, transporte y 2.831   -0,013       -0,144       -0,050         -0,023
+  hotelería                      (0,012)      (0,011)***   (0,016)**      (0,010)*
+
+  TIC, finanzas y        4.598   0,066        -0,181       -0,022 (0,013) 0,040
+  servicios a empresas           (0,009)***   (0,009)***                  (0,008)***
+
+  Administración         4.474   -0,043       -0,171       -0,020 (0,014) 0,020
+  pública, educación y           (0,010)***   (0,010)***                  (0,009)*
+  salud                                                                   
+
+  Otros servicios        2.878   -0,004       -0,130       -0,061         0,007
+                                 (0,011)      (0,011)***   (0,016)***     (0,010)
+
+  Otro o no declarado    1.074   -0,041       -0,150       -0,040 (0,025) 0,007
+                                 (0,018)*     (0,017)***                  (0,016)
+  ------------------------------------------------------------------------------------
+
+  : Pendiente de la amenaza tecnológica en cada sector de actividad
+
+  Variable dependiente     Chi cuadrado   gl        p
+  ---------------------- -------------- ---- --------
+  Volumen                         86,70    7   0,0000
+  Inversión                       25,36    7   0,0007
+  Compensación                    14,10    7   0,0495
+  Protección                      37,74    7   0,0000
+
+  : Prueba conjunta de la interacción amenaza × sector de actividad
+
+Nota: la pendiente de cada sector es la suma del coeficiente de la
+amenaza y de su interacción con el sector, con el error estándar de esa
+suma. La prueba conjunta compara cada modelo con el modelo 4 mediante
+una razón de verosimilitud (anova()). N: personas de cada sector en la
+muestra analítica. Errores estándar entre paréntesis. *** p < 0,001; **
+p < 0,01; * p < 0,05.
+
+[]
+
+Manufactura frente al resto
+
+  ---------------------------------------------------------------------------------------------------------------
+  Variable       Amenaza ×     p conjunta Pendiente,   Pendiente,    N resto  N manufactura Signo      Coincide
+  dependiente    manufactura              resto (EE)   manufactura                          esperado   
+                 (EE)                                  (EE)                                            
+  -------------- ------------- ---------- ------------ ------------- -------- ------------- ---------- ----------
+  Volumen        0,007 (0,014) 0,5886     0,005        0,012 (0,013) 17.467   2.264                    
+                                          (0,005)                                                      
+
+  Inversión      -0,009        0,4881     -0,156       -0,165        17.467   2.264                    
+                 (0,013)                  (0,005)      (0,013)                                         
+
+  Compensación   -0,047        0,0108     -0,037       -0,084        17.467   2.264                    
+                 (0,019)*                 (0,007)      (0,018)                                         
+
+  Protección     -0,008        0,5352     0,010        0,002 (0,012) 17.467   2.264         Positivo   No
+                 (0,012)                  (0,005)                                                      
+
+  Prioridad a    -0,034        0,1868     -0,086       -0,120        17.177   2.229         Positivo   No
+  trabajadores   (0,026)                  (0,010)      (0,025)                                         
+  del país                                                                                             
+
+  Aranceles      0,023 (0,024) 0,3394     0,028        0,051 (0,023) 16.729   2.189         Positivo   Sí
+                                          (0,010)                                                      
+  ---------------------------------------------------------------------------------------------------------------
+
+  : Amenaza tecnológica × manufactura
+
+
+    ==========================================================================================================================
+                              policy_mean     rel_investment  rel_compensation  rel_protection  rel_item_11     rel_item_12   
+    --------------------------------------------------------------------------------------------------------------------------
+    (Intercept)                    3.301 ***       0.161 ***      -0.153 ***         0.082 **        0.375 ***       0.052    
+                                  (0.035)         (0.035)         (0.046)           (0.031)         (0.066)         (0.063)   
+    ego_neg_cwc                    0.005          -0.156 ***      -0.037 ***         0.010 *        -0.086 ***       0.028 ** 
+                                  (0.005)         (0.005)         (0.007)           (0.005)         (0.010)         (0.010)   
+    ego_pos_cwc                    0.091 ***       0.058 ***       0.024 **         -0.044 ***      -0.053 ***      -0.025 *  
+                                  (0.006)         (0.005)         (0.008)           (0.005)         (0.011)         (0.010)   
+    socio_neg_cwc                  0.192 ***      -0.011           0.058 ***         0.108 ***       0.116 ***       0.068 ***
+                                  (0.006)         (0.006)         (0.008)           (0.005)         (0.011)         (0.010)   
+    socio_pos_cwc                  0.142 ***      -0.004          -0.045 ***        -0.082 ***      -0.136 ***      -0.034 ** 
+                                  (0.006)         (0.006)         (0.008)           (0.006)         (0.012)         (0.011)   
+    unnemployment                  0.042 ***      -0.017 ***       0.050 ***         0.007 *         0.002          -0.002    
+                                  (0.004)         (0.004)         (0.005)           (0.003)         (0.007)         (0.007)   
+    sex2                           0.025 ***      -0.017 *         0.039 ***         0.020 **       -0.018           0.049 ***
+                                  (0.007)         (0.007)         (0.010)           (0.007)         (0.014)         (0.013)   
+    age2                           0.064 ***       0.037 **        0.035             0.005           0.029           0.020    
+                                  (0.014)         (0.013)         (0.019)           (0.012)         (0.026)         (0.024)   
+    age3                           0.065 ***       0.085 ***       0.036             0.008           0.050           0.037    
+                                  (0.013)         (0.013)         (0.018)           (0.012)         (0.026)         (0.024)   
+    age4                           0.065 ***       0.140 ***       0.035             0.028 *         0.098 ***       0.044    
+                                  (0.014)         (0.013)         (0.019)           (0.012)         (0.026)         (0.024)   
+    age5                           0.071 ***       0.172 ***       0.040 *           0.014           0.097 ***      -0.006    
+                                  (0.014)         (0.014)         (0.020)           (0.013)         (0.027)         (0.025)   
+    educ2                         -0.009           0.069 ***      -0.014            -0.009           0.001          -0.058 *  
+                                  (0.015)         (0.014)         (0.020)           (0.013)         (0.028)         (0.026)   
+    educ3                          0.009           0.133 ***      -0.071 ***        -0.101 ***      -0.146 ***      -0.137 ***
+                                  (0.015)         (0.014)         (0.021)           (0.014)         (0.028)         (0.026)   
+    income                        -0.002           0.008 ***      -0.016 ***        -0.001           0.001          -0.004    
+                                  (0.001)         (0.001)         (0.002)           (0.001)         (0.002)         (0.002)   
+    lm_positionNon-standard        0.012           0.028 **        0.001            -0.019 *        -0.012          -0.009    
+                                  (0.011)         (0.010)         (0.015)           (0.010)         (0.020)         (0.019)   
+    lm_positionSelf-employed      -0.066 ***       0.013           0.003            -0.028 **        0.001          -0.026    
+                                  (0.011)         (0.011)         (0.015)           (0.010)         (0.021)         (0.020)   
+    platform2                      0.122 ***      -0.101 ***      -0.044 *           0.012          -0.052 *         0.059 ** 
+                                  (0.013)         (0.012)         (0.017)           (0.011)         (0.024)         (0.022)   
+    public                        -0.026 **       -0.048 ***       0.005             0.009           0.017           0.030    
+                                  (0.009)         (0.009)         (0.012)           (0.008)         (0.017)         (0.016)   
+    sector_cat2                    0.085 **        0.013           0.028             0.015           0.001           0.050    
+                                  (0.026)         (0.025)         (0.036)           (0.024)         (0.050)         (0.047)   
+    sector_cat3                    0.098 ***      -0.057 *         0.059             0.055 *         0.029           0.096    
+                                  (0.028)         (0.027)         (0.038)           (0.025)         (0.053)         (0.049)   
+    sector_cat4                    0.107 ***       0.010           0.096 **          0.024           0.021           0.013    
+                                  (0.026)         (0.025)         (0.035)           (0.023)         (0.049)         (0.046)   
+    sector_cat5                    0.081 **        0.074 **        0.045            -0.007           0.027          -0.033    
+                                  (0.025)         (0.024)         (0.035)           (0.023)         (0.048)         (0.045)   
+    sector_cat6                    0.137 ***       0.040           0.086 *          -0.024          -0.045          -0.047    
+                                  (0.026)         (0.025)         (0.035)           (0.023)         (0.049)         (0.046)   
+    sector_cat7                    0.112 ***       0.011           0.153 ***        -0.012          -0.032          -0.027    
+                                  (0.026)         (0.025)         (0.035)           (0.023)         (0.049)         (0.046)   
+    sector_cat8                    0.061 *        -0.023           0.086 *           0.021           0.011          -0.004    
+                                  (0.028)         (0.027)         (0.039)           (0.026)         (0.054)         (0.050)   
+    gdp_pc_log_z                   0.005          -0.003           0.008            -0.010          -0.020          -0.025    
+                                  (0.022)         (0.025)         (0.023)           (0.017)         (0.040)         (0.043)   
+    gini_z                         0.037           0.029          -0.011             0.004           0.014          -0.004    
+                                  (0.022)         (0.024)         (0.022)           (0.017)         (0.039)         (0.041)   
+    ubcov_z                       -0.024           0.010          -0.044 *           0.001          -0.030          -0.021    
+                                  (0.021)         (0.024)         (0.022)           (0.016)         (0.037)         (0.040)   
+    almp_z                        -0.035           0.025          -0.038            -0.014           0.000          -0.015    
+                                  (0.022)         (0.025)         (0.023)           (0.017)         (0.039)         (0.042)   
+    ego_neg_cwc:manuf              0.007          -0.009          -0.047 *          -0.008          -0.034           0.023    
+                                  (0.014)         (0.013)         (0.019)           (0.012)         (0.026)         (0.024)   
+    --------------------------------------------------------------------------------------------------------------------------
+    AIC                        30231.161       28365.553       42597.976         26279.863       54113.238       49585.305    
+    BIC                        30483.639       28618.031       42850.454         26532.342       54365.185       49836.437    
+    Log Likelihood            -15083.581      -14150.776      -21266.988        -13107.932      -27024.619      -24760.652    
+    Num. obs.                  19731           19731           19731             19731           19406           18918        
+    Num. groups: ctrcode          27              27              27                27              27              27        
+    Var: ctrcode (Intercept)       0.007           0.009           0.007             0.004           0.021           0.025    
+    Var: Residual                  0.239           0.217           0.448             0.196           0.841           0.710    
+    ==========================================================================================================================
+    *** p < 0.001; ** p < 0.01; * p < 0.05
+
+Nota: manufactura corresponde a “Manufactura y servicios básicos”
+(sector_cat = 2); el resto agrupa los otros siete sectores. Con una sola
+interacción, la prueba conjunta equivale a la prueba de ese coeficiente.
+“Coincide” compara el signo del coeficiente, sea o no significativo.
+Errores estándar entre paréntesis. *** p < 0,001; ** p < 0,01; * p <
+0,05.
+
+Resumen de las pruebas adicionales
+
+- Prestaciones por desempleo en la compensación. En el modelo 4 el
+  coeficiente es -0,044 (0,022)*. Al agregar el gasto social público
+  queda en -0,017 (0,022), y el gasto social en -0,054 (0,021)**. Con el
+  gasto social en lugar de las prestaciones, el gasto social es -0,062
+  (0,018)***. El AIC (máxima verosimilitud) del modelo de compensación
+  es 42396,3 con las prestaciones, 42389,6 con el gasto social en su
+  lugar y 42390,8 con ambos.
+- Interacción con la amenaza en la compensación. Amenaza × prestaciones:
+  0,047 (0,011)*** en el modelo del paper y 0,047 (0,011)*** al
+  controlar por el gasto social. Amenaza × gasto social: 0,035
+  (0,013)**. AIC (máxima verosimilitud): 42302,5, 42299,9 y 42307,0,
+  respectivamente.
+- Colinealidad. Entre los 27 países, el gasto social se correlaciona
+  0,55 con las prestaciones, 0,26 con las políticas de mercado laboral,
+  0,31 con el PIB y -0,56 con el Gini. El mayor VIF de nivel país en el
+  modelo a) es 2,29.
+- Manufactura. Amenaza × manufactura: volumen 0,007 (p = 0,592);
+  inversión -0,009 (p = 0,489); compensación -0,047 (p = 0,011);
+  protección -0,008 (p = 0,537); prioridad a trabajadores del país
+  -0,034 (p = 0,188); aranceles 0,023 (p = 0,339). En las tres variables
+  con expectativa (protección, prioridad a los trabajadores del país y
+  aranceles), el signo coincide en 1 y la interacción es significativa
+  en 0.
+- Sector de actividad (exploratorio). Pruebas conjuntas significativas
+  (p < 0,05): volumen (p = 0,0000); inversión (p = 0,0007); compensación
+  (p = 0,0495); protección (p = 0,0000). Las cuatro pruebas son
+  significativas. Sectores con una pendiente de la amenaza significativa
+  (p < 0,05), por variable dependiente: volumen: Agricultura y minería,
+  TIC, finanzas y servicios a empresas, Administración pública,
+  educación y salud, Otro o no declarado; inversión: Agricultura y
+  minería, Manufactura y servicios básicos, Construcción, Comercio,
+  transporte y hotelería, TIC, finanzas y servicios a empresas,
+  Administración pública, educación y salud, Otros servicios, Otro o no
+  declarado; compensación: Manufactura y servicios básicos,
+  Construcción, Comercio, transporte y hotelería, Otros servicios;
+  protección: Construcción, Comercio, transporte y hotelería, TIC,
+  finanzas y servicios a empresas, Administración pública, educación y
+  salud.
+
+Nivel educacional × sector de actividad
+
+Composición educacional de cada sector
+
+  ------------------------------------------------------------------------
+  Sector                            Educación    Educación    Educación
+                                    baja         media        alta
+  --------------------------------- ------------ ------------ ------------
+  Agricultura y minería             15,9 % (71)  51,4 % (220) 32,7 % (154)
+                                    †                         
+
+  Manufactura y servicios básicos   9,2 % (223)  50,7 %       40,2 %
+                                                 (1.031)      (1.010)
+
+  Construcción                      9,4 % (106)  53,7 % (573) 36,9 % (488)
+
+  Comercio, transporte y hotelería  10,2 % (335) 59,2 %       30,6 % (961)
+                                                 (1.535)      
+
+  TIC, finanzas y servicios a       2,8 % (137)  32,1 %       65,1 %
+  empresas                                       (1.350)      (3.111)
+
+  Administración pública, educación 4,0 % (188)  34,4 %       61,7 %
+  y salud                                        (1.410)      (2.876)
+
+  Otros servicios                   11,3 % (353) 53,7 %       35,0 %
+                                                 (1.420)      (1.105)
+
+  Otro o no declarado               9,4 % (110)  55,7 % (550) 34,9 % (414)
+  ------------------------------------------------------------------------
+
+  : Nivel educacional en cada sector de actividad: porcentaje ponderado
+  (N)
+
+Nota: porcentajes ponderados con weight_n dentro de cada sector; entre
+paréntesis, el N sin ponderar. † Menos de 100 casos.
+
+Modelos y prueba conjunta
+
+  Variable dependiente     Chi cuadrado   gl        p
+  ---------------------- -------------- ---- --------
+  Volumen                         17,35   14   0,2379
+  Inversión                       26,26   14   0,0240
+  Compensación                    12,37   14   0,5768
+  Protección                      18,86   14   0,1703
+
+  : Prueba conjunta de la interacción nivel educacional × sector de
+  actividad
+
+Nota: razón de verosimilitud frente al modelo 4 (anova(), que reajusta
+ambos modelos por máxima verosimilitud).
+
+Brecha entre educación alta y baja en cada sector
+
+  -----------------------------------------------------------------------------------------
+  Sector                 N baja N alta  Volumen    Inversión    Compensación   Protección
+  ---------------------- ------ ------- ---------- ------------ -------------- ------------
+  Agricultura y minería  71     154     -0,045     0,107        0,086 (0,100)  -0,082
+  †                                     (0,073)    (0,070)                     (0,066)
+
+  Manufactura y          223    1.010   -0,034     0,152        -0,001 (0,052) -0,100
+  servicios básicos                     (0,038)    (0,036)***                  (0,035)**
+
+  Construcción           106    488     0,105      0,205        -0,154         -0,059
+                                        (0,052)*   (0,050)***   (0,072)*       (0,047)
+
+  Comercio, transporte y 335    961     -0,032     0,113        -0,109         -0,078
+  hotelería                             (0,033)    (0,032)***   (0,045)*       (0,030)**
+
+  TIC, finanzas y        137    3.111   0,039      0,025        -0,103 (0,060) 0,007
+  servicios a empresas                  (0,044)    (0,042)                     (0,040)
+
+  Administración         188    2.876   -0,007     0,173        -0,093 (0,053) -0,162
+  pública, educación y                  (0,039)    (0,037)***                  (0,035)***
+  salud                                                                        
+
+  Otros servicios        353    1.105   0,034      0,178        -0,078 (0,043) -0,128
+                                        (0,031)    (0,030)***                  (0,028)***
+
+  Otro o no declarado    110    414     0,022      0,013        0,039 (0,076)  -0,164
+                                        (0,056)    (0,053)                     (0,050)**
+  -----------------------------------------------------------------------------------------
+
+  : Diferencia entre educación alta y baja en cada sector de actividad
+
+
+    ==========================================================================================
+                              policy_mean     rel_investment  rel_compensation  rel_protection
+    ------------------------------------------------------------------------------------------
+    (Intercept)                    3.337 ***       0.181 **       -0.274 **          0.068    
+                                  (0.064)         (0.062)         (0.087)           (0.058)   
+    ego_neg_cwc                    0.006          -0.157 ***      -0.042 ***         0.009 *  
+                                  (0.005)         (0.005)         (0.007)           (0.005)   
+    ego_pos_cwc                    0.091 ***       0.058 ***       0.024 **         -0.044 ***
+                                  (0.006)         (0.005)         (0.008)           (0.005)   
+    socio_neg_cwc                  0.191 ***      -0.011           0.058 ***         0.108 ***
+                                  (0.006)         (0.006)         (0.008)           (0.005)   
+    socio_pos_cwc                  0.142 ***      -0.004          -0.045 ***        -0.083 ***
+                                  (0.006)         (0.006)         (0.008)           (0.006)   
+    unnemployment                  0.042 ***      -0.017 ***       0.050 ***         0.007 *  
+                                  (0.004)         (0.004)         (0.005)           (0.003)   
+    sex2                           0.025 ***      -0.019 **        0.039 ***         0.021 ** 
+                                  (0.007)         (0.007)         (0.010)           (0.007)   
+    age2                           0.063 ***       0.039 **        0.035             0.006    
+                                  (0.014)         (0.013)         (0.019)           (0.012)   
+    age3                           0.065 ***       0.086 ***       0.036             0.008    
+                                  (0.014)         (0.013)         (0.019)           (0.012)   
+    age4                           0.065 ***       0.141 ***       0.035             0.028 *  
+                                  (0.014)         (0.013)         (0.019)           (0.012)   
+    age5                           0.071 ***       0.173 ***       0.040 *           0.014    
+                                  (0.014)         (0.014)         (0.020)           (0.013)   
+    educ2                         -0.046           0.046           0.125             0.006    
+                                  (0.069)         (0.066)         (0.094)           (0.062)   
+    educ3                         -0.045           0.107           0.086            -0.082    
+                                  (0.073)         (0.070)         (0.100)           (0.066)   
+    income                        -0.002           0.008 ***      -0.016 ***        -0.001    
+                                  (0.001)         (0.001)         (0.002)           (0.001)   
+    lm_positionNon-standard        0.013           0.027 **        0.001            -0.019    
+                                  (0.011)         (0.010)         (0.015)           (0.010)   
+    lm_positionSelf-employed      -0.065 ***       0.012           0.002            -0.028 ** 
+                                  (0.011)         (0.011)         (0.015)           (0.010)   
+    platform2                      0.121 ***      -0.101 ***      -0.045 **          0.012    
+                                  (0.013)         (0.012)         (0.017)           (0.011)   
+    public                        -0.025 **       -0.049 ***       0.005             0.010    
+                                  (0.009)         (0.009)         (0.012)           (0.008)   
+    sector_cat2                    0.060          -0.006           0.075             0.029    
+                                  (0.069)         (0.066)         (0.095)           (0.063)   
+    sector_cat3                   -0.003          -0.137           0.257 *           0.026    
+                                  (0.076)         (0.072)         (0.104)           (0.069)   
+    sector_cat4                    0.097           0.007           0.254 **          0.029    
+                                  (0.067)         (0.063)         (0.091)           (0.060)   
+    sector_cat5                    0.022           0.154 *         0.196            -0.094    
+                                  (0.074)         (0.070)         (0.101)           (0.067)   
+    sector_cat6                    0.112          -0.013           0.226 *           0.041    
+                                  (0.071)         (0.068)         (0.097)           (0.064)   
+    sector_cat7                    0.066          -0.054           0.286 **          0.031    
+                                  (0.066)         (0.063)         (0.090)           (0.060)   
+    sector_cat8                    0.005           0.028           0.147             0.073    
+                                  (0.078)         (0.074)         (0.106)           (0.070)   
+    gdp_pc_log_z                   0.005          -0.003           0.008            -0.010    
+                                  (0.022)         (0.025)         (0.023)           (0.017)   
+    gini_z                         0.037           0.029          -0.011             0.005    
+                                  (0.022)         (0.024)         (0.022)           (0.017)   
+    ubcov_z                       -0.024           0.010          -0.044 *           0.000    
+                                  (0.021)         (0.024)         (0.022)           (0.016)   
+    almp_z                        -0.034           0.025          -0.038            -0.013    
+                                  (0.022)         (0.025)         (0.023)           (0.017)   
+    educ2:sector_cat2              0.049           0.004          -0.052            -0.016    
+                                  (0.078)         (0.074)         (0.107)           (0.071)   
+    educ3:sector_cat2              0.011           0.044          -0.087            -0.018    
+                                  (0.082)         (0.079)         (0.113)           (0.075)   
+    educ2:sector_cat3              0.091           0.085          -0.226             0.036    
+                                  (0.085)         (0.081)         (0.117)           (0.077)   
+    educ3:sector_cat3              0.150           0.098          -0.240             0.023    
+                                  (0.090)         (0.086)         (0.123)           (0.081)   
+    educ2:sector_cat4              0.013           0.004          -0.181            -0.012    
+                                  (0.075)         (0.072)         (0.103)           (0.068)   
+    educ3:sector_cat4              0.014           0.005          -0.195             0.004    
+                                  (0.080)         (0.077)         (0.110)           (0.073)   
+    educ2:sector_cat5              0.046          -0.070          -0.162             0.081    
+                                  (0.082)         (0.078)         (0.112)           (0.074)   
+    educ3:sector_cat5              0.085          -0.083          -0.189             0.089    
+                                  (0.085)         (0.081)         (0.117)           (0.077)   
+    educ2:sector_cat6              0.029           0.047          -0.155            -0.056    
+                                  (0.079)         (0.076)         (0.109)           (0.072)   
+    educ3:sector_cat6              0.039           0.065          -0.179            -0.080    
+                                  (0.083)         (0.079)         (0.113)           (0.075)   
+    educ2:sector_cat7              0.037           0.077          -0.156            -0.052    
+                                  (0.075)         (0.071)         (0.103)           (0.068)   
+    educ3:sector_cat7              0.079           0.071          -0.163            -0.046    
+                                  (0.080)         (0.076)         (0.109)           (0.072)   
+    educ2:sector_cat8              0.063          -0.029          -0.097            -0.045    
+                                  (0.087)         (0.083)         (0.119)           (0.079)   
+    educ3:sector_cat8              0.068          -0.094          -0.047            -0.081    
+                                  (0.092)         (0.088)         (0.126)           (0.083)   
+    ------------------------------------------------------------------------------------------
+    AIC                        30299.864       28426.785       42669.677         26349.735    
+    BIC                        30654.912       28781.833       43024.724         26704.782    
+    Log Likelihood            -15104.932      -14168.393      -21289.838        -13129.867    
+    Num. obs.                  19731           19731           19731             19731        
+    Num. groups: ctrcode          27              27              27                27        
+    Var: ctrcode (Intercept)       0.007           0.009           0.007             0.004    
+    Var: Residual                  0.239           0.217           0.448             0.196    
+    ==========================================================================================
+    *** p < 0.001; ** p < 0.01; * p < 0.05
+
+Nota: la brecha es la diferencia entre los valores predichos con
+educación alta y baja dentro de cada sector, con el resto de las
+variables en sus valores de referencia de emmeans. Como el modelo no
+tiene otras interacciones con la educación, la brecha no depende de esos
+valores. † Menos de 100 casos con educación baja o alta en el sector. En
+la tabla de tab(), la primera fila es la brecha en agricultura y minería
+(categoría de referencia) y las demás, la diferencia de cada sector
+respecto de esa brecha. Errores estándar entre paréntesis. *** p <
+0,001; ** p < 0,01; * p < 0,05.
+
+[]
+
+Resumen
+
+- Prueba conjunta. volumen: χ² = 17,35, gl = 14, p = 0,2379 (no
+  significativa); inversión: χ² = 26,26, gl = 14, p = 0,0240
+  (significativa); compensación: χ² = 12,37, gl = 14, p = 0,5768 (no
+  significativa); protección: χ² = 18,86, gl = 14, p = 0,1703 (no
+  significativa).
+- Brecha por sector. Compensación: mayor en Agricultura y minería
+  (0,086) y menor en Construcción (-0,154); significativa en 2 de 8
+  sectores. Inversión: mayor en Construcción (0,205) y menor en Otro o
+  no declarado (0,013); significativa en 5 de 8 sectores. Volumen: mayor
+  en Construcción (0,105) y menor en Agricultura y minería (-0,045);
+  significativa en 1 de 8 sectores. Protección: mayor en TIC, finanzas y
+  servicios a empresas (0,007) y menor en Otro o no declarado (-0,164);
+  significativa en 5 de 8 sectores.
+- Casos escasos. Sectores con menos de 100 casos en educación baja o
+  alta: Agricultura y minería.
+- Convergencia. 0 de los cuatro modelos tienen advertencias de
+  convergencia o un ajuste singular.
+
+N y advertencias
+
+De los 59 modelos del archivo, 0 tienen advertencias de convergencia y 0
+tienen un ajuste singular.
+
+  ---------------------------------------------------------------------------------
+  Modelo                                                N Convergencia   Singular
+  ---------------------------------------------- -------- -------------- ----------
+  Modelo 4: volumen                                19.731 Sin            No
+                                                          advertencias   
+
+  Modelo 4: inversión                              19.731 Sin            No
+                                                          advertencias   
+
+  Modelo 4: compensación                           19.731 Sin            No
+                                                          advertencias   
+
+  Modelo 4: protección                             19.731 Sin            No
+                                                          advertencias   
+
+  Tasa de desempleo: volumen                       19.731 Sin            No
+                                                          advertencias   
+
+  Tasa de desempleo: inversión                     19.731 Sin            No
+                                                          advertencias   
+
+  Tasa de desempleo: compensación                  19.731 Sin            No
+                                                          advertencias   
+
+  Tasa de desempleo: protección                    19.731 Sin            No
+                                                          advertencias   
+
+  Gasto social público total: volumen              19.731 Sin            No
+                                                          advertencias   
+
+  Gasto social público total: inversión            19.731 Sin            No
+                                                          advertencias   
+
+  Gasto social público total: compensación         19.731 Sin            No
+                                                          advertencias   
+
+  Gasto social público total: protección           19.731 Sin            No
+                                                          advertencias   
+
+  Empleo en la industria: volumen                  19.731 Sin            No
+                                                          advertencias   
+
+  Empleo en la industria: inversión                19.731 Sin            No
+                                                          advertencias   
+
+  Empleo en la industria: compensación             19.731 Sin            No
+                                                          advertencias   
+
+  Empleo en la industria: protección               19.731 Sin            No
+                                                          advertencias   
+
+  Protección del empleo (EPL): volumen             19.731 Sin            No
+                                                          advertencias   
+
+  Protección del empleo (EPL): inversión           19.731 Sin            No
+                                                          advertencias   
+
+  Protección del empleo (EPL): compensación        19.731 Sin            No
+                                                          advertencias   
+
+  Protección del empleo (EPL): protección          19.731 Sin            No
+                                                          advertencias   
+
+  Amenaza × grupo de edad: volumen                 19.731 Sin            No
+                                                          advertencias   
+
+  Amenaza × grupo de edad: inversión               19.731 Sin            No
+                                                          advertencias   
+
+  Amenaza × grupo de edad: compensación            19.731 Sin            No
+                                                          advertencias   
+
+  Amenaza × grupo de edad: protección              19.731 Sin            No
+                                                          advertencias   
+
+  Amenaza × nivel educacional: volumen             19.731 Sin            No
+                                                          advertencias   
+
+  Amenaza × nivel educacional: inversión           19.731 Sin            No
+                                                          advertencias   
+
+  Amenaza × nivel educacional: compensación        19.731 Sin            No
+                                                          advertencias   
+
+  Amenaza × nivel educacional: protección          19.731 Sin            No
+                                                          advertencias   
+
+  Amenaza × posición en el mercado laboral:        19.731 Sin            No
+  volumen                                                 advertencias   
+
+  Amenaza × posición en el mercado laboral:        19.731 Sin            No
+  inversión                                               advertencias   
+
+  Amenaza × posición en el mercado laboral:        19.731 Sin            No
+  compensación                                            advertencias   
+
+  Amenaza × posición en el mercado laboral:        19.731 Sin            No
+  protección                                              advertencias   
+
+  Gasto social en lugar de prestaciones: volumen   19.731 Sin            No
+                                                          advertencias   
+
+  Gasto social en lugar de prestaciones:           19.731 Sin            No
+  inversión                                               advertencias   
+
+  Gasto social en lugar de prestaciones:           19.731 Sin            No
+  compensación                                            advertencias   
+
+  Gasto social en lugar de prestaciones:           19.731 Sin            No
+  protección                                              advertencias   
+
+  Compensación, amenaza × prestaciones (paper)     19.731 Sin            No
+                                                          advertencias   
+
+  Compensación, amenaza × prestaciones, con        19.731 Sin            No
+  gasto social                                            advertencias   
+
+  Compensación, amenaza × gasto social             19.731 Sin            No
+                                                          advertencias   
+
+  Amenaza × sector de actividad: volumen           19.731 Sin            No
+                                                          advertencias   
+
+  Amenaza × sector de actividad: inversión         19.731 Sin            No
+                                                          advertencias   
+
+  Amenaza × sector de actividad: compensación      19.731 Sin            No
+                                                          advertencias   
+
+  Amenaza × sector de actividad: protección        19.731 Sin            No
+                                                          advertencias   
+
+  Modelo 4 en la submuestra: volumen               19.731 Sin            No
+                                                          advertencias   
+
+  Modelo 4 en la submuestra: inversión             19.731 Sin            No
+                                                          advertencias   
+
+  Modelo 4 en la submuestra: compensación          19.731 Sin            No
+                                                          advertencias   
+
+  Modelo 4 en la submuestra: protección            19.731 Sin            No
+                                                          advertencias   
+
+  Modelo 4 en la submuestra: prioridad a           19.406 Sin            No
+  trabajadores del país                                   advertencias   
+
+  Modelo 4 en la submuestra: aranceles             18.918 Sin            No
+                                                          advertencias   
+
+  Amenaza × manufactura: volumen                   19.731 Sin            No
+                                                          advertencias   
+
+  Amenaza × manufactura: inversión                 19.731 Sin            No
+                                                          advertencias   
+
+  Amenaza × manufactura: compensación              19.731 Sin            No
+                                                          advertencias   
+
+  Amenaza × manufactura: protección                19.731 Sin            No
+                                                          advertencias   
+
+  Amenaza × manufactura: prioridad a               19.406 Sin            No
+  trabajadores del país                                   advertencias   
+
+  Amenaza × manufactura: aranceles                 18.918 Sin            No
+                                                          advertencias   
+
+  Nivel educacional × sector: volumen              19.731 Sin            No
+                                                          advertencias   
+
+  Nivel educacional × sector: inversión            19.731 Sin            No
+                                                          advertencias   
+
+  Nivel educacional × sector: compensación         19.731 Sin            No
+                                                          advertencias   
+
+  Nivel educacional × sector: protección           19.731 Sin            No
+                                                          advertencias   
+  ---------------------------------------------------------------------------------
+
+  : N y advertencias de cada modelo

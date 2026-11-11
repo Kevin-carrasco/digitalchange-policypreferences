@@ -415,7 +415,9 @@ labelled::var_label(data)[vars] <- labelled::var_label(policies)[vars]
 # Todos se descargan por API; no se escriben valores a mano ni se imputa.
 #
 # Fuentes:
-#   - Gini (ingreso disponible):  World Bank, WDI, SI.POV.GINI
+#   - Gini del ingreso per cápita del hogar (estimación del Banco Mundial a partir de encuestas
+#     de hogares, Poverty and Inequality Platform; en los 27 países el año usado se basa en
+#     ingreso, no en consumo): World Bank, WDI, SI.POV.GINI
 #   - PIB per cápita (PPP, US$ internacionales constantes 2021):
 #                                 World Bank, WDI, NY.GDP.PCAP.PP.KD
 #   - Tasa de desempleo (% fuerza laboral, estimación OIT):
@@ -430,11 +432,18 @@ labelled::var_label(data)[vars] <- labelled::var_label(policies)[vars]
 #   - Rigidez de la protección del empleo, contratos indefinidos (despidos individuales
 #     y colectivos), versión 4, escala 0 a 6:
 #                                 OECD EPL (DSD_EPL@DF_EPL), MEASURE EPL_OV, VERSION4
+#   - Cobertura efectiva de las prestaciones por desempleo (ODS 1.3.1: % de personas
+#     desempleadas que reciben prestaciones monetarias por desempleo), indicador de la
+#     compensación. Datos hasta 2024:
+#                                 OIT, ILOSTAT (ILO,DF_SDG_0131_SEX_SOC_RT), MEASURE SDG_0131_RT,
+#                                 SEX_T, SOC_CONTIG_UNE
 #
 # No se incluyen, porque no cubren los 27 países:
 #   - Generosidad del seguro de desempleo (SOCX TP71, Unemployment, dividido por la tasa
 #     de desempleo): México no tiene dato en ningún año (estado M, "data cannot exist") y
-#     Dinamarca registra 0 desde 2010.
+#     Dinamarca registra 0 desde 2010. Por eso la compensación se mide con la cobertura de la OIT.
+#   - Tasa neta de reemplazo en desempleo (OECD Tax-Benefit, DSD_TAXBEN_NRR@DF_NRR):
+#     sin registros para México.
 #   - Proporción del empleo expuesto a IA generativa (OIT, DF_EMP_TEMP_SEX_GAI_NB):
 #     sin datos para Canadá, Grecia, Israel, Corea, Eslovenia, Türkiye y Estados Unidos.
 # ============================================================
@@ -548,16 +557,34 @@ epl_latest <- readr::read_csv(epl_url, show_col_types = FALSE) %>%
   dplyr::slice_max(epl_year, n = 1, with_ties = FALSE) %>%
   dplyr::ungroup()
 
-# ---- 5. Consolidar y estandarizar entre los 27 países -------------------------
+# ---- 5. OIT: cobertura efectiva de las prestaciones por desempleo -----------
+# API SDMX de ILOSTAT. Dimensiones del dataflow: REF_AREA, FREQ, MEASURE (SDG_0131_RT),
+# SEX (SEX_T = total) y SOC (SOC_CONTIG_UNE = desempleados que reciben prestaciones).
+# Varios países registran el máximo de 100%. Un 0 publicado es un dato válido.
+
+ubcov_url <- paste0(
+  "https://sdmx.ilo.org/rest/data/ILO,DF_SDG_0131_SEX_SOC_RT/",
+  paste(iso_map$iso3c, collapse = "+"),
+  ".A.SDG_0131_RT.SEX_T.SOC_CONTIG_UNE?startPeriod=2015&endPeriod=2024&format=csvfilewithlabels"
+)
+ubcov_latest <- readr::read_csv(ubcov_url, show_col_types = FALSE) %>%
+  dplyr::select(iso3c = REF_AREA, ubcov_year = TIME_PERIOD, ubcov = OBS_VALUE) %>%
+  dplyr::filter(!is.na(ubcov)) %>%
+  dplyr::group_by(iso3c) %>%
+  dplyr::slice_max(ubcov_year, n = 1, with_ties = FALSE) %>%
+  dplyr::ungroup()
+
+# ---- 6. Consolidar y estandarizar entre los 27 países -------------------------
 
 macro <- iso_map %>%
   dplyr::left_join(wdi_latest,  by = "iso2c") %>%
   dplyr::left_join(socx_latest, by = "iso3c") %>%
   dplyr::left_join(almp_latest, by = "iso3c") %>%
   dplyr::left_join(epl_latest,  by = "iso3c") %>%
+  dplyr::left_join(ubcov_latest, by = "iso3c") %>%
   dplyr::mutate(
     gdp_pc_log = log(gdp_pc),
-    dplyr::across(c(gini, gdp_pc_log, unemp, socx, almp, epl, ind_emp),
+    dplyr::across(c(gini, gdp_pc_log, unemp, socx, almp, epl, ind_emp, ubcov),
                   ~ as.numeric(scale(.x)), .names = "{.col}_z")
   ) %>%
   dplyr::select(ctrcode = iso3c, country_name = country,
@@ -567,27 +594,29 @@ macro <- iso_map %>%
                 socx, socx_year, socx_z,
                 almp_gdp, almp_unemp, almp, almp_year, almp_z,
                 epl, epl_year, epl_z,
-                ind_emp, ind_emp_year, ind_emp_z)
+                ind_emp, ind_emp_year, ind_emp_z,
+                ubcov, ubcov_year, ubcov_z)
 
 # Los 27 países deben tener todos los indicadores (no se imputa)
 stopifnot(nrow(macro) == 27, !anyNA(macro))
 macro
 
-# ---- 6. Tabla de fuentes para el apéndice ----------------------------------
+# ---- 7. Tabla de fuentes para el apéndice ----------------------------------
 
 tabla_fuentes <- tibble::tribble(
   ~Indicator,                          ~Source,                                            ~Series,             ~Years,
-  "Gini coefficient (disposable income)", "World Bank, World Development Indicators",      "SI.POV.GINI",       paste(range(macro$gini_year,   na.rm = TRUE), collapse = "-"),
+  "Gini coefficient (household per capita income)", "World Bank, World Development Indicators",      "SI.POV.GINI",       paste(range(macro$gini_year,   na.rm = TRUE), collapse = "-"),
   "GDP per capita (PPP, constant 2021 international $)", "World Bank, World Development Indicators", "NY.GDP.PCAP.PP.KD", paste(range(macro$gdp_pc_year, na.rm = TRUE), collapse = "-"),
   "Unemployment rate (% of labour force, ILO estimate)", "World Bank, World Development Indicators", "SL.UEM.TOTL.ZS",    paste(range(macro$unemp_year,  na.rm = TRUE), collapse = "-"),
   "Public social expenditure (% of GDP)", "OECD Social Expenditure Database (SOCX)",       "DSD_SOCX_AGG@DF_SOCX_AGG, PROGRAMME_TYPE _T", paste(range(macro$socx_year,   na.rm = TRUE), collapse = "-"),
   "Public spending on active labour market programmes (% of GDP) per percentage point of unemployment", "OECD SOCX; World Bank, World Development Indicators", "DSD_SOCX_AGG@DF_SOCX_AGG, PROGRAMME_TYPE TP60; SL.UEM.TOTL.ZS", paste(range(macro$almp_year, na.rm = TRUE), collapse = "-"),
   "Strictness of employment protection, regular contracts (individual and collective dismissals, version 4)", "OECD Employment Protection Legislation Database", "DSD_EPL@DF_EPL, MEASURE EPL_OV, VERSION4", paste(range(macro$epl_year, na.rm = TRUE), collapse = "-"),
-  "Employment in industry (% of total employment, ILO estimate)", "World Bank, World Development Indicators", "SL.IND.EMPL.ZS", paste(range(macro$ind_emp_year, na.rm = TRUE), collapse = "-")
+  "Employment in industry (% of total employment, ILO estimate)", "World Bank, World Development Indicators", "SL.IND.EMPL.ZS", paste(range(macro$ind_emp_year, na.rm = TRUE), collapse = "-"),
+  "Unemployed persons receiving unemployment cash benefits (%, SDG indicator 1.3.1)", "ILO, World Social Protection Database (ILOSTAT)", "DF_SDG_0131_SEX_SOC_RT, MEASURE SDG_0131_RT, SEX_T, SOC_CONTIG_UNE", paste(range(macro$ubcov_year, na.rm = TRUE), collapse = "-")
 )
 tabla_fuentes
 
-# ---- 7. Guardar -------------------------------------------------------------
+# ---- 8. Guardar -------------------------------------------------------------
 # Base y tabla de fuentes para el análisis; copia en CSV, con la fecha de descarga,
 # que se versiona en el repositorio.
 

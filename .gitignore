@@ -50,3 +50,7 @@ input/proc/
 # Excepción: base de indicadores macro de nivel país (descargada por API desde
 # procesamiento.qmd), que se versiona con su fecha de descarga
 !input/macro/macro_indicators.csv
+
+# ---- Salidas generadas por R y Quarto ----
+Rplots.pdf
+*.html

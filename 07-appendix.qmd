@@ -1,0 +1,423 @@
+
+```{r}
+#| label: setup-appendix
+#| echo: false
+#| include: false
+
+# Usa la muestra analítica (data), data_original y los modelos estimados en 04-results.qmd
+
+load(file=here::here("input/proc/digitalization.RData"))
+load(file=here::here("input/proc/expectations.RData"))
+load(file=here::here("input/proc/policies.RData"))
+
+paises <- tibble::tribble(
+  ~ctrcode, ~pais,
+  "AUT", "Austria",
+  "BEL", "Bélgica",
+  "CAN", "Canadá",
+  "CHL", "Chile",
+  "DNK", "Dinamarca",
+  "EST", "Estonia",
+  "FIN", "Finlandia",
+  "FRA", "Francia",
+  "DEU", "Alemania",
+  "GRC", "Grecia",
+  "IRL", "Irlanda",
+  "ISR", "Israel",
+  "ITA", "Italia",
+  "KOR", "Corea",
+  "LVA", "Letonia",
+  "LTU", "Lituania",
+  "MEX", "México",
+  "NLD", "Países Bajos",
+  "NOR", "Noruega",
+  "POL", "Polonia",
+  "PRT", "Portugal",
+  "SVN", "Eslovenia",
+  "ESP", "España",
+  "CHE", "Suiza",
+  "TUR", "Türkiye",
+  "GBR", "Reino Unido",
+  "USA", "Estados Unidos"
+)
+
+# Ítems del análisis factorial, con etiquetas en español
+digitalization <- digitalization %>% select(-tecnoestres_2, -tecnoestres_4)
+digitalization <- set_label(digitalization,
+                            label = c("Reemplazo por un robot",
+                                      "Reemplazo por una herramienta de IA",
+                                      "Reemplazo por una persona en una plataforma de internet",
+                                      "Pérdida del empleo por habilidades tecnológicas",
+                                      "Mayor compatibilidad con la vida privada",
+                                      "Trabajo menos peligroso o físicamente exigente",
+                                      "Trabajo menos aburrido, repetitivo o estresante"))
+
+expectations <- set_label(expectations,
+                          label = c("Aumento de la desigualdad de ingresos",
+                                    "Más tiempo libre para la mayoría",
+                                    "Trabajos menos aburridos, repetitivos o estresantes",
+                                    "Creación de más empleos",
+                                    "Más desempleo",
+                                    "Más vigilancia en el trabajo",
+                                    "Necesidad de que muchas personas se reentrenen"))
+
+policies <- set_label(policies,
+                      label = c("Educación universitaria y formación profesional para jóvenes",
+                                "Reentrenamiento para personas en edad de trabajar",
+                                "Infraestructura digital",
+                                "Impuesto a robots o empresas tecnológicas",
+                                "Límite o reducción de la jornada laboral",
+                                "Prestaciones más accesibles o generosas",
+                                "Renta básica universal e incondicional",
+                                "Subsidios a industrias afectadas por el cambio tecnológico",
+                                "Promoción de la migración calificada",
+                                "Promoción de la migración no calificada",
+                                "Prioridad a trabajadores del país en la contratación",
+                                "Aranceles para proteger industrias nacionales"))
+```
+
+```{r}
+#| label: tbl-a-paises
+#| tbl-cap: "Tamaño de la muestra analítica e indicadores nacionales por país"
+#| tbl-cap-location: top
+
+# Indicadores en escala original, con el año del dato entre paréntesis
+data %>%
+  count(ctrcode) %>%
+  left_join(paises, by = "ctrcode") %>%
+  left_join(macro, by = "ctrcode") %>%
+  arrange(pais) %>%
+  mutate(n = format(n, big.mark = ".", decimal.mark = ",", trim = TRUE),
+         pib = paste0(format(round(gdp_pc), big.mark = ".", decimal.mark = ",", trim = TRUE), " (", gdp_pc_year, ")"),
+         gin = paste0(format(gini, nsmall = 1, decimal.mark = ",", trim = TRUE), " (", gini_year, ")"),
+         alm = paste0(format(round(almp, 4), nsmall = 4, decimal.mark = ",", trim = TRUE), " (", almp_year, ")"),
+         cob = paste0(format(ubcov, nsmall = 1, decimal.mark = ",", trim = TRUE), " (", ubcov_year, ")")) %>%
+  select(pais, n, pib, gin, cob, alm) %>%
+  kable(format = "pipe", align = c("l", "r", "r", "r", "r", "r"),
+        col.names = c("País", "n", "PIB per cápita", "Gini", "Prestaciones por desempleo", "Políticas de mercado laboral"))
+```
+
+*Nota*: Valores en escala original; entre paréntesis, el año del dato. PIB per cápita en dólares internacionales constantes de 2021 (PPA). Prestaciones por desempleo: porcentaje de personas desempleadas que reciben prestaciones monetarias por desempleo. Políticas de mercado laboral: gasto público en políticas activas del mercado laboral como porcentaje del PIB, dividido por la tasa de desempleo.
+
+```{r}
+#| label: tbl-a-fuentes
+#| tbl-cap: "Fuentes de los indicadores de nivel país"
+#| tbl-cap-location: top
+
+# A partir de tabla_fuentes (procesamiento.qmd), solo con los cuatro indicadores de los modelos.
+# Los nombres de los indicadores y de las fuentes se traducen; la serie y los años se toman tal cual.
+# Serie: forma abreviada del código de tabla_fuentes, para que la tabla quepa en la página.
+fuentes_es <- tibble::tribble(
+  ~Series, ~Indicador, ~Fuente, ~Serie,
+  "NY.GDP.PCAP.PP.KD", "PIB per cápita", "Banco Mundial, WDI", "NY.GDP.PCAP.PP.KD",
+  "SI.POV.GINI", "Gini", "Banco Mundial, WDI", "SI.POV.GINI",
+  "DF_SDG_0131_SEX_SOC_RT, MEASURE SDG_0131_RT, SEX_T, SOC_CONTIG_UNE", "Prestaciones por desempleo", "OIT, ILOSTAT", "SDG_0131_RT, SOC_CONTIG_UNE",
+  "DSD_SOCX_AGG@DF_SOCX_AGG, PROGRAMME_TYPE TP60; SL.UEM.TOTL.ZS", "Políticas de mercado laboral", "OCDE, SOCX; Banco Mundial, WDI", "SOCX TP60; SL.UEM.TOTL.ZS"
+)
+
+fuentes_es %>%
+  left_join(select(tabla_fuentes, Series, Years), by = "Series") %>%
+  mutate(Years = sub("^(\\d{4})-\\1$", "\\1", Years)) %>%
+  select(Indicador, Fuente, Serie, `Años` = Years) %>%
+  kable(format = "pipe")
+```
+
+*Nota*: WDI: World Development Indicators. Las definiciones de los indicadores están en la nota de la @tbl-a-paises. Años: rango de los años del dato más reciente desde 2015 entre los 27 países.
+
+```{r}
+#| label: tbl-a-afe-q25
+#| tbl-cap: "Análisis factorial exploratorio de la amenaza y el beneficio tecnológico en el propio empleo"
+#| tbl-cap-location: top
+
+sjPlot::tab_fa(digitalization, nmbr.fctr = 2, title = "")
+```
+
+```{r}
+#| label: tbl-a-afe-q26
+#| tbl-cap: "Análisis factorial exploratorio de las expectativas sobre los efectos sociales de la IA"
+#| tbl-cap-location: top
+
+sjPlot::tab_fa(expectations, nmbr.fctr = 2, title = "")
+```
+
+```{r}
+#| label: tbl-a-afe-q27
+#| tbl-cap: "Análisis factorial exploratorio de las medidas frente al cambio tecnológico"
+#| tbl-cap-location: top
+
+sjPlot::tab_fa(policies, nmbr.fctr = 5, title = "")
+```
+
+```{r}
+#| label: modelos-apendice
+#| include: false
+
+# Robustez: protección sin subsidios (q27h carga casi igual en compensación)
+data_core <- data %>%
+  left_join(select(data_original, ctrcode, id, rel_protection_core), by = c("ctrcode", "id")) %>%
+  filter(!is.na(rel_protection_core)) %>%
+  group_by(ctrcode) %>%
+  mutate(weight_n = weight / mean(weight)) %>%
+  ungroup()
+
+data_core$rel_protection_core  <- set_label(x = data_core$rel_protection_core, label = "Protección sin subsidios")
+
+reg4_pro_core <- lmer(rel_protection_core ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + gini_z + ubcov_z + almp_z + (1|ctrcode), data=data_core, weights=weight_n)
+
+# Descomposición de la protección: medidas dirigidas a la tecnología (impuesto a robots,
+# subsidios) y a la competencia extranjera (prioridad a nacionales, aranceles).
+# Escala relativa: cada medida menos el volumen.
+data_items <- data %>%
+  left_join(select(data_original, ctrcode, id, policy_4, policy_8, policy_11, policy_12), by = c("ctrcode", "id")) %>%
+  mutate(rel_robot_tax = policy_4 - policy_mean,
+         rel_subsidies = policy_8 - policy_mean,
+         rel_natives = policy_11 - policy_mean,
+         rel_tariffs = policy_12 - policy_mean) %>%
+  filter(!is.na(rel_robot_tax), !is.na(rel_subsidies), !is.na(rel_natives), !is.na(rel_tariffs)) %>%
+  group_by(ctrcode) %>%
+  mutate(weight_n = weight / mean(weight)) %>%
+  ungroup()
+
+data_items$rel_robot_tax  <- set_label(x = data_items$rel_robot_tax, label = "Impuesto a robots")
+data_items$rel_subsidies  <- set_label(x = data_items$rel_subsidies, label = "Subsidios a industrias afectadas")
+data_items$rel_natives  <- set_label(x = data_items$rel_natives, label = "Prioridad a trabajadores del país")
+data_items$rel_tariffs  <- set_label(x = data_items$rel_tariffs, label = "Aranceles")
+
+reg13_tax <- lmer(rel_robot_tax ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + gini_z + ubcov_z + almp_z + (1|ctrcode), data=data_items, weights=weight_n)
+reg13_sub <- lmer(rel_subsidies ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + gini_z + ubcov_z + almp_z + (1|ctrcode), data=data_items, weights=weight_n)
+reg13_nat <- lmer(rel_natives ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + gini_z + ubcov_z + almp_z + (1|ctrcode), data=data_items, weights=weight_n)
+reg13_tar <- lmer(rel_tariffs ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + gini_z + ubcov_z + almp_z + (1|ctrcode), data=data_items, weights=weight_n)
+
+# Análisis exploratorio por sector de actividad: modelo 4 más amenaza × sector
+reg23_lev_sec <- lmer(policy_mean ~ ego_neg_cwc*sector_cat + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + gdp_pc_log_z + gini_z + ubcov_z + almp_z + (1|ctrcode), data=data, weights=weight_n)
+reg23_inv_sec <- lmer(rel_investment ~ ego_neg_cwc*sector_cat + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + gdp_pc_log_z + gini_z + ubcov_z + almp_z + (1|ctrcode), data=data, weights=weight_n)
+reg23_com_sec <- lmer(rel_compensation ~ ego_neg_cwc*sector_cat + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + gdp_pc_log_z + gini_z + ubcov_z + almp_z + (1|ctrcode), data=data, weights=weight_n)
+reg23_pro_sec <- lmer(rel_protection ~ ego_neg_cwc*sector_cat + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + gdp_pc_log_z + gini_z + ubcov_z + almp_z + (1|ctrcode), data=data, weights=weight_n)
+reg23 <- list(lev = reg23_lev_sec, inv = reg23_inv_sec, com = reg23_com_sec, pro = reg23_pro_sec)
+
+sectores <- c(`1` = "Agricultura y minería", `2` = "Manufactura y servicios básicos", `3` = "Construcción",
+              `4` = "Comercio, transporte y hotelería", `5` = "TIC, finanzas y servicios a empresas",
+              `6` = "Administración pública, educación y salud", `7` = "Otros servicios", `8` = "Otro o no declarado")
+stopifnot(identical(levels(data$sector_cat), names(sectores)))
+
+# Pendiente de la amenaza en cada sector (el sector 1 es la categoría de referencia), con su
+# error estándar, y prueba conjunta de la interacción frente al modelo 4
+pendientes_sec <- do.call(rbind, lapply(names(dv_es), function(k) {
+  m <- reg23[[k]]
+  b <- fixef(m)
+  V <- as.matrix(vcov(m))
+  L <- matrix(0, nrow = length(sectores), ncol = length(b), dimnames = list(names(sectores), names(b)))
+  L[, "ego_neg_cwc"] <- 1
+  for (j in names(sectores)[-1]) L[j, paste0("ego_neg_cwc:sector_cat", j)] <- 1
+  est <- as.vector(L %*% b)
+  se <- sqrt(diag(L %*% V %*% t(L)))
+  data.frame(dv = k, sector = names(sectores), b = est, se = se, p = 2 * pnorm(-abs(est / se)))
+}))
+pruebas_sec <- do.call(rbind, lapply(names(dv_es), function(k) {
+  a <- anova(reg4[[k]], reg23[[k]])
+  data.frame(dv = k, chi2 = a$Chisq[2], gl = a$Df[2], p = a$`Pr(>Chisq)`[2])
+}))
+
+# Robustez de las prestaciones por desempleo frente al gasto social público (compensación)
+data_socx <- data %>% left_join(select(macro, ctrcode, socx_z), by = "ctrcode")
+data_socx$socx_z  <- set_label(x = data_socx$socx_z, label = "Gasto social público")
+
+reg24_com_socx <- lmer(rel_compensation ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + gini_z + ubcov_z + almp_z + socx_z + (1|ctrcode), data=data_socx, weights=weight_n)
+reg24_com_socx_sin_cov <- lmer(rel_compensation ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + gini_z + almp_z + socx_z + (1|ctrcode), data=data_socx, weights=weight_n)
+# Interacción del paper (amenaza × prestaciones), con el gasto social como control
+reg24_com_ego_cov_socx <- lmer(rel_compensation ~ ego_neg_cwc*ubcov_z + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + gini_z + almp_z + socx_z + (1 + ego_neg_cwc|ctrcode), data=data_socx, weights=weight_n, control = lmerControl(optimizer = "bobyqa"))
+
+# Tablas del apéndice, con el mismo procedimiento que las de 04-results.qmd
+secuencia <- c("Modelo 1", "Modelo 2", "Modelo 3", "Modelo 4")
+tablas_a <- list(volumen = list(modelos = list(reg1_lev, reg2_lev, reg3_lev, reg4_lev), nombres = secuencia),
+                 inversion = list(modelos = list(reg1_inv, reg2_inv, reg3_inv, reg4_inv), nombres = secuencia),
+                 compensacion = list(modelos = list(reg1_com, reg2_com, reg3_com, reg4_com), nombres = secuencia),
+                 proteccion = list(modelos = list(reg1_pro, reg2_pro, reg3_pro, reg4_pro), nombres = secuencia),
+                 sin_subsidios = list(modelos = list(reg4_pro, reg4_pro_core),
+                                      nombres = c("Protección", "Protección sin subsidios")),
+                 items = list(modelos = list(reg13_tax, reg13_sub, reg13_nat, reg13_tar),
+                              nombres = c("Impuesto a robots", "Subsidios", "Prioridad a nacionales", "Aranceles")),
+                 edad = list(modelos = reg22$age, nombres = unname(dv_es)),
+                 educacion = list(modelos = reg22$educ, nombres = unname(dv_es)),
+                 gasto_social = list(modelos = list(reg24_com_socx, reg24_com_socx_sin_cov, reg24_com_ego_cov_socx),
+                                     nombres = c("Modelo 4 + gasto social", "Gasto social en lugar de prestaciones",
+                                                 "Amenaza × prestaciones, con gasto social")))
+
+for (t in names(tablas_a)) {
+  op <- options(OutDec = ",")
+  mr <- matrixreg(unname(tablas_a[[t]]$modelos), custom.model.names = tablas_a[[t]]$nombres,
+                  custom.coef.map = coef_es, digits = 3, include.aic = FALSE, include.bic = FALSE, trim = TRUE)
+  options(op)
+  fila_n <- which(mr[, 1] == "Num. obs.")
+  mr[fila_n, -1] <- format(as.numeric(mr[fila_n, -1]), big.mark = ".", decimal.mark = ",", trim = TRUE)
+  mr[, 1] <- ifelse(mr[, 1] %in% names(gof_es), gof_es[mr[, 1]], mr[, 1])
+  mr <- gsub("*", "\\*", mr, fixed = TRUE)
+  for (b in names(bloques)) {
+    i <- which(mr[, 1] %in% bloques[[b]])[1]
+    if (!is.na(i)) mr <- rbind(mr[seq_len(i - 1), , drop = FALSE], c(b, rep("", ncol(mr) - 1)), mr[i:nrow(mr), , drop = FALSE])
+  }
+  tablas_a[[t]]$tabla <- mr
+}
+```
+
+
+```{r}
+#| label: tbl-a-volumen
+#| tbl-cap: "Modelos secuenciales del volumen"
+#| tbl-cap-location: top
+
+mr <- tablas_a$volumen$tabla
+kable(mr[-1, ], col.names = mr[1, ], format = "pipe", align = c("l", rep("c", ncol(mr) - 1)))
+```
+
+*Nota*: `r nota_secuencial`
+
+```{r}
+#| label: tbl-a-inversion
+#| tbl-cap: "Modelos secuenciales de la dirección: inversión"
+#| tbl-cap-location: top
+
+mr <- tablas_a$inversion$tabla
+kable(mr[-1, ], col.names = mr[1, ], format = "pipe", align = c("l", rep("c", ncol(mr) - 1)))
+```
+
+*Nota*: `r nota_secuencial`
+
+```{r}
+#| label: tbl-a-compensacion
+#| tbl-cap: "Modelos secuenciales de la dirección: compensación"
+#| tbl-cap-location: top
+
+mr <- tablas_a$compensacion$tabla
+kable(mr[-1, ], col.names = mr[1, ], format = "pipe", align = c("l", rep("c", ncol(mr) - 1)))
+```
+
+*Nota*: `r nota_secuencial`
+
+```{r}
+#| label: tbl-a-proteccion
+#| tbl-cap: "Modelos secuenciales de la dirección: protección"
+#| tbl-cap-location: top
+
+mr <- tablas_a$proteccion$tabla
+kable(mr[-1, ], col.names = mr[1, ], format = "pipe", align = c("l", rep("c", ncol(mr) - 1)))
+```
+
+*Nota*: `r nota_secuencial`
+
+```{r}
+#| label: tbl-a-sin-subsidios
+#| tbl-cap: "Dirección de la protección con y sin subsidios"
+#| tbl-cap-location: top
+
+mr <- tablas_a$sin_subsidios$tabla
+kable(mr[-1, ], col.names = mr[1, ], format = "pipe", align = c("l", rep("c", ncol(mr) - 1)))
+```
+
+*Nota*: `r nota_modelos` `r nota_pais`
+
+```{r}
+#| label: tbl-a-items
+#| tbl-cap: "Dirección de cada medida de protección"
+#| tbl-cap-location: top
+
+mr <- tablas_a$items$tabla
+kable(mr[-1, ], col.names = mr[1, ], format = "pipe", align = c("l", rep("c", ncol(mr) - 1)))
+```
+
+*Nota*: `r nota_modelos` `r nota_pais`
+
+```{r}
+#| label: tbl-a-moderacion-edad
+#| tbl-cap: "Interacciones entre la amenaza tecnológica y el grupo de edad"
+#| tbl-cap-location: top
+
+mr <- tablas_a$edad$tabla
+kable(mr[-1, ], col.names = mr[1, ], format = "pipe", align = c("l", rep("c", ncol(mr) - 1)))
+```
+
+*Nota*: `r nota_modelos` `r nota_pais`
+
+```{r}
+#| label: tbl-a-moderacion-educacion
+#| tbl-cap: "Interacciones entre la amenaza tecnológica y el nivel educacional"
+#| tbl-cap-location: top
+
+mr <- tablas_a$educacion$tabla
+kable(mr[-1, ], col.names = mr[1, ], format = "pipe", align = c("l", rep("c", ncol(mr) - 1)))
+```
+
+*Nota*: `r nota_modelos` `r nota_pais`
+
+```{r}
+#| label: tbl-a-moderacion-pendientes
+#| tbl-cap: "Prueba conjunta y pendiente de la amenaza tecnológica por grupo de edad y nivel educacional"
+#| tbl-cap-location: top
+
+# Pendientes por categoría y, al final de cada moderador, la prueba conjunta frente al modelo 4
+op <- options(OutDec = ",")
+tabla_mod <- bind_rows(lapply(names(moderadores_es), function(z) {
+  pend <- pendientes_mod %>%
+    filter(moderador == z) %>%
+    mutate(valor = paste0(formatC(b, format = "f", digits = 3, decimal.mark = ","),
+                          " (", formatC(se, format = "f", digits = 3, decimal.mark = ","), ")",
+                          as.character(cut(p, c(0, 0.001, 0.01, 0.05, 1), labels = c("\\*\\*\\*", "\\*\\*", "\\*", ""), include.lowest = TRUE))),
+           dv = dv_es[dv]) %>%
+    select(categoria, dv, valor) %>%
+    tidyr::pivot_wider(names_from = dv, values_from = valor)
+  conj <- pruebas_mod %>%
+    filter(moderador == z) %>%
+    mutate(valor = paste0("χ² = ", formatC(chi2, format = "f", digits = 2, decimal.mark = ","), " (", gl, " gl), p = ",
+                          formatC(p, format = "f", digits = 3, decimal.mark = ",")),
+           dv = dv_es[dv], categoria = "Prueba conjunta") %>%
+    select(categoria, dv, valor) %>%
+    tidyr::pivot_wider(names_from = dv, values_from = valor)
+  bind_rows(tibble::tibble(categoria = paste0("**", moderadores_es[z], "**")), pend, conj)
+}))
+options(op)
+
+kable(tabla_mod, format = "pipe", col.names = c("", unname(dv_es)), align = c("l", "c", "c", "c", "c"))
+```
+
+*Nota*: pendiente de la amenaza tecnológica en cada categoría, calculada como la suma del coeficiente de la amenaza y de su interacción con la categoría, con el error estándar de esa suma. Prueba conjunta: razón de verosimilitud de cada modelo frente al modelo 4 sin la interacción. `r nota_modelos` `r nota_pais`
+
+```{r}
+#| label: tbl-a-sector
+#| tbl-cap: "Pendiente de la amenaza tecnológica por sector de actividad (análisis exploratorio)"
+#| tbl-cap-location: top
+
+tabla_sec <- pendientes_sec %>%
+  mutate(valor = paste0(formatC(b, format = "f", digits = 3, decimal.mark = ","),
+                        " (", formatC(se, format = "f", digits = 3, decimal.mark = ","), ")",
+                        as.character(cut(p, c(0, 0.001, 0.01, 0.05, 1), labels = c("\\*\\*\\*", "\\*\\*", "\\*", ""), include.lowest = TRUE))),
+         dv = dv_es[dv]) %>%
+  select(sector, dv, valor) %>%
+  tidyr::pivot_wider(names_from = dv, values_from = valor) %>%
+  mutate(N = format(as.vector(table(data$sector_cat)[sector]), big.mark = ".", decimal.mark = ",", trim = TRUE),
+         sector = sectores[sector]) %>%
+  select(sector, N, all_of(unname(dv_es)))
+
+conj_sec <- pruebas_sec %>%
+  mutate(valor = paste0("χ² = ", formatC(chi2, format = "f", digits = 2, decimal.mark = ","), " (", gl, " gl), p = ",
+                        formatC(p, format = "f", digits = 3, decimal.mark = ",")),
+         dv = dv_es[dv]) %>%
+  select(dv, valor) %>%
+  tidyr::pivot_wider(names_from = dv, values_from = valor) %>%
+  mutate(sector = "Prueba conjunta", N = "")
+
+kable(bind_rows(tabla_sec, conj_sec), format = "pipe", col.names = c("Sector", "N", unname(dv_es)),
+      align = c("l", "r", "c", "c", "c", "c"))
+```
+
+*Nota*: modelos con una interacción entre la amenaza tecnológica y el sector de actividad. La pendiente de cada sector es la suma del coeficiente de la amenaza y de su interacción con el sector, con el error estándar de esa suma. Prueba conjunta: razón de verosimilitud frente al modelo 4 sin la interacción. N: personas de cada sector en la muestra analítica. `r nota_modelos` `r nota_pais`
+
+```{r}
+#| label: tbl-a-gasto-social
+#| tbl-cap: "Prestaciones por desempleo y gasto social público"
+#| tbl-cap-location: top
+
+mr <- tablas_a$gasto_social$tabla
+kable(mr[-1, ], col.names = mr[1, ], format = "pipe", align = c("l", rep("c", ncol(mr) - 1)))
+```
+
+*Nota*: variable dependiente: dirección de la compensación. El tercer modelo incluye una pendiente aleatoria por país para la amenaza tecnológica. `r nota_modelos` `r nota_pais_socx`

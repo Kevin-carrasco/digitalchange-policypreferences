@@ -1,0 +1,3249 @@
+% Options for packages loaded elsewhere
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\PassOptionsToPackage{dvipsnames,svgnames,x11names}{xcolor}
+%
+\documentclass[
+  spanish,
+  12pt,
+]{article}
+\usepackage{xcolor}
+\usepackage[margin=2cm]{geometry}
+\usepackage{amsmath,amssymb}
+\setcounter{secnumdepth}{5}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+  \setmainfont[]{Times New Roman}
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\usepackage{setspace}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+% Make \paragraph and \subparagraph free-standing
+\makeatletter
+\ifx\paragraph\undefined\else
+  \let\oldparagraph\paragraph
+  \renewcommand{\paragraph}{
+    \@ifstar
+      \xxxParagraphStar
+      \xxxParagraphNoStar
+  }
+  \newcommand{\xxxParagraphStar}[1]{\oldparagraph*{#1}\mbox{}}
+  \newcommand{\xxxParagraphNoStar}[1]{\oldparagraph{#1}\mbox{}}
+\fi
+\ifx\subparagraph\undefined\else
+  \let\oldsubparagraph\subparagraph
+  \renewcommand{\subparagraph}{
+    \@ifstar
+      \xxxSubParagraphStar
+      \xxxSubParagraphNoStar
+  }
+  \newcommand{\xxxSubParagraphStar}[1]{\oldsubparagraph*{#1}\mbox{}}
+  \newcommand{\xxxSubParagraphNoStar}[1]{\oldsubparagraph{#1}\mbox{}}
+\fi
+\makeatother
+
+
+\usepackage{longtable,booktabs,array}
+\newcounter{none} % for unnumbered tables
+\usepackage{calc} % for calculating minipage widths
+% Correct order of tables after \paragraph or \subparagraph
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\makeatother
+% Allow footnotes in longtable head/foot
+\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
+\makesavenoteenv{longtable}
+\usepackage{graphicx}
+\makeatletter
+\newsavebox\pandoc@box
+\newcommand*\pandocbounded[1]{% scales image to fit in text height/width
+  \sbox\pandoc@box{#1}%
+  \Gscale@div\@tempa{\textheight}{\dimexpr\ht\pandoc@box+\dp\pandoc@box\relax}%
+  \Gscale@div\@tempb{\linewidth}{\wd\pandoc@box}%
+  \ifdim\@tempb\p@<\@tempa\p@\let\@tempa\@tempb\fi% select the smaller of both
+  \ifdim\@tempa\p@<\p@\scalebox{\@tempa}{\usebox\pandoc@box}%
+  \else\usebox{\pandoc@box}%
+  \fi%
+}
+% Set default figure placement to htbp
+\def\fps@figure{htbp}
+\makeatother
+
+
+% definitions for citeproc citations
+\NewDocumentCommand\citeproctext{}{}
+\NewDocumentCommand\citeproc{mm}{%
+  \begingroup\def\citeproctext{#2}\cite{#1}\endgroup}
+\makeatletter
+ % allow citations to break across lines
+ \let\@cite@ofmt\@firstofone
+ % avoid brackets around text for \cite:
+ \def\@biblabel#1{}
+ \def\@cite#1#2{{#1\if@tempswa , #2\fi}}
+\makeatother
+\newlength{\cslhangindent}
+\setlength{\cslhangindent}{1.5em}
+\newlength{\csllabelwidth}
+\setlength{\csllabelwidth}{3em}
+\newenvironment{CSLReferences}[2] % #1 hanging-indent, #2 entry-spacing
+ {\begin{list}{}{%
+  \setlength{\itemindent}{0pt}
+  \setlength{\leftmargin}{0pt}
+  \setlength{\parsep}{0pt}
+  % turn on hanging indent if param 1 is 1
+  \ifodd #1
+   \setlength{\leftmargin}{\cslhangindent}
+   \setlength{\itemindent}{-1\cslhangindent}
+  \fi
+  % set entry spacing
+  \setlength{\itemsep}{#2\baselineskip}}}
+ {\end{list}}
+\usepackage{calc}
+\newcommand{\CSLBlock}[1]{\hfill\break\parbox[t]{\linewidth}{\strut\ignorespaces#1\strut}}
+\newcommand{\CSLLeftMargin}[1]{\parbox[t]{\csllabelwidth}{\strut#1\strut}}
+\newcommand{\CSLRightInline}[1]{\parbox[t]{\linewidth - \csllabelwidth}{\strut#1\strut}}
+\newcommand{\CSLIndent}[1]{\hspace{\cslhangindent}#1}
+
+\ifLuaTeX
+\usepackage[bidi=basic,shorthands=off]{babel}
+\else
+\usepackage[bidi=default,shorthands=off]{babel}
+\fi
+\ifPDFTeX
+\else
+\babelfont{rm}[]{Times New Roman}
+\fi
+\ifLuaTeX
+  \usepackage{selnolig} % disable illegal ligatures
+\fi
+
+
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+
+
+
+ 
+
+
+\usepackage[noblocks]{authblk}
+\renewcommand*{\Authsep}{, }
+\renewcommand*{\Authand}{, }
+\renewcommand*{\Authands}{, }
+\renewcommand\Affilfont{\small}
+\usepackage{etoolbox}
+\AtBeginEnvironment{longtable}{\footnotesize}
+\makeatletter
+\@ifpackageloaded{tcolorbox}{}{\usepackage[skins,breakable]{tcolorbox}}
+\@ifpackageloaded{fontawesome5}{}{\usepackage{fontawesome5}}
+\definecolor{quarto-callout-color}{HTML}{909090}
+\definecolor{quarto-callout-note-color}{HTML}{0758E5}
+\definecolor{quarto-callout-important-color}{HTML}{CC1914}
+\definecolor{quarto-callout-warning-color}{HTML}{EB9113}
+\definecolor{quarto-callout-tip-color}{HTML}{00A047}
+\definecolor{quarto-callout-caution-color}{HTML}{FC5300}
+\definecolor{quarto-callout-color-frame}{HTML}{acacac}
+\definecolor{quarto-callout-note-color-frame}{HTML}{4582ec}
+\definecolor{quarto-callout-important-color-frame}{HTML}{d9534f}
+\definecolor{quarto-callout-warning-color-frame}{HTML}{f0ad4e}
+\definecolor{quarto-callout-tip-color-frame}{HTML}{02b875}
+\definecolor{quarto-callout-caution-color-frame}{HTML}{fd7e14}
+\makeatother
+\makeatletter
+\@ifpackageloaded{caption}{}{\usepackage{caption}}
+\AtBeginDocument{%
+\ifdefined\contentsname
+  \renewcommand*\contentsname{Tabla de contenidos}
+\else
+  \newcommand\contentsname{Tabla de contenidos}
+\fi
+\ifdefined\listfigurename
+  \renewcommand*\listfigurename{Listado de Figuras}
+\else
+  \newcommand\listfigurename{Listado de Figuras}
+\fi
+\ifdefined\listtablename
+  \renewcommand*\listtablename{Listado de Tablas}
+\else
+  \newcommand\listtablename{Listado de Tablas}
+\fi
+\ifdefined\figurename
+  \renewcommand*\figurename{Figura}
+\else
+  \newcommand\figurename{Figura}
+\fi
+\ifdefined\tablename
+  \renewcommand*\tablename{Tabla}
+\else
+  \newcommand\tablename{Tabla}
+\fi
+}
+\@ifpackageloaded{float}{}{\usepackage{float}}
+\floatstyle{ruled}
+\@ifundefined{c@chapter}{\newfloat{codelisting}{h}{lop}}{\newfloat{codelisting}{h}{lop}[chapter]}
+\floatname{codelisting}{Listado}
+\newcommand*\listoflistings{\listof{codelisting}{Listado de Listados}}
+\makeatother
+\makeatletter
+\makeatother
+\makeatletter
+\@ifpackageloaded{caption}{}{\usepackage{caption}}
+\@ifpackageloaded{subcaption}{}{\usepackage{subcaption}}
+\makeatother
+\usepackage{bookmark}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  pdftitle={{[}Working title{]} Percepciones del cambio tecnológico y preferencias de política social de los trabajadores en 27 países de la OCDE},
+  pdfauthor={Kevin Carrasco},
+  pdflang={es},
+  colorlinks=true,
+  linkcolor={blue},
+  filecolor={Maroon},
+  citecolor={Blue},
+  urlcolor={Blue},
+  pdfcreator={LaTeX via pandoc}}
+
+
+\title{{[}Working title{]} Percepciones del cambio tecnológico y
+preferencias de política social de los trabajadores en 27 países de la
+OCDE}
+
+
+  \author{Kevin Carrasco}
+            \affil{%
+                  Núcleo Milenio sobre Evolución del Trabajo (M-NEW)
+              }
+      
+\date{}
+\begin{document}
+\maketitle
+
+
+\setstretch{1.15}
+\section{Introducción}\label{introducciuxf3n}
+
+La difusión de la inteligencia artificial (IA), y en particular de la IA
+generativa, ha reabierto la pregunta sobre cómo deben responder los
+Estados a las transformaciones tecnológicas del trabajo. Las olas
+previas de automatización afectaron sobre todo a tareas rutinarias y a
+ocupaciones de calificación baja y media
+(\citeproc{ref-acemoglu_tasks_2022}{Acemoglu \& Restrepo, 2022};
+\citeproc{ref-autor_why_2015}{Autor, 2015};
+\citeproc{ref-frey_future_2017}{Frey \& Osborne, 2017}). Las
+estimaciones recientes indican que la exposición a la IA generativa
+alcanza también a ocupaciones cognitivas de mayor calificación y
+salario, como las de las finanzas, el derecho o la medicina, y que en
+muchas de ellas es más probable que transforme las tareas a que elimine
+los puestos de trabajo (\citeproc{ref-eloundou_gpts_2024}{Eloundou
+et~al., 2024}; \citeproc{ref-gmyrek_generative_2023}{Gmyrek et~al.,
+2023}; \citeproc{ref-oecd_employment_2023}{OECD, 2023}). Esta ampliación
+de la exposición vuelve más incierto quiénes ganarán y quiénes perderán
+con el cambio tecnológico
+(\citeproc{ref-haslberger_rage_2025}{Haslberger et~al., 2025}) y abre
+una disputa sobre qué debe hacer el Estado frente a él. Algunas
+propuestas apuntan a facilitar la adaptación mediante la inversión en
+educación, reentrenamiento e infraestructura digital, otras a compensar
+las pérdidas mediante prestaciones más generosas o una renta básica, y
+otras a proteger los empleos y las industrias existentes mediante
+impuestos a la automatización, subsidios a las industrias afectadas, la
+preferencia por los trabajadores del país o los aranceles
+(\citeproc{ref-busemeyer_preferred_2023}{Busemeyer et~al., 2023};
+\citeproc{ref-colantone_trade_2018}{Colantone \& Stanig, 2018};
+\citeproc{ref-gallego_technological_2022}{Gallego et~al., 2022};
+\citeproc{ref-lee_luddite_2024}{Lee, 2024}).
+
+Este artículo estudia las preferencias de la ciudadanía sobre estas
+respuestas desde la sociología del Estado de bienestar y la economía
+política comparada. Su objeto son las preferencias de política social
+frente al cambio tecnológico, que comprenden tanto la cantidad de
+intervención estatal que las personas demandan como el tipo de respuesta
+que priorizan. Los factores asociados que examina son las percepciones
+sobre el cambio tecnológico, referidas al propio empleo y a los efectos
+de la IA sobre la sociedad, y el contexto institucional en que esas
+percepciones se traducen en preferencias.
+
+La investigación sobre las consecuencias políticas del cambio
+tecnológico ha mostrado que el riesgo de automatización se asocia con
+las preferencias de política social, aunque los mecanismos que conectan
+ambos fenómenos siguen siendo poco comprendidos
+(\citeproc{ref-gallego_automation_2022}{Gallego \& Kurer, 2022}).
+Quienes trabajan en ocupaciones más expuestas o perciben un mayor riesgo
+de ser reemplazados tienden a apoyar más la redistribución y la
+compensación, sin un aumento equivalente del apoyo a la inversión social
+(\citeproc{ref-busemeyer_social_2022}{Busemeyer \& Sahm, 2022};
+\citeproc{ref-busemeyer_dealing_2023}{Busemeyer \& Tober, 2023};
+\citeproc{ref-kurer_automation_2022}{Kurer \& Häusermann, 2022};
+\citeproc{ref-thewissen_automation_2019}{Thewissen \& Rueda, 2019}).
+Otros estudios encuentran que la preocupación por el desplazamiento se
+orienta hacia medidas que frenan el cambio tecnológico y apenas modifica
+la demanda de compensación (\citeproc{ref-bicchi_unpacking_2025}{Bicchi
+et~al., 2025}; \citeproc{ref-gallego_technological_2022}{Gallego et~al.,
+2022}). Una tercera línea muestra que los trabajadores amenazados por la
+automatización expresan mayor hostilidad hacia el comercio y la
+inmigración y mayor apoyo a la derecha radical
+(\citeproc{ref-anelli_individual_2021}{Anelli et~al., 2021};
+\citeproc{ref-im_losers_2019}{Im et~al., 2019};
+\citeproc{ref-wu_misattributed_2022}{Wu, 2022}). Estos resultados
+ofrecen respuestas distintas a la pregunta de hacia dónde se dirige la
+demanda de quienes perciben el cambio tecnológico como una amenaza.
+
+Hasta ahora, esta literatura comparte tres rasgos que dificultan
+responder esa pregunta. El primero es el supuesto de que el vínculo
+entre tecnología y preferencias pasa por el interés propio, de modo que
+la percepción relevante es la que cada persona tiene sobre su propio
+empleo. La investigación sobre actitudes redistributivas muestra, sin
+embargo, que el apoyo a las políticas sociales responde también a normas
+compartidas de justicia (\citeproc{ref-cavaille_fair_2025}{Cavaillé,
+2025}), y la tecnología genera expectativas sobre lo que ocurrirá en la
+sociedad que pueden activar esas normas. El segundo rasgo es que las
+respuestas se han estudiado una por una o mediante asignaciones
+presupuestarias que fijan de antemano el monto total
+(\citeproc{ref-busemeyer_dealing_2023}{Busemeyer \& Tober, 2023}), lo
+que impide saber si el cambio tecnológico aumenta la demanda de
+intervención estatal o la reorienta hacia respuestas específicas. El
+tercero es que las medidas que resguardan el mercado laboral nacional de
+la competencia externa rara vez se han analizado como respuesta al
+cambio tecnológico, junto a la inversión, la compensación y las medidas
+que frenan la tecnología.
+
+Este artículo sostiene que las preferencias frente al cambio tecnológico
+tienen dos componentes que responden a lógicas distintas. El volumen
+corresponde a la cantidad de intervención estatal que se demanda,
+mientras que la dirección refiere a la respuesta que se prioriza entre
+la inversión, la compensación y la protección. Las percepciones sobre el
+cambio tecnológico pueden reorientar la demanda sin aumentarla, y el
+sentido de esa reorientación depende del motivo que activan, sea el
+interés propio o la adhesión a normas de justicia. A partir de la
+encuesta Risks That Matter de la OCDE de 2024, que cubre a más de 27.000
+personas de entre 18 y 64 años en 27 países
+(\citeproc{ref-oecd_risks_2024}{OECD, 2024};
+\citeproc{ref-thomas_survey_2025}{Thomas et~al., 2025}), el artículo
+contribuye a la investigación sobre cambio tecnológico y Estado de
+bienestar al separar el volumen de la dirección de la demanda, al
+incorporar a la protección las medidas que resguardan el mercado
+nacional de la competencia externa y al evaluar el papel de
+instituciones que corresponden a cada repertorio. La pregunta que
+orienta el estudio es cómo se relacionan las percepciones sobre el
+cambio tecnológico con la cantidad de intervención estatal que demandan
+las personas y con el tipo de respuesta que priorizan, y cómo condiciona
+el contexto institucional esa relación.
+
+Las percepciones sobre el propio empleo activan el interés propio y
+orientan la demanda hacia las respuestas que protegen o amplían la
+posición de cada persona, en una dirección que depende de si la amenaza
+se atribuye a riesgos que el Estado debe asegurar, a la tecnología y las
+empresas que la adoptan o a la competencia extranjera. Las expectativas
+sobre los efectos sociales de la IA activan, por su parte, normas de
+justicia que definen si el cambio tecnológico se percibe como un
+problema de adaptación o como un problema distributivo, y ambas
+percepciones se traducen en preferencias dentro de instituciones que
+pueden volver más disponible el repertorio correspondiente o reducir la
+demanda de expandirlo.
+
+De este modo, el estudio relaciona tres conjuntos de conceptos. Las
+preferencias frente al cambio tecnológico, en su volumen y su dirección,
+constituyen el objeto de estudio. Las percepciones sobre el propio
+empleo y las expectativas sobre los efectos sociales de la IA
+constituyen sus factores individuales, y las prestaciones por desempleo
+y las políticas de mercado laboral constituyen su contexto. Las
+secciones siguientes precisan cada concepto y presentan las hipótesis
+que se derivan de ellos.
+
+\subsection{Preferencias frente al cambio
+tecnológico}\label{preferencias-frente-al-cambio-tecnoluxf3gico}
+
+Las preferencias frente al cambio tecnológico se refieren al apoyo de
+las personas a las respuestas que el Estado puede adoptar ante la
+transformación tecnológica del trabajo. Estas respuestas pueden
+distinguirse según el momento en que intervienen y según quién asume los
+costos del ajuste. La inversión interviene antes de que los riesgos se
+materialicen y busca que las personas y la economía puedan aprovechar
+las nuevas tecnologías mediante la educación, el reentrenamiento y la
+infraestructura digital. Se vincula con la perspectiva de la inversión
+social, que orienta la política social hacia la formación de capacidades
+a lo largo de la vida
+(\citeproc{ref-garritzmann_public_2018}{Garritzmann et~al., 2018};
+\citeproc{ref-morel_towards_2012}{Morel et~al., 2012}). La compensación
+interviene una vez que los riesgos se materializan, mediante
+transferencias que aseguran el ingreso de quienes pierden su empleo o
+ven reducidas sus oportunidades, y responde a la lógica del
+aseguramiento social (\citeproc{ref-iversen_asset_2001}{Iversen \&
+Soskice, 2001}; \citeproc{ref-rehm_risks_2009}{Rehm, 2009}). Su
+discusión se ha renovado con la expansión del trabajo mediado por
+plataformas, que externaliza responsabilidades propias de la relación
+laboral (\citeproc{ref-vallas_what_2020}{Vallas \& Schor, 2020}) y
+presenta brechas de cobertura que obligan a adaptar los sistemas de
+protección social (\citeproc{ref-behrendt_social_2019}{Behrendt et~al.,
+2019}).
+
+La protección busca evitar que los costos del cambio recaigan sobre los
+trabajadores de los sectores afectados, preservando los empleos y las
+industrias existentes frente a la sustitución por máquinas o por
+competidores extranjeros. A diferencia de la protección social, que
+asegura el ingreso y en este estudio corresponde a la compensación, su
+objeto son los puestos de trabajo y las industrias. Comprende medidas
+que frenan o encarecen la sustitución tecnológica, como los impuestos a
+la automatización y los subsidios a los sectores más afectados, y
+medidas que resguardan el mercado laboral nacional de la competencia
+externa, como la preferencia por los trabajadores del país en la
+contratación y los aranceles. Las primeras corresponden a lo que la
+literatura ha denominado proteccionismo tecnológico
+(\citeproc{ref-bicchi_unpacking_2025}{Bicchi et~al., 2025};
+\citeproc{ref-gallego_technological_2022}{Gallego et~al., 2022}) y
+trasladan parte de los costos del ajuste hacia las empresas que
+automatizan o hacia el presupuesto público. Las segundas se vinculan con
+el nacionalismo económico, que ha ganado apoyo en las regiones más
+expuestas a la competencia de las importaciones
+(\citeproc{ref-colantone_trade_2018}{Colantone \& Stanig, 2018}), y con
+criterios de merecimiento que, en los países europeos, sitúan a los
+inmigrantes en el último lugar entre los grupos que merecen apoyo
+(\citeproc{ref-vanoorschot_making_2006}{Van Oorschot, 2006}). Ambos
+tipos de medidas difieren en el agente al que apuntan y comparten el
+objetivo de preservar las posiciones existentes frente al ajuste. Ese
+objetivo distingue a la protección de la inversión, que prepara a las
+personas para el cambio, y de la compensación, que atenúa las pérdidas
+que este produce.
+
+Los tres repertorios expresan intereses distintos en el mercado laboral.
+En mercados laborales dualizados, quienes cuentan con empleos estables
+priorizan la protección del empleo, mientras que quienes tienen
+inserciones más precarias priorizan las políticas activas y pasivas
+dirigidas a los desempleados
+(\citeproc{ref-emmenegger_age_2012}{Emmenegger et~al., 2012};
+\citeproc{ref-rueda_social_2007}{Rueda, 2007}). La protección del
+empleo, la protección frente al desempleo y la formación de
+calificaciones funcionan, además, como complementos institucionales
+(\citeproc{ref-estevez-abe_social_2001}{Estevez-Abe et~al., 2001}). Las
+preferencias entre repertorios reflejan, por lo tanto, un conflicto
+distributivo sobre quién asume los costos del cambio tecnológico.
+
+Estas preferencias tienen dos componentes. El volumen corresponde al
+nivel general de apoyo a las respuestas frente al cambio tecnológico y
+expresa cuánta intervención estatal se demanda. La dirección corresponde
+al apoyo a cada repertorio en relación con ese nivel general y expresa
+qué respuesta se prioriza. Dos personas pueden diferir en el volumen y
+coincidir en la dirección, como ocurre cuando una apoya con intensidad
+todas las respuestas y otra las apoya moderadamente, pero ambas
+privilegian la compensación por sobre la inversión. La distinción retoma
+la diferencia entre el tamaño y el contenido de la intervención estatal,
+ya que los conflictos distributivos sobre qué políticas expandir siguen
+dinámicas distintas de los debates sobre el tamaño general del Estado de
+bienestar (\citeproc{ref-busemeyer_public_2017}{Busemeyer \&
+Garritzmann, 2017}; \citeproc{ref-hausermann_politics_2019}{Häusermann
+et~al., 2019}).
+
+La evidencia empírica muestra que esta distinción es necesaria. Cuando
+las medidas se evalúan una por una, sin restricciones presupuestarias,
+el apoyo tiende a ser alto para casi todas y disminuye considerablemente
+al introducir costos o disyuntivas explícitas
+(\citeproc{ref-busemeyer_public_2017}{Busemeyer \& Garritzmann, 2017};
+\citeproc{ref-hausermann_politics_2019}{Häusermann et~al., 2019}). La
+inversión social, en particular la educación, concentra un apoyo amplio
+(\citeproc{ref-busemeyer_public_2017}{Busemeyer \& Garritzmann, 2017}),
+y entre las respuestas al cambio tecnológico la inversión es la que
+recibe mayor apoyo (\citeproc{ref-churchill_policy_2025}{Churchill
+et~al., 2025}). Busemeyer \& Tober
+(\citeproc{ref-busemeyer_dealing_2023}{2023}) abordan la disyuntiva
+entre respuestas mediante una asignación presupuestaria que obliga a
+distribuir recursos entre opciones. Ese diseño identifica prioridades,
+pero fija de antemano el monto total, por lo que no permite saber si el
+cambio tecnológico aumenta la demanda de intervención estatal o solo la
+reorienta. Separar el volumen de la dirección permite responder ambas
+preguntas a partir de las mismas preferencias.
+
+\subsection{Amenaza y beneficio tecnológico en el propio
+empleo}\label{amenaza-y-beneficio-tecnoluxf3gico-en-el-propio-empleo}
+
+La percepción de amenaza tecnológica se refiere a la probabilidad que
+cada persona asigna a perder su empleo por la automatización, por la
+competencia mediada por plataformas o por la obsolescencia de sus
+habilidades. El beneficio esperado se refiere a la probabilidad de que
+la tecnología mejore las condiciones del propio trabajo. Ambas
+percepciones constituyen dimensiones distintas, porque la tecnología
+sustituye trabajo humano en algunas tareas y lo complementa en otras
+(\citeproc{ref-autor_why_2015}{Autor, 2015}). En España, por ejemplo, la
+mayoría de los trabajadores evalúa positivamente el efecto de las nuevas
+tecnologías en su lugar de trabajo, aunque existe una minoría preocupada
+por el desplazamiento (\citeproc{ref-gallego_technological_2022}{Gallego
+et~al., 2022}). La amenaza percibida se distribuye de manera desigual
+entre ocupaciones y grupos sociales, y sigue en buena medida la
+exposición objetiva de las tareas
+(\citeproc{ref-dekker_fear_2017}{Dekker et~al., 2017};
+\citeproc{ref-gallego_technological_2022}{Gallego et~al., 2022}). La
+percepción de amenaza ubica así a cada persona en una posición de riesgo
+frente al cambio tecnológico, del mismo modo en que el riesgo de empleo
+atípico o de desempleo permite distinguir a quienes están dentro y fuera
+de la protección del mercado laboral
+(\citeproc{ref-schwander_who_2013}{Schwander \& Häusermann, 2013}).
+
+Respecto del volumen de la demanda, la teoría más establecida sostiene
+que el Estado de bienestar funciona como un seguro, de modo que quienes
+enfrentan mayores riesgos en el mercado laboral demandan más protección
+social (\citeproc{ref-cusack_risks_2006}{Cusack et~al., 2006};
+\citeproc{ref-iversen_asset_2001}{Iversen \& Soskice, 2001};
+\citeproc{ref-rehm_risks_2009}{Rehm, 2009}). La inseguridad laboral
+subjetiva aumenta la demanda de redistribución, en especial entre
+quienes temen un desempleo prolongado
+(\citeproc{ref-marx_effect_2014}{Marx, 2014}), y el empleo en
+ocupaciones intensivas en tareas rutinarias se asocia con un mayor apoyo
+al seguro público frente a la pérdida de ingresos
+(\citeproc{ref-thewissen_automation_2019}{Thewissen \& Rueda, 2019}).
+Desde esta perspectiva, la amenaza tecnológica debería aumentar la
+cantidad de intervención estatal que demandan quienes se sienten
+amenazados.
+
+Hay razones, sin embargo, para dudar de que esa traducción sea directa.
+El riesgo de automatización se asocia con más apoyo a la redistribución
+y con menos apoyo a la inversión social, sin relación con el apoyo a una
+renta básica (\citeproc{ref-busemeyer_social_2022}{Busemeyer \& Sahm,
+2022}), y los trabajadores que se sienten amenazados apoyan la
+compensación pasiva sin aumentar su apoyo a las políticas activas
+(\citeproc{ref-kurer_automation_2022}{Kurer \& Häusermann, 2022}). La
+disposición a ampliar la intervención estatal depende, además, de la
+confianza en que el Estado actuará con eficiencia e imparcialidad
+(\citeproc{ref-rothstein_just_1998}{Rothstein, 1998};
+\citeproc{ref-svallfors_government_2013}{Stefan Svallfors, 2013}). Si
+quienes se sienten amenazados dudan de la capacidad estatal para
+gestionar el cambio tecnológico, su demanda puede concentrarse en
+respuestas específicas sin aumentar en su conjunto. La lógica del
+aseguramiento permite, con todo, formular una primera hipótesis:
+
+\begin{tcolorbox}[enhanced jigsaw, arc=.35mm, bottomrule=.15mm, breakable, colback=white, colframe=quarto-callout-note-color-frame, left=2mm, leftrule=.75mm, opacityback=0, rightrule=.15mm, toprule=.15mm]
+
+H1: Quienes perciben una mayor amenaza tecnológica sobre su empleo
+demandarán más intervención estatal frente al cambio tecnológico.
+
+\end{tcolorbox}
+
+Respecto de la dirección, la respuesta preferida depende de a qué se
+atribuye la amenaza. La demanda de protección comercial tras la pérdida
+de un empleo varía según la causa que se le atribuye y es mayor cuando
+esta se asocia al comercio internacional
+(\citeproc{ref-ditella_labour_2020}{\textbf{ditella\_labour\_2020?}}).
+En el ámbito tecnológico, la preocupación por la descalificación se
+asocia con demandas de gravar a las empresas que se consideran
+responsables de los cambios
+(\citeproc{ref-churchill_policy_2025}{Churchill et~al., 2025}). A partir
+de la atribución pueden formularse dos tesis sobre hacia dónde se dirige
+la amenaza tecnológica.
+
+La tesis de la compensación sostiene que la amenaza tecnológica se
+canaliza hacia el Estado como asegurador. Las prestaciones aseguran el
+ingreso de manera inmediata si el riesgo se materializa, mientras que
+los beneficios de la formación son inciertos, llegan a mediano plazo y
+dependen de la capacidad de cada persona para reconvertirse
+(\citeproc{ref-busemeyer_dealing_2023}{Busemeyer \& Tober, 2023}). Los
+estudios que usan medidas subjetivas u ocupacionales del riesgo de
+automatización encuentran, entre quienes enfrentan más riesgo, un mayor
+apoyo a la compensación y un apoyo igual o menor a la inversión social
+(\citeproc{ref-busemeyer_social_2022}{Busemeyer \& Sahm, 2022};
+\citeproc{ref-busemeyer_dealing_2023}{Busemeyer \& Tober, 2023};
+\citeproc{ref-kurer_automation_2022}{Kurer \& Häusermann, 2022}).
+
+\begin{tcolorbox}[enhanced jigsaw, arc=.35mm, bottomrule=.15mm, breakable, colback=white, colframe=quarto-callout-note-color-frame, left=2mm, leftrule=.75mm, opacityback=0, rightrule=.15mm, toprule=.15mm]
+
+H2a: Quienes perciben una mayor amenaza tecnológica sobre su empleo
+darán mayor prioridad a la compensación y menor prioridad a la
+inversión.
+
+\end{tcolorbox}
+
+La tesis de la protección sostiene que quienes se sienten amenazados
+buscan preservar su posición frente al ajuste, y que esa demanda puede
+seguir dos vías. La primera dirige la amenaza contra su fuente. Para
+quien teme perder su empleo, las medidas que frenan la automatización
+actúan sobre el origen del riesgo, mientras que la compensación solo
+atenúa sus consecuencias. Por un lado, en España, los trabajadores
+preocupados por el desplazamiento prefieren políticas que frenen el
+cambio tecnológico y, en menor medida, demandan más compensación
+(\citeproc{ref-bicchi_unpacking_2025}{Bicchi et~al., 2025};
+\citeproc{ref-gallego_technological_2022}{Gallego et~al., 2022}). Por
+otro lado, en el Reino Unido y Suecia la preocupación por la
+automatización se asocia con el apoyo a restringirla, sobre todo cuando
+las salvaguardas laborales se perciben débiles
+(\citeproc{ref-lee_luddite_2024}{Lee, 2024}).
+
+La segunda vía desplaza la amenaza tecnológica hacia la competencia
+extranjera. Los trabajadores más expuestos a la automatización muestran
+mayor oposición al comercio y a la inmigración, lo que sugiere que
+atribuyen a la apertura pérdidas que produce la tecnología
+(\citeproc{ref-wu_misattributed_2022}{Wu, 2022}), y apoyan en mayor
+medida a partidos de derecha radical que combinan la preferencia
+nacional con el proteccionismo económico
+(\citeproc{ref-anelli_individual_2021}{Anelli et~al., 2021};
+\citeproc{ref-im_losers_2019}{Im et~al., 2019};
+\citeproc{ref-kurer_declining_2020}{Kurer, 2020}). La evidencia
+experimental indica, con todo, que la sustitución por robots genera
+menos demanda de medidas preventivas que la deslocalización o la
+contratación de trabajadores extranjeros
+(\citeproc{ref-kuo_automation_2024}{Kuo et~al., 2024}). Por cualquiera
+de las dos vías, la amenaza tecnológica debería aumentar la prioridad de
+la protección.
+
+\begin{tcolorbox}[enhanced jigsaw, arc=.35mm, bottomrule=.15mm, breakable, colback=white, colframe=quarto-callout-note-color-frame, left=2mm, leftrule=.75mm, opacityback=0, rightrule=.15mm, toprule=.15mm]
+
+H2b: Quienes perciben una mayor amenaza tecnológica sobre su empleo
+darán mayor prioridad a la protección.
+
+\end{tcolorbox}
+
+El beneficio esperado de la tecnología sitúa a la persona en una
+posición distinta. Quien anticipa que la tecnología mejorará sus
+condiciones de trabajo ocupa una posición complementaria con el cambio
+tecnológico, más cercana a la ampliación de sus tareas que a su
+sustitución. Según Gmyrek et~al.
+(\citeproc{ref-gmyrek_generative_2023}{2023}), esa ampliación es el
+efecto más probable de la IA generativa en muchas ocupaciones. La
+inversión en educación, reentrenamiento e infraestructura amplía las
+oportunidades de aprovechar la tecnología, mientras que las medidas de
+protección, al frenar el ajuste, ponen en riesgo esos beneficios
+(\citeproc{ref-gmyrek_generative_2023}{Gmyrek et~al., 2023}). Busemeyer
+et~al. (\citeproc{ref-busemeyer_preferred_2023}{2023}) esperan que
+quienes usan tecnología de forma constante en el trabajo, tienen
+educación universitaria y mayores ingresos prefieran la inversión, y
+encuentran que incluso en esos grupos el aumento del riesgo percibido
+desplaza el apoyo hacia las políticas compensatorias. A su vez, la
+información de que las ganancias de la automatización se distribuyen
+ampliamente aumenta el apoyo a acelerarla, en especial entre los
+trabajadores menos expuestos (\citeproc{ref-lee_luddite_2024}{Lee,
+2024}).
+
+\begin{tcolorbox}[enhanced jigsaw, arc=.35mm, bottomrule=.15mm, breakable, colback=white, colframe=quarto-callout-note-color-frame, left=2mm, leftrule=.75mm, opacityback=0, rightrule=.15mm, toprule=.15mm]
+
+H3: Quienes esperan mayores beneficios de la tecnología en su empleo
+darán mayor prioridad a la inversión y menor prioridad a la protección.
+
+\end{tcolorbox}
+
+\subsection{Expectativas sobre los efectos sociales de la inteligencia
+artificial}\label{expectativas-sobre-los-efectos-sociales-de-la-inteligencia-artificial}
+
+Las expectativas sobre los efectos sociales de la IA se refieren a lo
+que las personas anticipan que ocurrirá en la sociedad, como un aumento
+de la desigualdad y del desempleo o la creación de empleos y la mejora
+de las condiciones de trabajo. Estas expectativas funcionan como
+diagnósticos sobre el tipo de transformación que producirá la
+tecnología. Si la IA se percibe como fuente de desigualdad y desempleo,
+el cambio tecnológico aparece como un problema distributivo en el que
+unos concentran las ganancias y otros asumen los costos. Si se percibe
+como fuente de empleo y de mejores condiciones de trabajo, aparece como
+un problema de adaptación.
+
+Estos diagnósticos se vinculan con las preferencias a través de normas
+de justicia. La investigación sobre actitudes redistributivas identifica
+dos motivos en el apoyo a las políticas sociales, que son el interés en
+el propio ingreso esperado y la adhesión a normas compartidas de
+justicia, y muestra que el segundo tiende a predominar salvo cuando las
+consecuencias de una política para el propio ingreso son grandes y
+ciertas (\citeproc{ref-cavaille_fair_2025}{Cavaillé, 2025}). La economía
+moral del Estado de bienestar descansa en normas de reciprocidad y en
+juicios sobre una distribución justa de cargas y beneficios
+(\citeproc{ref-mau_moral_2014}{Mau, 2014}), y un cambio que concentra
+las ganancias en quienes adoptan la tecnología puede percibirse como una
+vulneración de esas normas. El cambio tecnológico ofrece condiciones
+para que este motivo tenga peso, porque solo una fracción de los
+trabajadores percibe un riesgo alto para su propio empleo
+(\citeproc{ref-kurer_automation_2022}{Kurer \& Häusermann, 2022}).
+
+La evidencia reciente es consistente con este razonamiento. La
+exposición directa a la IA generativa aumenta el apoyo a políticas
+sociales activadoras sin elevar el riesgo percibido, un resultado que
+sus autores atribuyen a la preocupación por quienes podrían verse
+perjudicados (\citeproc{ref-haslberger_rage_2025}{Haslberger et~al.,
+2025}). A su vez, la preocupación general por los efectos de la
+tecnología se asocia con el apoyo al proteccionismo tecnológico,
+mientras que el riesgo de sustitución se relaciona solo modestamente con
+algunas políticas redistributivas
+(\citeproc{ref-bicchi_unpacking_2025}{Bicchi et~al., 2025}).
+
+Respecto del volumen, un diagnóstico distributivo convierte el cambio
+tecnológico en un problema colectivo que reclama la acción del Estado. A
+nivel agregado, la desigualdad se asocia con una mayor demanda de
+redistribución (\citeproc{ref-finseraas_income_2009}{Finseraas, 2009}),
+y la exposición de las economías a riesgos externos ha ido acompañada de
+una expansión del gasto social, que la hipótesis de compensación
+interpreta como una demanda de aseguramiento frente a esos riesgos
+(\citeproc{ref-rodrik_why_1998}{Rodrik, 1998};
+\citeproc{ref-walter_globalization_2010}{Walter, 2010}).
+
+\begin{tcolorbox}[enhanced jigsaw, arc=.35mm, bottomrule=.15mm, breakable, colback=white, colframe=quarto-callout-note-color-frame, left=2mm, leftrule=.75mm, opacityback=0, rightrule=.15mm, toprule=.15mm]
+
+H4: Las expectativas negativas sobre los efectos sociales de la IA
+aumentarán la demanda de intervención estatal frente al cambio
+tecnológico.
+
+\end{tcolorbox}
+
+Respecto de la dirección, un diagnóstico distributivo favorece las
+respuestas que corrigen la distribución de los costos. La compensación
+redistribuye hacia quienes pierden, y la protección traslada los costos
+del ajuste desde los trabajadores de los sectores afectados hacia las
+empresas que automatizan, el presupuesto público o la competencia
+extranjera. Un diagnóstico de adaptación favorece, en cambio, la
+inversión, porque sitúa el problema en la preparación de las personas y
+del país para aprovechar las oportunidades esperadas y reduce la
+urgencia de compensar pérdidas o de frenar el ajuste.
+
+\begin{tcolorbox}[enhanced jigsaw, arc=.35mm, bottomrule=.15mm, breakable, colback=white, colframe=quarto-callout-note-color-frame, left=2mm, leftrule=.75mm, opacityback=0, rightrule=.15mm, toprule=.15mm]
+
+H5a: Las expectativas negativas sobre los efectos sociales de la IA se
+asociarán con una mayor prioridad de la compensación y de la protección.
+
+H5b: Las expectativas positivas sobre los efectos sociales de la IA se
+asociarán con una mayor prioridad de la inversión y una menor prioridad
+de la compensación y de la protección.
+
+\end{tcolorbox}
+
+\subsection{Contexto institucional}\label{contexto-institucional}
+
+Las preferencias de política social se forman en contextos
+institucionales que contribuyen a moldearlas. La investigación comparada
+ha mostrado que el apoyo a la redistribución varía entre regímenes de
+bienestar (\citeproc{ref-esping-andersen_three_1993}{Esping-Andersen,
+1990}; \citeproc{ref-jaeger_welfare_2006}{Jæger, 2006};
+\citeproc{ref-svallfors_worlds_1997}{S. Svallfors, 1997}), que las
+instituciones de cobertura amplia generan coaliciones de apoyo más
+extensas que las focalizadas (\citeproc{ref-korpi_paradox_1998}{Korpi \&
+Palme, 1998}) y que el diseño institucional influye en el apoyo a las
+políticas a través de los juicios sobre su justicia y sobre el
+merecimiento de sus beneficiarios
+(\citeproc{ref-larsen_institutional_2008}{Larsen, 2008};
+\citeproc{ref-rothstein_just_1998}{Rothstein, 1998}).
+
+Las tipologías de regímenes describen con dificultad a los Estados de
+bienestar reales, que rara vez se ajustan a un tipo puro
+(\citeproc{ref-arts_three_2002}{Arts \& Gelissen, 2002}), y los efectos
+de la protección social sobre la experiencia del riesgo dependen de
+componentes específicos. Las distintas formas de inseguridad laboral
+responden a instrumentos de protección distintos, mientras que la
+generosidad general del Estado de bienestar no tiene un efecto
+sistemático sobre ellas (\citeproc{ref-anderson_workers_2007}{Anderson
+\& Pontusson, 2007}). Las políticas que aseguran el ingreso y la
+empleabilidad reducen la inseguridad laboral percibida
+(\citeproc{ref-chung_institutions_2011}{Chung \& Van Oorschot, 2011}), y
+el temor a los robots es, en alguna medida, mayor donde los trabajadores
+están menos protegidos frente al mercado
+(\citeproc{ref-dekker_fear_2017}{Dekker et~al., 2017}). En el caso de la
+automatización, el tamaño del Estado de bienestar modera la relación
+entre el riesgo y las preferencias de política social
+(\citeproc{ref-busemeyer_social_2022}{Busemeyer \& Sahm, 2022}).
+
+Estos resultados justifican desagregar el contexto institucional según
+los repertorios. Las prestaciones por desempleo corresponden a la
+compensación y las políticas de mercado laboral, a la inversión. En este
+estudio, las políticas de mercado laboral se refieren a las políticas
+activas, que buscan que las personas consigan o conserven un empleo
+mediante la capacitación, el reentrenamiento y otros programas. Esta
+correspondencia sigue la lógica de complementariedad institucional entre
+la protección frente al desempleo y la formación de calificaciones
+(\citeproc{ref-estevez-abe_social_2001}{Estevez-Abe et~al., 2001}).
+
+La literatura sobre retroalimentación de las políticas públicas sostiene
+que las instituciones existentes moldean las preferencias porque
+distribuyen recursos y ofrecen marcos para interpretar los problemas
+(\citeproc{ref-pierson_when_1993}{Pierson, 1993}). Una implicancia de
+este argumento es que las instituciones vuelven disponibles ciertas
+respuestas. Donde un repertorio está institucionalizado, las personas lo
+conocen, lo consideran viable y lo asocian con la manera habitual de
+enfrentar los riesgos, de modo que quienes perciben amenazas tenderían a
+canalizar su demanda hacia él. A este mecanismo puede sumarse otro de
+carácter relacional. Las instituciones restringen las prácticas de las
+personas, esas prácticas se interpretan como expresión de preferencias
+compartidas y las respuestas institucionalizadas adquieren así una
+validez social aparente (\citeproc{ref-puga_ideology_2023}{Puga \& Moya,
+2023}). En China, el riesgo de automatización y el apoyo a la
+responsabilidad estatal se refuerzan mutuamente donde los sistemas
+locales de bienestar son más generosos (\citeproc{ref-fan_how_2024}{Fan
+et~al., 2024}), un patrón consistente con este argumento. La expectativa
+de disponibilidad compite con el argumento de que las instituciones que
+uniforman los riesgos, como una protección del empleo fuerte o
+prestaciones desvinculadas de la participación laboral, reducen el peso
+del riesgo individual en las preferencias
+(\citeproc{ref-gingrich_preferences_2012}{Gingrich \& Ansell, 2012}).
+
+\begin{tcolorbox}[enhanced jigsaw, arc=.35mm, bottomrule=.15mm, breakable, colback=white, colframe=quarto-callout-note-color-frame, left=2mm, leftrule=.75mm, opacityback=0, rightrule=.15mm, toprule=.15mm]
+
+H6a: En los países con mayor gasto en políticas de mercado laboral, la
+amenaza tecnológica y las expectativas negativas sobre la IA se
+traducirán en mayor medida en prioridad para la inversión, y en los
+países con mayor cobertura de las prestaciones por desempleo, en
+prioridad para la compensación.
+
+\end{tcolorbox}
+
+El modelo termostático plantea una expectativa diferente, referida al
+nivel del apoyo. Según este modelo, la opinión pública ajusta su demanda
+de más intervención en un ámbito en función de lo que el Estado ya hace
+en él, de modo que la demanda relativa disminuye donde la política es
+más generosa (\citeproc{ref-soroka_degrees_2010}{Soroka \& Wlezien,
+2010}; \citeproc{ref-wlezien_public_1995a}{Wlezien, 1995}). En el ámbito
+tecnológico, Busemeyer \& Tober
+(\citeproc{ref-busemeyer_dealing_2023}{2023}) encuentran que el apoyo a
+las prestaciones es algo menor en los países con tasas de reemplazo más
+altas, lo que interpretan como un efecto de retroalimentación que limita
+su propia expansión. Ambas expectativas pueden operar a la vez, ya que
+en esos mismos datos las diferencias entre contextos se concentran entre
+las personas de bajo riesgo y se reducen a medida que el riesgo
+percibido aumenta.
+
+\begin{tcolorbox}[enhanced jigsaw, arc=.35mm, bottomrule=.15mm, breakable, colback=white, colframe=quarto-callout-note-color-frame, left=2mm, leftrule=.75mm, opacityback=0, rightrule=.15mm, toprule=.15mm]
+
+H6b: En los países con mayor gasto en políticas de mercado laboral, la
+inversión tendrá menor prioridad, y en los países con mayor cobertura de
+las prestaciones por desempleo, la compensación tendrá menor prioridad.
+
+\end{tcolorbox}
+
+\section{Datos, variables y métodos}\label{datos-variables-y-muxe9todos}
+
+\subsection{Datos}\label{datos}
+
+Este estudio utiliza datos de la ola más reciente (2024) de la encuesta
+Risks That Matter (RTM) de la OCDE (\citeproc{ref-oecd_risks_2024}{OECD,
+2024}), una encuesta comparada de opinión pública que cubre a 27.229
+personas de entre 18 y 64 años en 27 países miembros (Alemania, Austria,
+Bélgica, Canadá, Chile, Corea, Dinamarca, Eslovenia, España, Estados
+Unidos, Estonia, Finlandia, Francia, Grecia, Irlanda, Israel, Italia,
+Letonia, Lituania, México, Noruega, Países Bajos, Polonia, Portugal,
+Reino Unido, Suiza y Türkiye). La encuesta se aplica en línea y cuenta
+con ponderadores de postestratificación calibrados por edad, sexo,
+región y nivel educacional (\citeproc{ref-thomas_survey_2025}{Thomas
+et~al., 2025}). La ola de 2024 incorpora preguntas sobre los efectos
+esperados de la inteligencia artificial en el mercado laboral y sobre el
+apoyo a distintas respuestas públicas frente a la digitalización y el
+cambio tecnológico.
+
+El análisis se restringe a las personas que en la semana previa a la
+entrevista tenían un trabajo remunerado o estaban temporalmente ausentes
+de él por razones de salud u otras (n = 22.063). Esta restricción sigue
+la estructura del cuestionario, ya que las preguntas sobre la amenaza y
+el beneficio de la tecnología para el propio empleo solo se aplican a
+quienes trabajan, de modo que las 5.166 personas no ocupadas, busquen o
+no empleo, quedan fuera del análisis por diseño. Tras eliminar los casos
+con valores perdidos en las variables de los modelos, la muestra
+analítica es de 19.731 personas, el 89,4 \% de la muestra elegible. El
+apéndice reporta el tamaño muestral por país.
+
+\subsection{Variables}\label{variables}
+
+La variable dependiente son las preferencias frente al cambio
+tecnológico, medidas con la batería ``Los gobiernos pueden adoptar
+medidas para ayudar a trabajadores e industrias a enfrentar los desafíos
+de la digitalización y el cambio tecnológico, como habilidades
+obsoletas, escasez de habilidades y posibles pérdidas de empleo.
+Teniendo en cuenta cuánto podrían costar y cómo usted y su familia
+podrían beneficiarse, ¿en qué medida se opondría o apoyaría que el
+gobierno adoptara las siguientes acciones como respuesta a la
+digitalización y el cambio tecnológico?''.\footnote{Las formulaciones de
+  los ítems corresponden a traducciones propias del cuestionario en
+  inglés.} Cada una de las doce medidas se responde en una escala de
+cinco puntos, desde muy en contra (1) hasta muy a favor (5), y la opción
+``no sabe'' se trata como valor perdido. Aunque la pregunta pide
+considerar los costos, cada medida se evalúa por separado y sin una
+restricción presupuestaria.
+
+Las medidas se agrupan en tres repertorios. La inversión reúne la
+preferencia por la inversión en educación universitaria y formación
+profesional para jóvenes, en reentrenamiento para personas en edad de
+trabajar y en infraestructura digital. La compensación reúne las
+preferencias por prestaciones y servicios más accesibles o generosos,
+como el seguro de desempleo o los programas de ingreso mínimo, y una
+renta básica universal e incondicional. La protección reúne las
+preferencias por la introducción o el aumento de un impuesto a los
+robots o a las empresas tecnológicas, los subsidios a las empresas de
+las industrias más afectadas por el cambio tecnológico, la prioridad a
+los trabajadores del país en la contratación y la introducción de
+aranceles para proteger las industrias nacionales. Las tres medidas
+restantes, que son la limitación o reducción de la jornada laboral y la
+promoción de la migración de trabajadores calificados y no calificados,
+no forman parte de los repertorios.
+
+Esta agrupación combina criterios teóricos y empíricos. Un análisis
+factorial exploratorio de las doce medidas, con cinco factores según el
+análisis paralelo, distingue la inversión, la compensación y la
+protección, junto a un factor de migración y otro de reducción de la
+jornada. Los subsidios presentan cargas similares en la protección y en
+la compensación, por lo que el apéndice reporta también los modelos con
+un índice de protección que los excluye. La consistencia interna es
+moderada en la inversión (α = 0,66) y en la protección (α = 0,60). En la
+compensación, que reúne dos ítems, la correlación entre ítems es de
+0,43, con un coeficiente de Spearman-Brown de 0,60
+(\citeproc{ref-eisinga_reliability_2013}{\textbf{eisinga\_reliability\_2013?}}).
+El análisis factorial completo se presenta en el apéndice.
+
+A partir de estas medidas se construyen dos componentes. El volumen
+corresponde al promedio de las doce medidas y expresa el nivel general
+de apoyo a la intervención estatal frente al cambio tecnológico. La
+dirección se mide como la diferencia entre el promedio de cada
+repertorio y el volumen de cada persona, de modo que los valores
+positivos indican que el repertorio recibe más apoyo que el conjunto de
+las medidas y los negativos, menos. Este procedimiento centra las
+respuestas de cada persona en su propio promedio, como propone Schwartz
+(\citeproc{ref-schwartz_overview_2012}{2012}) para medir prioridades
+valóricas, y separa la prioridad asignada a cada repertorio de la
+tendencia general a apoyar las medidas, que puede variar entre personas
+y países por razones sustantivas y por estilos de respuesta
+(\citeproc{ref-rudnev_caveats_2021}{Rudnev, 2021};
+\citeproc{ref-fischer_standardization_2004}{\textbf{fischer\_standardization\_2004?}}).
+
+La Figura~\ref{fig-policies} presenta el apoyo promedio a cada medida
+entre las personas ocupadas. Los tres repertorios reciben, en promedio,
+un apoyo superior al punto medio de la escala, lo que indica una demanda
+extendida de intervención estatal frente al cambio tecnológico. La
+inversión concentra el mayor apoyo, en línea con estudios previos
+(\citeproc{ref-busemeyer_public_2017}{Busemeyer \& Garritzmann, 2017};
+\citeproc{ref-churchill_policy_2025}{Churchill et~al., 2025}).
+
+\begin{figure}
+
+\caption{\label{fig-policies}Apoyo promedio a las medidas frente a la
+digitalización y el cambio tecnológico}
+
+\centering{
+
+\centering{
+
+\includegraphics[width=0.85\linewidth,height=\textheight,keepaspectratio]{paper_files/figure-pdf/fig-policies-1.pdf}
+
+}
+
+\subcaption{\label{fig-policies}Fuente: elaboración propia con datos de
+la OCDE, encuesta Risks That Matter 2024. Personas ocupadas. Escala de 1
+(muy en contra) a 5 (muy a favor)}
+
+}
+
+\end{figure}%
+
+Tres conjuntos de variables independientes constituyen el núcleo del
+análisis. El primero corresponde a las percepciones sobre el propio
+empleo, medidas con la batería ``¿Qué tan probable cree que es que
+ocurra lo siguiente con su trabajo (u oportunidades laborales) en los
+próximos cinco años?'', cuyos ítems se responden en una escala de
+probabilidad de cuatro puntos. Cuatro ítems se refieren a la amenaza
+tecnológica y preguntan si el trabajo será reemplazado por un robot, por
+una herramienta de inteligencia artificial como ChatGPT o por una
+persona que ofrece un servicio similar a través de una plataforma de
+internet, y si la persona perderá su empleo por no manejar bien las
+nuevas tecnologías o por ser reemplazada por alguien con mejores
+habilidades tecnológicas. Tres ítems se refieren al beneficio esperado y
+preguntan si la tecnología hará que el trabajo y la jornada sean más
+compatibles con la vida privada, que el trabajo sea menos peligroso o
+físicamente exigente y que sea menos aburrido, repetitivo, estresante o
+mentalmente exigente. Un análisis factorial exploratorio de los siete
+ítems respalda una estructura de dos factores, a partir de la cual se
+construyen dos índices como el promedio de sus ítems, la amenaza
+tecnológica (α = 0,87) y el beneficio esperado (α = 0,78). El ítem sobre
+la inteligencia artificial carga en el factor de amenaza en la solución
+de dos factores y aparece como una dimensión aislada en una solución de
+tres factores, lo que se interpreta como sobreextracción, por lo que se
+mantiene en el índice.
+
+El segundo conjunto corresponde a las expectativas sobre los efectos
+sociales de la inteligencia artificial, medidas con la batería
+``Pensando en los efectos de la inteligencia artificial (IA) en el
+mercado laboral, ¿qué tan probable cree que es lo siguiente en
+{[}país{]} en los próximos 5 a 10 años?'', con la misma escala de cuatro
+puntos. Un análisis factorial exploratorio de los siete ítems identifica
+dos factores. Las expectativas negativas promedian los ítems sobre el
+aumento de la desigualdad de ingresos, del desempleo y de la vigilancia
+en el trabajo (α = 0,62), y las expectativas positivas, los ítems sobre
+más tiempo libre para la mayoría, trabajos menos aburridos, repetitivos,
+estresantes o mentalmente exigentes y la creación de más empleos (α =
+0,69). El ítem sobre la necesidad de que muchas personas se reentrenen
+carga en el factor negativo, pero se excluye porque describe un
+requisito de adaptación y no un daño.
+
+El tercer conjunto se refiere al contexto institucional y comprende dos
+indicadores nacionales, uno para la compensación y otro para la
+inversión. Las prestaciones por desempleo se miden con la proporción de
+personas desempleadas que reciben una prestación monetaria por
+desempleo. Es el indicador 1.3.1 de los Objetivos de Desarrollo
+Sostenible y proviene de la base de datos de protección social de la
+Organización Internacional del Trabajo. En varios países alcanza su
+máximo de 100 \%, lo que reduce su variación en la parte alta de la
+escala. Las políticas de mercado laboral se miden con el gasto público
+en políticas activas del mercado laboral como porcentaje del PIB, tomado
+de la base de gasto social de la OCDE (SOCX). Este gasto comprende los
+servicios públicos de empleo y su administración, la capacitación, la
+rotación y el reparto del trabajo, los incentivos a la contratación, el
+empleo con apoyo y la rehabilitación, la creación directa de empleo y
+los incentivos al emprendimiento. El gasto se divide por la tasa de
+desempleo para distinguir el esfuerzo de las políticas de la magnitud
+del problema que atienden. Los modelos incluyen además dos controles de
+nivel país tomados de los World Development Indicators del Banco
+Mundial: el PIB per cápita (PPA, en logaritmo; serie NY.GDP.PCAP.PP.KD),
+como control del nivel de desarrollo, y el coeficiente de Gini del
+ingreso per cápita de los hogares (serie SI.POV.GINI), como control de
+la desigualdad. En los 27 países el Gini proviene de encuestas de
+ingreso, con datos de entre 2021 y 2024. Para cada país se usa el valor
+más reciente disponible desde 2015, y todos los indicadores se
+estandarizan entre los 27 países, de modo que sus coeficientes expresan
+la asociación con una diferencia de una desviación estándar entre
+países.
+
+Los modelos incluyen como controles la preocupación por perder el empleo
+o los ingresos del trabajo independiente en los próximos uno o dos años,
+medida en una escala de cuatro puntos desde nada preocupado hasta muy
+preocupado, el sexo, el grupo de edad, el nivel educacional y el decil
+de ingreso autorreportado. Incluyen también cuatro características del
+empleo. La posición en el mercado laboral distingue a los asalariados
+con contrato indefinido, a los asalariados con contrato temporal o sin
+contrato y a los trabajadores independientes. Los otros tres controles
+corresponden al trabajo mediado por plataformas digitales en el empleo
+principal, al empleo en el sector público y al sector de actividad.
+
+La Tabla~\ref{tbl-summary} resume estas variables y sus principales
+estadísticos descriptivos en la muestra analítica.
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3136}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.4661}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2203}}@{}}
+\caption{Principales estadísticos
+descriptivos}\label{tbl-summary}\tabularnewline
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Etiqueta
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Estadísticas / Valores
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Frec. (\% sobre válidos)
+\end{minipage} \\
+\midrule\noalign{}
+\endfirsthead
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Etiqueta
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Estadísticas / Valores
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Frec. (\% sobre válidos)
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Volumen (apoyo general) & \begin{minipage}[t]{\linewidth}\raggedright
+Media (d-s) : 3,6 (0,5)\\
+min \textless{} mediana \textless{} max:\\
+1 \textless{} 3,6 \textless{} 5\strut
+\end{minipage} & 155 valores distintos \\
+Dirección: inversión & \begin{minipage}[t]{\linewidth}\raggedright
+Media (d-s) : 0,3 (0,5)\\
+min \textless{} mediana \textless{} max:\\
+-2,3 \textless{} 0,3 \textless{} 3,2\strut
+\end{minipage} & 388 valores distintos \\
+Dirección: compensación & \begin{minipage}[t]{\linewidth}\raggedright
+Media (d-s) : 0 (0,7)\\
+min \textless{} mediana \textless{} max:\\
+-3 \textless{} 0 \textless{} 2,7\strut
+\end{minipage} & 292 valores distintos \\
+Dirección: protección & \begin{minipage}[t]{\linewidth}\raggedright
+Media (d-s) : 0,1 (0,5)\\
+min \textless{} mediana \textless{} max:\\
+-2,9 \textless{} 0 \textless{} 2,6\strut
+\end{minipage} & 462 valores distintos \\
+Amenaza tecnológica & \begin{minipage}[t]{\linewidth}\raggedright
+Media (d-s) : 2,1 (0,8)\\
+min \textless{} mediana \textless{} max:\\
+1 \textless{} 2 \textless{} 4\strut
+\end{minipage} & 19 valores distintos \\
+Beneficio esperado & \begin{minipage}[t]{\linewidth}\raggedright
+Media (d-s) : 2,6 (0,8)\\
+min \textless{} mediana \textless{} max:\\
+1 \textless{} 2,7 \textless{} 4\strut
+\end{minipage} & 13 valores distintos \\
+Expectativas negativas sobre la IA &
+\begin{minipage}[t]{\linewidth}\raggedright
+Media (d-s) : 3 (0,6)\\
+min \textless{} mediana \textless{} max:\\
+1 \textless{} 3 \textless{} 4\strut
+\end{minipage} & 13 valores distintos \\
+Expectativas positivas sobre la IA &
+\begin{minipage}[t]{\linewidth}\raggedright
+Media (d-s) : 2,7 (0,7)\\
+min \textless{} mediana \textless{} max:\\
+1 \textless{} 2,7 \textless{} 4\strut
+\end{minipage} & 13 valores distintos \\
+Preocupación por perder el empleo &
+\begin{minipage}[t]{\linewidth}\raggedright
+1. Nada preocupado\\
+2. No muy preocupado\\
+3. Algo preocupado\\
+4. Muy preocupado\strut
+\end{minipage} & \begin{minipage}[t]{\linewidth}\raggedright
+2971 (15,1\%)\\
+5523 (28,0\%)\\
+6109 (31,0\%)\\
+5128 (26,0\%)\strut
+\end{minipage} \\
+Sexo & \begin{minipage}[t]{\linewidth}\raggedright
+1. Hombre\\
+2. Mujer\strut
+\end{minipage} & \begin{minipage}[t]{\linewidth}\raggedright
+10567 (53,6\%)\\
+9164 (46,4\%)\strut
+\end{minipage} \\
+Grupo de edad & \begin{minipage}[t]{\linewidth}\raggedright
+1. 18-24\\
+2. 25-34\\
+3. 35-44\\
+4. 45-54\\
+5. 55-64\strut
+\end{minipage} & \begin{minipage}[t]{\linewidth}\raggedright
+2135 (10,8\%)\\
+4642 (23,5\%)\\
+4838 (24,5\%)\\
+4612 (23,4\%)\\
+3504 (17,8\%)\strut
+\end{minipage} \\
+Nivel educacional & \begin{minipage}[t]{\linewidth}\raggedright
+1. Bajo\\
+2. Medio\\
+3. Alto\strut
+\end{minipage} & \begin{minipage}[t]{\linewidth}\raggedright
+1523 ( 7,7\%)\\
+8089 (41,0\%)\\
+10119 (51,3\%)\strut
+\end{minipage} \\
+Decil de ingreso & \begin{minipage}[t]{\linewidth}\raggedright
+1. {[}1{]} First decile\\
+2. {[}2{]} Second decile\\
+3. {[}3{]} Third decile\\
+4. {[}4{]} Fourth decile\\
+5. {[}5{]} Fifth decile\\
+6. {[}6{]} Sixth decile\\
+7. {[}7{]} Seventh decile\\
+8. {[}8{]} Eighth decile\\
+9. {[}9{]} Ninth decile\\
+10. {[}10{]} Tenth decile\strut
+\end{minipage} & \begin{minipage}[t]{\linewidth}\raggedright
+3309 (16,8\%)\\
+1808 ( 9,2\%)\\
+1803 ( 9,1\%)\\
+2673 (13,5\%)\\
+2345 (11,9\%)\\
+1836 ( 9,3\%)\\
+1530 ( 7,8\%)\\
+1448 ( 7,3\%)\\
+1317 ( 6,7\%)\\
+1662 ( 8,4\%)\strut
+\end{minipage} \\
+Posición en el mercado laboral &
+\begin{minipage}[t]{\linewidth}\raggedright
+1. Asalariado con contrato indefinido\\
+2. Asalariado con contrato temporal o sin contrato\\
+3. Independiente\strut
+\end{minipage} & \begin{minipage}[t]{\linewidth}\raggedright
+15150 (76,8\%)\\
+2471 (12,5\%)\\
+2110 (10,7\%)\strut
+\end{minipage} \\
+Trabajo en plataformas & \begin{minipage}[t]{\linewidth}\raggedright
+1. No\\
+2. Sí\strut
+\end{minipage} & \begin{minipage}[t]{\linewidth}\raggedright
+17889 (90,7\%)\\
+1842 ( 9,3\%)\strut
+\end{minipage} \\
+Sector público & \begin{minipage}[t]{\linewidth}\raggedright
+1. No\\
+2. Sí\strut
+\end{minipage} & \begin{minipage}[t]{\linewidth}\raggedright
+13463 (68,2\%)\\
+6268 (31,8\%)\strut
+\end{minipage} \\
+Sector de actividad & \begin{minipage}[t]{\linewidth}\raggedright
+1. Agricultura y minería\\
+2. Manufactura y servicios básicos\\
+3. Construcción\\
+4. Comercio, transporte y hotelería\\
+5. TIC, finanzas y servicios a empresas\\
+6. Administración pública, educación y salud\\
+7. Otros servicios\\
+8. Otro o no declarado\strut
+\end{minipage} & \begin{minipage}[t]{\linewidth}\raggedright
+445 ( 2,3\%)\\
+2264 (11,5\%)\\
+1167 ( 5,9\%)\\
+2831 (14,3\%)\\
+4598 (23,3\%)\\
+4474 (22,7\%)\\
+2878 (14,6\%)\\
+1074 ( 5,4\%)\strut
+\end{minipage} \\
+\end{longtable}
+
+\subsection{Métodos}\label{muxe9todos}
+
+Los análisis se realizaron en R, versión 4.6.1. Para examinar la
+relación entre las percepciones sobre el cambio tecnológico y las
+preferencias se estiman modelos lineales multinivel con personas
+anidadas en países, mediante la función lmer del paquete lme4
+(\citeproc{ref-bates_fitting_2015}{\textbf{bates\_fitting\_2015?}}).
+Este enfoque considera la estructura jerárquica de los datos comparados
+y descompone la varianza de cada resultado en un componente individual y
+uno nacional
+(\citeproc{ref-snijders_multilevel_2012}{\textbf{snijders\_multilevel\_2012?}};
+\citeproc{ref-hox_multilevel_2017}{\textbf{hox\_multilevel\_2017?}}),
+con interceptos aleatorios por país. Se estima un conjunto de modelos
+para el volumen y uno para la dirección de cada repertorio, y en cada
+caso un modelo nulo establece primero la proporción de la varianza que
+se ubica entre países. Todos los modelos incorporan los ponderadores de
+postestratificación de la OCDE en el nivel individual.
+
+Para separar las asociaciones dentro y entre países, las cuatro
+percepciones se centran en la media de cada país, de modo que sus
+coeficientes expresan diferencias entre personas de un mismo país
+(\citeproc{ref-hox_multilevel_2017}{\textbf{hox\_multilevel\_2017?}}).
+Los modelos se estiman de forma secuencial. El modelo 1 incluye las
+cuatro percepciones, el modelo 2 agrega los controles sociodemográficos
+y laborales, el modelo 3 la preocupación por perder el empleo y el
+modelo 4 los cuatro indicadores de nivel país: el PIB per cápita, el
+Gini, las prestaciones por desempleo y las políticas de mercado laboral.
+El contexto institucional se incorpora en dos pasos para la inversión y
+la compensación. Primero, el modelo 4 incluye las prestaciones por
+desempleo, que corresponden a la compensación, y las políticas de
+mercado laboral, que corresponden a la inversión. Luego, se estiman las
+interacciones entre el indicador de cada repertorio y la amenaza
+tecnológica, y entre ese indicador y las expectativas negativas, una
+interacción por modelo y con una pendiente aleatoria para la percepción
+correspondiente
+(\citeproc{ref-heisig_why_2019}{\textbf{heisig\_why\_2019?}}). Todos los
+modelos que incorporan el contexto institucional incluyen los cuatro
+indicadores de nivel país.
+
+Para examinar si la relación entre la amenaza tecnológica y las
+preferencias varía entre grupos, se estiman además modelos con una
+interacción entre la amenaza y el grupo de edad, y entre la amenaza y el
+nivel educacional. El apéndice presenta, como análisis exploratorio, las
+interacciones con el sector de actividad.
+
+Las hipótesis sobre el volumen (H1 y H4) se contrastan en los modelos
+del volumen, y las hipótesis sobre la dirección (H2a, H2b, H3, H5a y
+H5b), en los modelos de cada repertorio. La hipótesis termostática (H6b)
+se evalúa en la Tabla~\ref{tbl-modelos}, con el efecto de cada indicador
+sobre su repertorio, y la hipótesis de disponibilidad (H6a), con las
+interacciones entre niveles de la Tabla~\ref{tbl-interacciones}. El
+apéndice descompone, además, la protección en sus cuatro medidas, para
+distinguir las dirigidas a la tecnología de las dirigidas a la
+competencia extranjera.
+
+\section{Resultados}\label{resultados}
+
+{
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.3684}}
+  >{\centering\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1579}}
+  >{\centering\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1579}}
+  >{\centering\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1579}}
+  >{\centering\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1579}}@{}}
+
+\caption{\label{tbl-modelos}Modelos multinivel del volumen y la
+dirección de las preferencias frente al cambio tecnológico}
+
+\tabularnewline
+
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Volumen
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Inversión
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Compensación
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Protección
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Intercepto & 3,301 *** & 0,161 *** & -0,152 *** & 0,082 ** \\
+& (0,035) & (0,035) & (0,046) & (0,031) \\
+\textbf{Nivel individual} & & & & \\
+Amenaza tecnológica & 0,005 & -0,157 *** & -0,042 *** & 0,009 \\
+& (0,005) & (0,005) & (0,007) & (0,005) \\
+Beneficio esperado & 0,091 *** & 0,058 *** & 0,024 ** & -0,044 *** \\
+& (0,006) & (0,005) & (0,008) & (0,005) \\
+Expectativas negativas sobre la IA & 0,192 *** & -0,011 & 0,058 *** &
+0,108 *** \\
+& (0,006) & (0,006) & (0,008) & (0,005) \\
+Expectativas positivas sobre la IA & 0,142 *** & -0,004 & -0,045 *** &
+-0,082 *** \\
+& (0,006) & (0,006) & (0,008) & (0,006) \\
+Preocupación por perder el empleo & 0,042 *** & -0,017 *** & 0,050 *** &
+0,007 * \\
+& (0,004) & (0,004) & (0,005) & (0,003) \\
+Mujer & 0,025 *** & -0,018 * & 0,039 *** & 0,020 ** \\
+& (0,007) & (0,007) & (0,010) & (0,007) \\
+25 a 34 años & 0,063 *** & 0,037 ** & 0,035 & 0,005 \\
+& (0,014) & (0,013) & (0,019) & (0,012) \\
+35 a 44 años & 0,065 *** & 0,086 *** & 0,037 * & 0,008 \\
+& (0,013) & (0,013) & (0,018) & (0,012) \\
+45 a 54 años & 0,065 *** & 0,140 *** & 0,036 & 0,028 * \\
+& (0,014) & (0,013) & (0,019) & (0,012) \\
+55 a 64 años & 0,071 *** & 0,172 *** & 0,041 * & 0,015 \\
+& (0,014) & (0,014) & (0,020) & (0,013) \\
+Educación media & -0,009 & 0,069 *** & -0,014 & -0,009 \\
+& (0,015) & (0,014) & (0,020) & (0,013) \\
+Educación alta & 0,009 & 0,133 *** & -0,071 *** & -0,101 *** \\
+& (0,015) & (0,014) & (0,021) & (0,014) \\
+Decil de ingreso & -0,002 & 0,008 *** & -0,016 *** & -0,001 \\
+& (0,001) & (0,001) & (0,002) & (0,001) \\
+Asalariado temporal o sin contrato & 0,012 & 0,028 ** & 0,001 & -0,019
+* \\
+& (0,011) & (0,010) & (0,015) & (0,010) \\
+Independiente & -0,066 *** & 0,013 & 0,001 & -0,028 ** \\
+& (0,011) & (0,011) & (0,015) & (0,010) \\
+Trabajo en plataformas & 0,122 *** & -0,101 *** & -0,046 ** & 0,012 \\
+& (0,013) & (0,012) & (0,017) & (0,011) \\
+Sector público & -0,026 ** & -0,048 *** & 0,004 & 0,009 \\
+& (0,009) & (0,009) & (0,012) & (0,008) \\
+\textbf{Nivel país} & & & & \\
+PIB per cápita (log) & 0,005 & -0,003 & 0,008 & -0,010 \\
+& (0,022) & (0,025) & (0,023) & (0,017) \\
+Gini & 0,037 & 0,029 & -0,011 & 0,004 \\
+& (0,022) & (0,024) & (0,022) & (0,017) \\
+Prestaciones por desempleo & -0,024 & 0,010 & -0,044 * & 0,001 \\
+& (0,021) & (0,024) & (0,022) & (0,016) \\
+Políticas de mercado laboral & -0,035 & 0,025 & -0,038 & -0,014 \\
+& (0,022) & (0,025) & (0,023) & (0,017) \\
+Log verosimilitud & -15080,342 & -14147,586 & -21267,176 & -13104,640 \\
+N & 19.731 & 19.731 & 19.731 & 19.731 \\
+Países & 27 & 27 & 27 & 27 \\
+Varianza del intercepto (país) & 0,007 & 0,009 & 0,007 & 0,004 \\
+Varianza residual & 0,239 & 0,217 & 0,448 & 0,196 \\
+
+\end{longtable}
+
+}
+
+\emph{Nota}: Categorías de referencia: hombre, 18 a 24 años, educación
+baja, asalariado con contrato indefinido, sin trabajo en plataformas y
+no empleado en el sector público (asalariados del sector privado e
+independientes). Todos los modelos controlan además por sector de
+actividad. Errores estándar entre paréntesis. *** p \textless{} 0,001;
+** p \textless{} 0,01; * p \textless{} 0,05. Los indicadores de nivel
+país están estandarizados entre los 27 países. PIB per cápita en paridad
+de poder adquisitivo, en logaritmo, y coeficiente de Gini, ambos del
+Banco Mundial. Prestaciones por desempleo: porcentaje de personas
+desempleadas que reciben prestaciones monetarias por desempleo (OIT,
+indicador 1.3.1 de los ODS). Políticas de mercado laboral: gasto público
+en políticas activas del mercado laboral como porcentaje del PIB,
+dividido por la tasa de desempleo (OCDE, SOCX).
+
+{
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.3548}}
+  >{\centering\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1355}}
+  >{\centering\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1677}}
+  >{\centering\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1548}}
+  >{\centering\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1871}}@{}}
+
+\caption{\label{tbl-interacciones}Interacciones entre las percepciones y
+los indicadores institucionales}
+
+\tabularnewline
+
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Inversión × amenaza
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Inversión × expectativas
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Compensación × amenaza
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Compensación × expectativas
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Intercepto & 0,155 *** & 0,163 *** & -0,147 ** & -0,152 *** \\
+& (0,035) & (0,035) & (0,046) & (0,046) \\
+\textbf{Nivel individual} & & & & \\
+Amenaza tecnológica & -0,157 *** & -0,158 *** & -0,041 *** & -0,041
+*** \\
+& (0,009) & (0,005) & (0,012) & (0,007) \\
+Beneficio esperado & 0,061 *** & 0,058 *** & 0,022 ** & 0,024 ** \\
+& (0,005) & (0,005) & (0,008) & (0,008) \\
+Expectativas negativas sobre la IA & -0,010 & -0,010 & 0,058 *** & 0,059
+*** \\
+& (0,006) & (0,009) & (0,008) & (0,012) \\
+Expectativas positivas sobre la IA & -0,004 & -0,005 & -0,045 *** &
+-0,044 *** \\
+& (0,006) & (0,006) & (0,008) & (0,008) \\
+Preocupación por perder el empleo & -0,015 *** & -0,017 *** & 0,049 ***
+& 0,050 *** \\
+& (0,004) & (0,004) & (0,005) & (0,005) \\
+Mujer & -0,020 ** & -0,018 ** & 0,038 *** & 0,039 *** \\
+& (0,007) & (0,007) & (0,010) & (0,010) \\
+25 a 34 años & 0,033 * & 0,036 ** & 0,038 * & 0,036 \\
+& (0,013) & (0,013) & (0,019) & (0,019) \\
+35 a 44 años & 0,082 *** & 0,083 *** & 0,039 * & 0,038 * \\
+& (0,013) & (0,013) & (0,018) & (0,018) \\
+45 a 54 años & 0,134 *** & 0,138 *** & 0,039 * & 0,038 * \\
+& (0,013) & (0,013) & (0,019) & (0,019) \\
+55 a 64 años & 0,167 *** & 0,170 *** & 0,044 * & 0,042 * \\
+& (0,014) & (0,014) & (0,020) & (0,020) \\
+Educación media & 0,072 *** & 0,069 *** & -0,017 & -0,013 \\
+& (0,014) & (0,014) & (0,020) & (0,020) \\
+Educación alta & 0,136 *** & 0,133 *** & -0,076 *** & -0,071 *** \\
+& (0,014) & (0,014) & (0,020) & (0,021) \\
+Decil de ingreso & 0,008 *** & 0,008 *** & -0,016 *** & -0,016 *** \\
+& (0,001) & (0,001) & (0,002) & (0,002) \\
+Asalariado temporal o sin contrato & 0,026 * & 0,028 ** & 0,002 &
+0,002 \\
+& (0,010) & (0,010) & (0,015) & (0,015) \\
+Independiente & 0,012 & 0,014 & 0,002 & 0,001 \\
+& (0,011) & (0,011) & (0,015) & (0,015) \\
+Trabajo en plataformas & -0,101 *** & -0,100 *** & -0,042 * & -0,044
+* \\
+& (0,012) & (0,012) & (0,017) & (0,017) \\
+Sector público & -0,046 *** & -0,047 *** & 0,001 & 0,004 \\
+& (0,008) & (0,009) & (0,012) & (0,012) \\
+\textbf{Nivel país} & & & & \\
+PIB per cápita (log) & -0,016 & -0,007 & 0,003 & 0,007 \\
+& (0,023) & (0,023) & (0,018) & (0,023) \\
+Gini & 0,025 & 0,021 & -0,002 & -0,014 \\
+& (0,023) & (0,023) & (0,017) & (0,022) \\
+Prestaciones por desempleo & -0,003 & 0,000 & -0,041 * & -0,044 * \\
+& (0,022) & (0,022) & (0,019) & (0,021) \\
+Políticas de mercado laboral & 0,038 & 0,027 & -0,027 & -0,038 \\
+& (0,024) & (0,024) & (0,017) & (0,022) \\
+\textbf{Interacciones entre niveles} & & & & \\
+Amenaza tecnológica × Políticas de mercado laboral & -0,031 *** & & & \\
+& (0,009) & & & \\
+Expectativas negativas × Políticas de mercado laboral & & -0,021 * &
+& \\
+& & (0,009) & & \\
+Amenaza tecnológica × Prestaciones por desempleo & & & 0,047 *** & \\
+& & & (0,011) & \\
+Expectativas negativas × Prestaciones por desempleo & & & & 0,013 \\
+& & & & (0,012) \\
+Log verosimilitud & -14101,113 & -14132,162 & -21221,593 & -21263,064 \\
+N & 19.731 & 19.731 & 19.731 & 19.731 \\
+Países & 27 & 27 & 27 & 27 \\
+Varianza del intercepto (país) & 0,009 & 0,008 & 0,006 & 0,007 \\
+Varianza de la pendiente de la amenaza tecnológica & 0,002 & & 0,002
+& \\
+Covarianza entre intercepto y pendiente (amenaza) & -0,002 & & -0,003
+& \\
+Varianza residual & 0,216 & 0,217 & 0,446 & 0,447 \\
+Varianza de la pendiente de las expectativas negativas & & 0,001 & &
+0,002 \\
+Covarianza entre intercepto y pendiente (expectativas) & & -0,002 & &
+-0,000 \\
+
+\end{longtable}
+
+}
+
+\emph{Nota}: Categorías de referencia: hombre, 18 a 24 años, educación
+baja, asalariado con contrato indefinido, sin trabajo en plataformas y
+no empleado en el sector público (asalariados del sector privado e
+independientes). Todos los modelos controlan además por sector de
+actividad. Errores estándar entre paréntesis. *** p \textless{} 0,001;
+** p \textless{} 0,01; * p \textless{} 0,05. Los indicadores de nivel
+país están estandarizados entre los 27 países. PIB per cápita en paridad
+de poder adquisitivo, en logaritmo, y coeficiente de Gini, ambos del
+Banco Mundial. Prestaciones por desempleo: porcentaje de personas
+desempleadas que reciben prestaciones monetarias por desempleo (OIT,
+indicador 1.3.1 de los ODS). Políticas de mercado laboral: gasto público
+en políticas activas del mercado laboral como porcentaje del PIB,
+dividido por la tasa de desempleo (OCDE, SOCX). Cada modelo incluye una
+pendiente aleatoria por país para la percepción que interactúa.
+
+\begin{figure}
+
+\caption{\label{fig-interacciones}Asociación de la amenaza tecnológica y
+de las expectativas negativas sobre la IA con la dirección de las
+preferencias, según el indicador institucional de cada repertorio}
+
+\centering{
+
+\includegraphics[width=0.85\linewidth,height=\textheight,keepaspectratio]{paper_files/figure-pdf/fig-interacciones-1.pdf}
+
+}
+
+\end{figure}%
+
+\begin{figure}[H]
+
+\caption{\label{fig-moderacion}Pendiente de la amenaza tecnológica según
+grupo de edad y nivel educacional}
+
+\centering{
+
+\includegraphics[width=0.85\linewidth,height=\textheight,keepaspectratio]{paper_files/figure-pdf/fig-moderacion-1.pdf}
+
+}
+
+\end{figure}%
+
+\emph{Nota}: Pendientes estimadas a partir de modelos con una
+interacción entre la amenaza tecnológica y cada moderador. Intervalos de
+confianza de 95 \%.
+
+\section{Discusión}\label{discusiuxf3n}
+
+\section{Conclusión}\label{conclusiuxf3n}
+
+\section{Referencias}\label{referencias}
+
+\protect\phantomsection\label{refs}
+\begin{CSLReferences}{1}{0}
+\bibitem[\citeproctext]{ref-acemoglu_tasks_2022}
+Acemoglu, D., \& Restrepo, P. (2022). Tasks, {Automation}, and the
+{Rise} in {U}.{S}. {Wage Inequality}. \emph{Econometrica : Journal of
+the Econometric Society}, \emph{90}(5), 1973-2016.
+\url{https://doi.org/10.3982/ECTA19815}
+
+\bibitem[\citeproctext]{ref-anderson_workers_2007}
+Anderson, C. J., \& Pontusson, J. (2007). Workers, Worries and Welfare
+States: {Social} Protection and Job Insecurity in 15 {OECD} Countries.
+\emph{European Journal of Political Research}, \emph{46}(2), 211-235.
+\url{https://doi.org/10.1111/j.1475-6765.2007.00692.x}
+
+\bibitem[\citeproctext]{ref-anelli_individual_2021}
+Anelli, M., Colantone, I., \& Stanig, P. (2021). Individual
+Vulnerability to Industrial Robot Adoption Increases Support for the
+Radical Right. \emph{Proceedings of the National Academy of Sciences},
+\emph{118}(47), e2111611118.
+\url{https://doi.org/10.1073/pnas.2111611118}
+
+\bibitem[\citeproctext]{ref-arts_three_2002}
+Arts, W., \& Gelissen, J. (2002). Three Worlds of Welfare Capitalism or
+More? {A} State-of-the-Art Report. \emph{Journal of European Social
+Policy}, \emph{12}(2), 137-158.
+\url{https://doi.org/10.1177/0952872002012002114}
+
+\bibitem[\citeproctext]{ref-autor_why_2015}
+Autor, D. H. (2015). Why {Are There Still So Many Jobs}? {The History}
+and {Future} of {Workplace Automation}. \emph{Journal of Economic
+Perspectives}, \emph{29}(3), 3-30.
+\url{https://doi.org/10.1257/jep.29.3.3}
+
+\bibitem[\citeproctext]{ref-behrendt_social_2019}
+Behrendt, C., Nguyen, Q. A., \& Rani, U. (2019). Social Protection
+Systems and the Future of Work: {Ensuring} Social Security for Digital
+Platform Workers. \emph{International Social Security Review},
+\emph{72}(3), 17-41. \url{https://doi.org/10.1111/issr.12212}
+
+\bibitem[\citeproctext]{ref-bicchi_unpacking_2025}
+Bicchi, N., Kuo, A., \& Gallego, A. (2025). Unpacking Technological
+Risks: {Different} Sources of Concern and Policy Preferences.
+\emph{Political Studies}, \emph{73}(3), 1054-1077.
+\url{https://doi.org/10.1177/00323217241281575}
+
+\bibitem[\citeproctext]{ref-busemeyer_preferred_2023}
+Busemeyer, M. R., Gandenberger, M., Knotz, C., \& Tober, T. (2023).
+Preferred Policy Responses to Technological Change: {Survey} Evidence
+from {OECD} Countries. \emph{Socio-Economic Review}, \emph{21}(1),
+593-615. \url{https://doi.org/10.1093/ser/mwac015}
+
+\bibitem[\citeproctext]{ref-busemeyer_public_2017}
+Busemeyer, M. R., \& Garritzmann, J. L. (2017). Public Opinion on Policy
+and Budgetary Trade-Offs in {European} Welfare States: {Evidence} from a
+New Comparative Survey. \emph{Journal of European Public Policy},
+\emph{24}(6), 871-889.
+\url{https://doi.org/10.1080/13501763.2017.1298658}
+
+\bibitem[\citeproctext]{ref-busemeyer_social_2022}
+Busemeyer, M. R., \& Sahm, A. H. J. (2022). Social {Investment},
+{Redistribution} or {Basic Income}? {Exploring} the {Association Between
+Automation Risk} and {Welfare State Attitudes} in {Europe}.
+\emph{Journal of Social Policy}, \emph{51}(4), 751-770.
+\url{https://doi.org/10.1017/S0047279421000519}
+
+\bibitem[\citeproctext]{ref-busemeyer_dealing_2023}
+Busemeyer, M. R., \& Tober, T. (2023). Dealing with Technological
+Change: {Social} Policy Preferences and Institutional Context.
+\emph{Comparative Political Studies}, \emph{56}(7), 968-999.
+\url{https://doi.org/10.1177/00104140221139381}
+
+\bibitem[\citeproctext]{ref-cavaille_fair_2025}
+Cavaillé, C. (2025). \emph{Fair {Enough}?: {Support} for
+{Redistribution} in the {Age} of {Inequality}} (1.ª ed.). Cambridge
+University Press. \url{https://doi.org/10.1017/9781009366038}
+
+\bibitem[\citeproctext]{ref-chung_institutions_2011}
+Chung, H., \& Van Oorschot, W. (2011). Institutions versus Market
+Forces: {Explaining} the Employment Insecurity of {European} Individuals
+during (the Beginning of) the Financial Crisis. \emph{Journal of
+European Social Policy}, \emph{21}(4), 287-301.
+\url{https://doi.org/10.1177/0958928711412224}
+
+\bibitem[\citeproctext]{ref-churchill_policy_2025}
+Churchill, B., Vromen, A., \& Ruppanner, L. (2025). Policy Interventions
+for the Future of Work: {Do Australians} Want Government Compensation,
+Guidance, or Investment to Manage Technological Change? \emph{Policy
+Studies}. \url{https://doi.org/10.1080/01442872.2025.2567875}
+
+\bibitem[\citeproctext]{ref-colantone_trade_2018}
+Colantone, I., \& Stanig, P. (2018). The Trade Origins of Economic
+Nationalism: {Import} Competition and Voting Behavior in {Western
+Europe}. \emph{American Journal of Political Science}, \emph{62}(4),
+936-953. \url{https://doi.org/10.1111/ajps.12358}
+
+\bibitem[\citeproctext]{ref-cusack_risks_2006}
+Cusack, T., Iversen, T., \& Rehm, P. (2006). Risks at {Work}: {The
+Demand} and {Supply Sides} of {Government Redistribution}. \emph{Oxford
+Review of Economic Policy}, \emph{22}(3), 365-389.
+\url{https://doi.org/10.1093/oxrep/grj022}
+
+\bibitem[\citeproctext]{ref-dekker_fear_2017}
+Dekker, F., Salomons, A., \& Waal, J. V. D. (2017). Fear of Robots at
+Work: {The} Role of Economic Self-Interest. \emph{Socio-Economic
+Review}, \emph{15}(3), 539-562. \url{https://doi.org/10.1093/ser/mwx005}
+
+\bibitem[\citeproctext]{ref-eloundou_gpts_2024}
+Eloundou, T., Manning, S., Mishkin, P., \& Rock, D. (2024). {GPTs} Are
+{GPTs}: {Labor} Market Impact Potential of {LLMs}. \emph{Science},
+\emph{384}(6702), 1306-1308.
+\url{https://doi.org/10.1126/science.adj0998}
+
+\bibitem[\citeproctext]{ref-emmenegger_age_2012}
+Emmenegger, P., Häusermann, S., Palier, B., \& Seeleib-Kaiser, M.
+(2012). \emph{The Age of Dualization : {The} Changing Face of Inequality
+in Deindustrializing Societies}. (P. Emmenegger, S. Häusermann, B.
+Palier, \& M. Seeleib-Kaiser, Eds.). Oxford University Press.
+\url{https://doi.org/10.5167/UZH-65793}
+
+\bibitem[\citeproctext]{ref-esping-andersen_three_1993}
+Esping-Andersen, G. (1990). \emph{The Three Worlds of Welfare
+Capitalism}. Cambridge: Polity press.
+
+\bibitem[\citeproctext]{ref-estevez-abe_social_2001}
+Estevez-Abe, M., Iversen, T., \& Soskice, D. (2001). Social Protection
+and the Formation of Skills: A Reinterpretation of the Welfare State. En
+P. A. Hall \& D. Soskice (Eds.), \emph{Varieties of Capitalism: {The}
+Institutional Foundations of Comparative Advantage} (pp. 145-183).
+Oxford: Oxford University Press.
+
+\bibitem[\citeproctext]{ref-fan_how_2024}
+Fan, Z., Ning, J., \& He, A. J. (2024). How {Does Automation Risk Shape
+Social Policy Preference}? {Employment Insecurity} and {Policy Feedback
+Effect} in {China}. \emph{Social Policy and Society}, \emph{23}(3),
+750-768. \url{https://doi.org/10.1017/S1474746422000513}
+
+\bibitem[\citeproctext]{ref-finseraas_income_2009}
+Finseraas, H. (2009). Income {Inequality} and {Demand} for
+{Redistribution}: {A Multilevel Analysis} of {European Public Opinion}.
+\emph{Scandinavian Political Studies}, \emph{32}(1), 94-119.
+\url{https://doi.org/10.1111/j.1467-9477.2008.00211.x}
+
+\bibitem[\citeproctext]{ref-frey_future_2017}
+Frey, C. B., \& Osborne, M. A. (2017). The Future of Employment: {How}
+Susceptible Are Jobs to Computerisation? \emph{Technological Forecasting
+and Social Change}, \emph{114}, 254-280.
+\url{https://doi.org/10.1016/j.techfore.2016.08.019}
+
+\bibitem[\citeproctext]{ref-gallego_technological_2022}
+Gallego, A., Kuo, A., Manzano, D., \& Fernández-Albertos, J. (2022).
+Technological Risk and Policy Preferences. \emph{Comparative Political
+Studies}, \emph{55}(1), 60-92.
+\url{https://doi.org/10.1177/00104140211024290}
+
+\bibitem[\citeproctext]{ref-gallego_automation_2022}
+Gallego, A., \& Kurer, T. (2022). Automation, {Digitalization}, and
+{Artificial Intelligence} in the {Workplace}: {Implications} for
+{Political Behavior}. \emph{Annual Review of Political Science},
+\emph{25}(1), 463-484.
+\url{https://doi.org/10.1146/annurev-polisci-051120-104535}
+
+\bibitem[\citeproctext]{ref-garritzmann_public_2018}
+Garritzmann, J. L., Busemeyer, M. R., \& Neimanns, E. (2018). Public
+Demand for Social Investment: {New} Supporting Coalitions for Welfare
+State Reform in {Western Europe}? \emph{Journal of European Public
+Policy}, \emph{25}(6), 844-861.
+\url{https://doi.org/10.1080/13501763.2017.1401107}
+
+\bibitem[\citeproctext]{ref-gingrich_preferences_2012}
+Gingrich, J., \& Ansell, B. (2012). Preferences in Context: {Micro}
+Preferences, Macro Contexts, and the Demand for Social Policy.
+\emph{Comparative Political Studies}, \emph{45}(12), 1624-1654.
+\url{https://doi.org/10.1177/0010414012463904}
+
+\bibitem[\citeproctext]{ref-gmyrek_generative_2023}
+Gmyrek, P., Berg, J., \& Bescond, D. (2023). \emph{Generative {AI} and
+Jobs: A Global Analysis of Potential Effects on Job Quantity and
+Quality} (\{\{ILO Working Paper\}\} No. 96). Geneva: International
+Labour Organization. \url{https://doi.org/10.54394/FHEM8239}
+
+\bibitem[\citeproctext]{ref-haslberger_rage_2025}
+Haslberger, M., Gingrich, J., \& Bhatia, J. (2025). Rage against the
+Machine? {Generative AI} Exposure, Subjective Risk, and Policy
+Preferences. \emph{Journal of European Public Policy}.
+\url{https://doi.org/10.1080/13501763.2025.2554903}
+
+\bibitem[\citeproctext]{ref-hausermann_politics_2019}
+Häusermann, S., Kurer, T., \& Traber, D. (2019). The Politics of
+Trade-Offs: {Studying} the Dynamics of Welfare State Reform with
+Conjoint Experiments. \emph{Comparative Political Studies},
+\emph{52}(7), 1059-1095. \url{https://doi.org/10.1177/0010414018797943}
+
+\bibitem[\citeproctext]{ref-im_losers_2019}
+Im, Z. J., Mayer, N., Palier, B., \& Rovny, J. (2019). The {«Losers of
+Automation»}: {A} Reservoir of Votes for the Radical Right?
+\emph{Research \& Politics}, \emph{6}(1), 2053168018822395.
+\url{https://doi.org/10.1177/2053168018822395}
+
+\bibitem[\citeproctext]{ref-iversen_asset_2001}
+Iversen, T., \& Soskice, D. (2001). An {Asset Theory} of {Social Policy
+Preferences}. \emph{American Political Science Review}, \emph{95}(4),
+875-893. \url{https://doi.org/10.1017/S0003055400400079}
+
+\bibitem[\citeproctext]{ref-jaeger_welfare_2006}
+Jæger, M. M. (2006). Welfare {Regimes} and {Attitudes Towards
+Redistribution}: {The Regime Hypothesis Revisited}. \emph{European
+Sociological Review}, \emph{22}(2), 157-170.
+\url{https://doi.org/10.1093/esr/jci049}
+
+\bibitem[\citeproctext]{ref-korpi_paradox_1998}
+Korpi, W., \& Palme, J. (1998). The {Paradox} of {Redistribution} and
+{Strategies} of {Equality}: {Welfare State Institutions}, {Inequality},
+and {Poverty} in the {Western Countries}. \emph{American Sociological
+Review}, \emph{63}(5), 661. \url{https://doi.org/10.2307/2657333}
+
+\bibitem[\citeproctext]{ref-kuo_automation_2024}
+Kuo, A., Manzano, D., \& Gallego, A. (2024). Automation versus Openness:
+{Support} for Policies to Address Job Threats. \emph{Journal of Public
+Policy}, \emph{44}(1), 1-23.
+\url{https://doi.org/10.1017/S0143814X23000260}
+
+\bibitem[\citeproctext]{ref-kurer_declining_2020}
+Kurer, T. (2020). The {Declining Middle}: {Occupational Change}, {Social
+Status}, and the {Populist Right}. \emph{Comparative Political Studies},
+\emph{53}(10-11), 1798-1835.
+\url{https://doi.org/10.1177/0010414020912283}
+
+\bibitem[\citeproctext]{ref-kurer_automation_2022}
+Kurer, T., \& Häusermann, S. (2022). Automation Risk, Social Policy
+Preferences, and Political Participation. En {M. R. Busemeyer, A.
+Kemmerling, P. Marx, \& K. van Kersbergen (Eds.)}, \emph{Digitalization
+and the Welfare State}. Oxford: Oxford University Press.
+\url{https://doi.org/10.1093/oso/9780192848369.003.0008}
+
+\bibitem[\citeproctext]{ref-larsen_institutional_2008}
+Larsen, C. A. (2008). The {Institutional Logic} of {Welfare Attitudes}:
+{How Welfare Regimes Influence Public Support}. \emph{Comparative
+Political Studies}, \emph{41}(2), 145-168.
+\url{https://doi.org/10.1177/0010414006295234}
+
+\bibitem[\citeproctext]{ref-lee_luddite_2024}
+Lee, J. (2024). Luddite or Technophile? {Policy} Preferences for
+Governing Technology-Driven Economic Change. \emph{Socio-Economic
+Review}, \emph{22}(3), 1019-1046.
+\url{https://doi.org/10.1093/ser/mwae025}
+
+\bibitem[\citeproctext]{ref-marx_effect_2014}
+Marx, P. (2014). The Effect of Job Insecurity and Employability on
+Preferences for Redistribution in {Western Europe}. \emph{Journal of
+European Social Policy}, \emph{24}(4), 351-366.
+\url{https://doi.org/10.1177/0958928714538217}
+
+\bibitem[\citeproctext]{ref-mau_moral_2014}
+Mau, S. (2014). \emph{The Moral Economy of Welfare States: {Britain} and
+{Germany} Compared} (First issued in paperback). London New York NY:
+Routledge \& Francis Group.
+
+\bibitem[\citeproctext]{ref-morel_towards_2012}
+Morel, N., Palier, B., \& Palme, J. (Eds.). (2012). \emph{Towards a
+Social Investment Welfare State? {Ideas}, Policies and Challenges}.
+Bristol: Policy Press.
+
+\bibitem[\citeproctext]{ref-oecd_employment_2023}
+OECD. (2023). \emph{{OECD Employment Outlook} 2023: {Artificial}
+Intelligence and the Labour Market}. Paris: OECD Publishing.
+\url{https://doi.org/10.1787/08785bba-en}
+
+\bibitem[\citeproctext]{ref-oecd_risks_2024}
+OECD. (2024). Risks That {Matter Survey}: 2024 {Public Use Microdata
+File}. {Available} via {http://oe.cd/rtm}.
+
+\bibitem[\citeproctext]{ref-pierson_when_1993}
+Pierson, P. (1993). When Effect Becomes Cause: {Policy} Feedback and
+Political Change. \emph{World Politics}, \emph{45}(4), 595-628.
+\url{https://doi.org/10.2307/2950710}
+
+\bibitem[\citeproctext]{ref-puga_ideology_2023}
+Puga, I., \& Moya, C. (2023). Ideology, Legitimation and Collective
+Action: {Evidence} from {Chile} on the Mechanism of Ideological
+Inversion. \emph{Social Forces}, \emph{101}(3), 1519-1551.
+\url{https://doi.org/10.1093/sf/soac032}
+
+\bibitem[\citeproctext]{ref-rehm_risks_2009}
+Rehm, P. (2009). Risks and {Redistribution}: {An Individual-Level
+Analysis}. \emph{Comparative Political Studies}, \emph{42}(7), 855-881.
+\url{https://doi.org/10.1177/0010414008330595}
+
+\bibitem[\citeproctext]{ref-rodrik_why_1998}
+Rodrik, D. (1998). Why Do {More Open Economies Have Bigger Governments}?
+\emph{Journal of Political Economy}, \emph{106}(5), 997-1032.
+\url{https://doi.org/10.1086/250038}
+
+\bibitem[\citeproctext]{ref-rothstein_just_1998}
+Rothstein, B. (1998). \emph{Just {Institutions Matter}: {The Moral} and
+{Political Logic} of the {Universal Welfare State}} (1.ª ed.). Cambridge
+University Press. \url{https://doi.org/10.1017/CBO9780511598449}
+
+\bibitem[\citeproctext]{ref-rudnev_caveats_2021}
+Rudnev, M. (2021). Caveats of Non-Ipsatization of Basic Values: {A}
+Review of Issues and a Simulation Study. \emph{Journal of Research in
+Personality}, \emph{93}, 104118.
+\url{https://doi.org/10.1016/j.jrp.2021.104118}
+
+\bibitem[\citeproctext]{ref-rueda_social_2007}
+Rueda, D. (2007). \emph{Social {Democracy Inside Out}: {Partisanship}
+and {Labor Market Policy} in {Advanced Industrialized Democracies}} (1.ª
+ed.). Oxford University PressOxford.
+\url{https://doi.org/10.1093/acprof:oso/9780199216352.001.0001}
+
+\bibitem[\citeproctext]{ref-schwander_who_2013}
+Schwander, H., \& Häusermann, S. (2013). Who Is in and Who Is out? {A}
+Risk-Based Conceptualization of Insiders and Outsiders. \emph{Journal of
+European Social Policy}, \emph{23}(3), 248-269.
+\url{https://doi.org/10.1177/0958928713480064}
+
+\bibitem[\citeproctext]{ref-schwartz_overview_2012}
+Schwartz, S. H. (2012). An {Overview} of the {Schwartz Theory} of {Basic
+Values}. \emph{Online Readings in Psychology and Culture}, \emph{2}(1).
+\url{https://doi.org/10.9707/2307-0919.1116}
+
+\bibitem[\citeproctext]{ref-soroka_degrees_2010}
+Soroka, S. N., \& Wlezien, C. (2010). \emph{Degrees of Democracy:
+{Politics}, Public Opinion, and Policy}. Cambridge: Cambridge University
+Press.
+
+\bibitem[\citeproctext]{ref-svallfors_worlds_1997}
+Svallfors, S. (1997). Worlds of {Welfare} and {Attitudes} to
+{Redistribution}: {A Comparison} of {Eight Western Nations}.
+\emph{European Sociological Review}, \emph{13}(3), 283-304.
+\url{https://doi.org/10.1093/oxfordjournals.esr.a018219}
+
+\bibitem[\citeproctext]{ref-svallfors_government_2013}
+Svallfors, Stefan. (2013). Government Quality, Egalitarianism, and
+Attitudes to Taxes and Social Spending: A {European} Comparison.
+\emph{European Political Science Review}, \emph{5}(3), 363-380.
+\url{https://doi.org/10.1017/S175577391200015X}
+
+\bibitem[\citeproctext]{ref-thewissen_automation_2019}
+Thewissen, S., \& Rueda, D. (2019). Automation and the {Welfare State}:
+{Technological Change} as a {Determinant} of {Redistribution
+Preferences}. \emph{Comparative Political Studies}, \emph{52}(2),
+171-208. \url{https://doi.org/10.1177/0010414017740600}
+
+\bibitem[\citeproctext]{ref-thomas_survey_2025}
+Thomas, J., Frey, V., \& Clarke, C. (2025). \emph{Survey Design and
+Technical Documentation Supporting the {OECD Risks} That {Matter
+Survey}} (\{\{OECD Social\}\}, \{\{Employment\}\} and \{\{Migration
+Working Papers\}\}, 324.ª ed.).
+\url{https://doi.org/10.1787/5eebe551-en}
+
+\bibitem[\citeproctext]{ref-vallas_what_2020}
+Vallas, S., \& Schor, J. B. (2020). What {Do Platforms Do}?
+{Understanding} the {Gig Economy}. \emph{Annual Review of Sociology},
+\emph{46}(1), 273-294.
+\url{https://doi.org/10.1146/annurev-soc-121919-054857}
+
+\bibitem[\citeproctext]{ref-vanoorschot_making_2006}
+Van Oorschot, W. (2006). Making the Difference in Social {Europe}:
+{Deservingness} Perceptions among Citizens of {European} Welfare States.
+\emph{Journal of European Social Policy}, \emph{16}(1), 23-42.
+\url{https://doi.org/10.1177/0958928706059829}
+
+\bibitem[\citeproctext]{ref-walter_globalization_2010}
+Walter, S. (2010). Globalization and the Welfare State: {Testing} the
+Microfoundations of the Compensation Hypothesis. \emph{International
+Studies Quarterly}, \emph{54}(2), 403-426.
+\url{https://doi.org/10.1111/j.1468-2478.2010.00593.x}
+
+\bibitem[\citeproctext]{ref-wlezien_public_1995a}
+Wlezien, C. (1995). The {Public} as {Thermostat}: {Dynamics} of
+{Preferences} for {Spending}. \emph{American Journal of Political
+Science}, \emph{39}(4), 981. \url{https://doi.org/10.2307/2111666}
+
+\bibitem[\citeproctext]{ref-wu_misattributed_2022}
+Wu, N. (2022). Misattributed Blame? {Attitudes} toward Globalization in
+the Age of Automation. \emph{Political Science Research and Methods},
+\emph{10}(3), 470-487. \url{https://doi.org/10.1017/psrm.2021.43}
+
+\end{CSLReferences}
+
+\section{Apéndice}\label{apuxe9ndice}
+
+{
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1471}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.0392}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1471}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1176}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.2647}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.2843}}@{}}
+
+\caption{\label{tbl-a-paises}Tamaño de la muestra analítica e
+indicadores nacionales por país}
+
+\tabularnewline
+
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+País
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+n
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+PIB per cápita
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Gini
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Prestaciones por desempleo
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Políticas de mercado laboral
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Alemania & 765 & 62.655 (2024) & 33,7 (2022) & 100,0 (2022) & 0,1564
+(2021) \\
+Austria & 788 & 63.788 (2024) & 31,2 (2023) & 99,0 (2021) & 0,1341
+(2021) \\
+Bélgica & 697 & 63.311 (2024) & 26,8 (2023) & 100,0 (2022) & 0,1386
+(2021) \\
+Canadá & 791 & 57.534 (2024) & 31,5 (2022) & 47,4 (2022) & 0,0405
+(2022) \\
+Chile & 656 & 30.268 (2024) & 43,0 (2024) & 24,6 (2022) & 0,0149
+(2023) \\
+Corea & 719 & 55.071 (2024) & 32,9 (2021) & 100,0 (2021) & 0,1481
+(2022) \\
+Dinamarca & 700 & 71.035 (2024) & 29,9 (2023) & 95,6 (2022) & 0,3242
+(2021) \\
+Eslovenia & 806 & 48.658 (2024) & 24,7 (2023) & 39,1 (2021) & 0,0478
+(2021) \\
+España & 672 & 48.460 (2024) & 33,4 (2023) & 57,2 (2022) & 0,0619
+(2021) \\
+Estados Unidos & 683 & 75.698 (2024) & 41,8 (2024) & 50,5 (2021) &
+0,0214 (2023) \\
+Estonia & 777 & 41.186 (2024) & 30,7 (2023) & 44,0 (2022) & 0,0889
+(2021) \\
+Finlandia & 707 & 55.901 (2024) & 27,4 (2023) & 100,0 (2021) & 0,1100
+(2021) \\
+Francia & 734 & 54.799 (2024) & 31,8 (2023) & 100,0 (2021) & 0,1143
+(2022) \\
+Grecia & 718 & 37.474 (2024) & 33,4 (2023) & 22,3 (2023) & 0,0209
+(2021) \\
+Irlanda & 815 & 118.833 (2024) & 29,0 (2023) & 100,0 (2022) & 0,1914
+(2021) \\
+Israel & 754 & 47.389 (2024) & 38,3 (2022) & 42,8 (2022) & 0,0389
+(2023) \\
+Italia & 694 & 53.285 (2024) & 34,3 (2023) & 51,5 (2022) & 0,0465
+(2021) \\
+Letonia & 726 & 37.615 (2024) & 34,0 (2023) & 46,1 (2022) & 0,0184
+(2021) \\
+Lituania & 733 & 47.462 (2024) & 36,0 (2023) & 88,2 (2022) & 0,0520
+(2021) \\
+México & 631 & 21.970 (2024) & 42,6 (2024) & 8,3 (2022) & 0,0004
+(2023) \\
+Noruega & 776 & 94.804 (2024) & 26,5 (2023) & 43,3 (2022) & 0,0865
+(2021) \\
+Países Bajos & 816 & 70.494 (2024) & 25,7 (2021) & 56,7 (2022) & 0,3585
+(2021) \\
+Polonia & 793 & 45.153 (2024) & 28,5 (2023) & 31,2 (2020) & 0,1600
+(2021) \\
+Portugal & 692 & 42.228 (2024) & 33,9 (2023) & 62,3 (2022) & 0,1024
+(2021) \\
+Reino Unido & 761 & 53.412 (2024) & 32,4 (2021) & 94,1 (2022) & 0,0418
+(2019) \\
+Suiza & 766 & 85.448 (2024) & 33,5 (2023) & 55,4 (2021) & 0,1209
+(2021) \\
+Türkiye & 561 & 36.154 (2024) & 43,7 (2023) & 2,5 (2022) & 0,0012
+(2021) \\
+
+\end{longtable}
+
+}
+
+\emph{Nota}: Valores en escala original; entre paréntesis, el año del
+dato. PIB per cápita en dólares internacionales constantes de 2021
+(PPA). Prestaciones por desempleo: porcentaje de personas desempleadas
+que reciben prestaciones monetarias por desempleo. Políticas de mercado
+laboral: gasto público en políticas activas del mercado laboral como
+porcentaje del PIB, dividido por la tasa de desempleo.
+
+{
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2959}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.3163}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2857}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.1020}}@{}}
+
+\caption{\label{tbl-a-fuentes}Fuentes de los indicadores de nivel país}
+
+\tabularnewline
+
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Indicador
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Fuente
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Serie
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Años
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+PIB per cápita & Banco Mundial, WDI & NY.GDP.PCAP.PP.KD & 2024 \\
+Gini & Banco Mundial, WDI & SI.POV.GINI & 2021-2024 \\
+Prestaciones por desempleo & OIT, ILOSTAT & SDG\_0131\_RT,
+SOC\_CONTIG\_UNE & 2020-2023 \\
+Políticas de mercado laboral & OCDE, SOCX; Banco Mundial, WDI & SOCX
+TP60; SL.UEM.TOTL.ZS & 2019-2023 \\
+
+\end{longtable}
+
+}
+
+\emph{Nota}: WDI: World Development Indicators. Las definiciones de los
+indicadores están en la nota de la Tabla~\ref{tbl-a-paises}. Años: rango
+de los años del dato más reciente desde 2015 entre los 27 países.
+
+{
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}@{}}
+
+\caption{\label{tbl-a-afe-q25}Análisis factorial exploratorio de la
+amenaza y el beneficio tecnológico en el propio empleo}
+
+\tabularnewline
+
+\toprule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+~ & Factor 1 & Factor 2 \\
+Reemplazo por un robot & 0.86 & -0.05 \\
+Reemplazo por una herramienta de IA & 0.83 & 0.00 \\
+\begin{minipage}[t]{\linewidth}\raggedright
+Reemplazo por una persona en una\\
+plataforma de internet\strut
+\end{minipage} & 0.76 & 0.06 \\
+\begin{minipage}[t]{\linewidth}\raggedright
+Pérdida del empleo por habilidades\\
+tecnológicas\strut
+\end{minipage} & 0.71 & 0.01 \\
+Mayor compatibilidad con la vida privada & -0.04 & 0.76 \\
+\begin{minipage}[t]{\linewidth}\raggedright
+Trabajo menos peligroso o físicamente\\
+exigente\strut
+\end{minipage} & 0.13 & 0.62 \\
+\begin{minipage}[t]{\linewidth}\raggedright
+Trabajo menos aburrido, repetitivo o\\
+estresante\strut
+\end{minipage} & -0.04 & 0.79 \\
+Cronbach\textquotesingle s α & 0.88 & 0.78 \\
+
+\end{longtable}
+
+}
+
+{
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}@{}}
+
+\caption{\label{tbl-a-afe-q26}Análisis factorial exploratorio de las
+expectativas sobre los efectos sociales de la IA}
+
+\tabularnewline
+
+\toprule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+~ & Factor 1 & Factor 2 \\
+Aumento de la desigualdad de ingresos & 0.63 & -0.03 \\
+Más tiempo libre para la mayoría & 0.11 & 0.61 \\
+\begin{minipage}[t]{\linewidth}\raggedright
+Trabajos menos aburridos, repetitivos o\\
+estresantes\strut
+\end{minipage} & 0.03 & 0.69 \\
+Creación de más empleos & -0.13 & 0.67 \\
+Más desempleo & 0.70 & -0.18 \\
+Más vigilancia en el trabajo & 0.49 & 0.09 \\
+\begin{minipage}[t]{\linewidth}\raggedright
+Necesidad de que muchas personas se\\
+reentrenen\strut
+\end{minipage} & 0.51 & 0.12 \\
+Cronbach\textquotesingle s α & 0.67 & 0.69 \\
+
+\end{longtable}
+
+}
+
+{
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}@{}}
+
+\caption{\label{tbl-a-afe-q27}Análisis factorial exploratorio de las
+medidas frente al cambio tecnológico}
+
+\tabularnewline
+
+\toprule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+~ & Factor 1 & Factor 2 & Factor 3 & Factor 4 & Factor 5 \\
+\begin{minipage}[t]{\linewidth}\raggedright
+Educación universitaria y formación\\
+profesional para jóvenes\strut
+\end{minipage} & 0.60 & -0.00 & 0.10 & -0.01 & -0.03 \\
+\begin{minipage}[t]{\linewidth}\raggedright
+Reentrenamiento para personas en edad de\\
+trabajar\strut
+\end{minipage} & 0.64 & -0.04 & 0.06 & 0.01 & -0.03 \\
+Infraestructura digital & 0.60 & 0.11 & -0.11 & -0.05 & 0.13 \\
+\begin{minipage}[t]{\linewidth}\raggedright
+Impuesto a robots o empresas\\
+tecnológicas\strut
+\end{minipage} & -0.08 & 0.12 & 0.12 & 0.39 & 0.07 \\
+Límite o reducción de la jornada laboral & 0.09 & -0.00 & 0.16 & 0.04 &
+0.40 \\
+Prestaciones más accesibles o generosas & 0.09 & -0.06 & 0.69 & -0.06 &
+-0.03 \\
+Renta básica universal e incondicional & -0.06 & -0.02 & 0.66 & -0.06 &
+0.13 \\
+\begin{minipage}[t]{\linewidth}\raggedright
+Subsidios a industrias afectadas por el\\
+cambio tecnológico\strut
+\end{minipage} & 0.14 & 0.07 & 0.28 & 0.30 & -0.09 \\
+Promoción de la migración calificada & 0.23 & 0.72 & -0.07 & -0.03 &
+-0.04 \\
+Promoción de la migración no calificada & -0.13 & 0.74 & 0.01 & 0.11 &
+0.04 \\
+\begin{minipage}[t]{\linewidth}\raggedright
+Prioridad a trabajadores del país en la\\
+contratación\strut
+\end{minipage} & 0.16 & -0.30 & -0.08 & 0.46 & 0.06 \\
+\begin{minipage}[t]{\linewidth}\raggedright
+Aranceles para proteger industrias\\
+nacionales\strut
+\end{minipage} & -0.04 & 0.07 & -0.10 & 0.74 & -0.03 \\
+Cronbach\textquotesingle s α & 0.66 & 0.68 & 0.60 & 0.60 & \\
+
+\end{longtable}
+
+}
+
+{
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.3723}}
+  >{\centering\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1489}}
+  >{\centering\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1596}}
+  >{\centering\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1596}}
+  >{\centering\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1596}}@{}}
+
+\caption{\label{tbl-a-volumen}Modelos secuenciales del volumen}
+
+\tabularnewline
+
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Modelo 1
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Modelo 2
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Modelo 3
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Modelo 4
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Intercepto & 3,566 *** & 3,406 *** & 3,300 *** & 3,301 *** \\
+& (0,022) & (0,037) & (0,037) & (0,035) \\
+\textbf{Nivel individual} & & & & \\
+Amenaza tecnológica & 0,019 *** & 0,017 ** & 0,005 & 0,005 \\
+& (0,005) & (0,005) & (0,005) & (0,005) \\
+Beneficio esperado & 0,092 *** & 0,093 *** & 0,091 *** & 0,091 *** \\
+& (0,006) & (0,006) & (0,006) & (0,006) \\
+Expectativas negativas sobre la IA & 0,200 *** & 0,198 *** & 0,192 *** &
+0,192 *** \\
+& (0,006) & (0,006) & (0,006) & (0,006) \\
+Expectativas positivas sobre la IA & 0,142 *** & 0,139 *** & 0,142 *** &
+0,142 *** \\
+& (0,006) & (0,006) & (0,006) & (0,006) \\
+Preocupación por perder el empleo & & & 0,042 *** & 0,042 *** \\
+& & & (0,004) & (0,004) \\
+Mujer & & 0,032 *** & 0,025 *** & 0,025 *** \\
+& & (0,007) & (0,007) & (0,007) \\
+25 a 34 años & & 0,068 *** & 0,064 *** & 0,063 *** \\
+& & (0,014) & (0,014) & (0,014) \\
+35 a 44 años & & 0,071 *** & 0,065 *** & 0,065 *** \\
+& & (0,014) & (0,013) & (0,013) \\
+45 a 54 años & & 0,071 *** & 0,065 *** & 0,065 *** \\
+& & (0,014) & (0,014) & (0,014) \\
+55 a 64 años & & 0,073 *** & 0,071 *** & 0,071 *** \\
+& & (0,014) & (0,014) & (0,014) \\
+Educación media & & -0,006 & -0,009 & -0,009 \\
+& & (0,015) & (0,015) & (0,015) \\
+Educación alta & & 0,013 & 0,009 & 0,009 \\
+& & (0,015) & (0,015) & (0,015) \\
+Decil de ingreso & & -0,004 ** & -0,002 & -0,002 \\
+& & (0,001) & (0,001) & (0,001) \\
+Asalariado temporal o sin contrato & & 0,019 & 0,012 & 0,012 \\
+& & (0,011) & (0,011) & (0,011) \\
+Independiente & & -0,063 *** & -0,066 *** & -0,066 *** \\
+& & (0,011) & (0,011) & (0,011) \\
+Trabajo en plataformas & & 0,126 *** & 0,122 *** & 0,122 *** \\
+& & (0,013) & (0,013) & (0,013) \\
+Sector público & & -0,032 *** & -0,026 ** & -0,026 ** \\
+& & (0,009) & (0,009) & (0,009) \\
+\textbf{Nivel país} & & & & \\
+PIB per cápita (log) & & & & 0,005 \\
+& & & & (0,022) \\
+Gini & & & & 0,037 \\
+& & & & (0,022) \\
+Prestaciones por desempleo & & & & -0,024 \\
+& & & & (0,021) \\
+Políticas de mercado laboral & & & & -0,035 \\
+& & & & (0,022) \\
+Log verosimilitud & -15183,987 & -15134,592 & -15076,953 & -15080,342 \\
+N & 19.731 & 19.731 & 19.731 & 19.731 \\
+Países & 27 & 27 & 27 & 27 \\
+Varianza del intercepto (país) & 0,013 & 0,013 & 0,011 & 0,007 \\
+Varianza residual & 0,243 & 0,241 & 0,239 & 0,239 \\
+
+\end{longtable}
+
+}
+
+\emph{Nota}: Categorías de referencia: hombre, 18 a 24 años, educación
+baja, asalariado con contrato indefinido, sin trabajo en plataformas y
+no empleado en el sector público (asalariados del sector privado e
+independientes). Los modelos 2 a 4 controlan además por sector de
+actividad. Errores estándar entre paréntesis. *** p \textless{} 0,001;
+** p \textless{} 0,01; * p \textless{} 0,05.
+
+{
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.3684}}
+  >{\centering\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1579}}
+  >{\centering\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1579}}
+  >{\centering\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1579}}
+  >{\centering\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1579}}@{}}
+
+\caption{\label{tbl-a-inversion}Modelos secuenciales de la dirección:
+inversión}
+
+\tabularnewline
+
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Modelo 1
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Modelo 2
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Modelo 3
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Modelo 4
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Intercepto & 0,348 *** & 0,118 *** & 0,161 *** & 0,161 *** \\
+& (0,018) & (0,033) & (0,034) & (0,035) \\
+\textbf{Nivel individual} & & & & \\
+Amenaza tecnológica & -0,184 *** & -0,162 *** & -0,157 *** & -0,157
+*** \\
+& (0,005) & (0,005) & (0,005) & (0,005) \\
+Beneficio esperado & 0,063 *** & 0,057 *** & 0,058 *** & 0,058 *** \\
+& (0,006) & (0,005) & (0,005) & (0,005) \\
+Expectativas negativas sobre la IA & -0,009 & -0,013 * & -0,011 &
+-0,011 \\
+& (0,006) & (0,006) & (0,006) & (0,006) \\
+Expectativas positivas sobre la IA & -0,007 & -0,003 & -0,004 &
+-0,004 \\
+& (0,006) & (0,006) & (0,006) & (0,006) \\
+Preocupación por perder el empleo & & & -0,017 *** & -0,017 *** \\
+& & & (0,004) & (0,004) \\
+Mujer & & -0,020 ** & -0,018 * & -0,018 * \\
+& & (0,007) & (0,007) & (0,007) \\
+25 a 34 años & & 0,035 ** & 0,037 ** & 0,037 ** \\
+& & (0,013) & (0,013) & (0,013) \\
+35 a 44 años & & 0,083 *** & 0,085 *** & 0,086 *** \\
+& & (0,013) & (0,013) & (0,013) \\
+45 a 54 años & & 0,137 *** & 0,140 *** & 0,140 *** \\
+& & (0,013) & (0,013) & (0,013) \\
+55 a 64 años & & 0,171 *** & 0,172 *** & 0,172 *** \\
+& & (0,014) & (0,014) & (0,014) \\
+Educación media & & 0,068 *** & 0,069 *** & 0,069 *** \\
+& & (0,014) & (0,014) & (0,014) \\
+Educación alta & & 0,131 *** & 0,133 *** & 0,133 *** \\
+& & (0,014) & (0,014) & (0,014) \\
+Decil de ingreso & & 0,008 *** & 0,008 *** & 0,008 *** \\
+& & (0,001) & (0,001) & (0,001) \\
+Asalariado temporal o sin contrato & & 0,025 * & 0,028 ** & 0,028 ** \\
+& & (0,010) & (0,010) & (0,010) \\
+Independiente & & 0,012 & 0,013 & 0,013 \\
+& & (0,011) & (0,011) & (0,011) \\
+Trabajo en plataformas & & -0,103 *** & -0,101 *** & -0,101 *** \\
+& & (0,012) & (0,012) & (0,012) \\
+Sector público & & -0,046 *** & -0,048 *** & -0,048 *** \\
+& & (0,009) & (0,009) & (0,009) \\
+\textbf{Nivel país} & & & & \\
+PIB per cápita (log) & & & & -0,003 \\
+& & & & (0,025) \\
+Gini & & & & 0,029 \\
+& & & & (0,024) \\
+Prestaciones por desempleo & & & & 0,010 \\
+& & & & (0,024) \\
+Políticas de mercado laboral & & & & 0,025 \\
+& & & & (0,025) \\
+Log verosimilitud & -14467,882 & -14143,647 & -14136,976 & -14147,586 \\
+N & 19.731 & 19.731 & 19.731 & 19.731 \\
+Países & 27 & 27 & 27 & 27 \\
+Varianza del intercepto (país) & 0,008 & 0,008 & 0,008 & 0,009 \\
+Varianza residual & 0,226 & 0,218 & 0,217 & 0,217 \\
+
+\end{longtable}
+
+}
+
+\emph{Nota}: Categorías de referencia: hombre, 18 a 24 años, educación
+baja, asalariado con contrato indefinido, sin trabajo en plataformas y
+no empleado en el sector público (asalariados del sector privado e
+independientes). Los modelos 2 a 4 controlan además por sector de
+actividad. Errores estándar entre paréntesis. *** p \textless{} 0,001;
+** p \textless{} 0,01; * p \textless{} 0,05.
+
+{
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.3684}}
+  >{\centering\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1579}}
+  >{\centering\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1579}}
+  >{\centering\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1579}}
+  >{\centering\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1579}}@{}}
+
+\caption{\label{tbl-a-compensacion}Modelos secuenciales de la dirección:
+compensación}
+
+\tabularnewline
+
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Modelo 1
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Modelo 2
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Modelo 3
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Modelo 4
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Intercepto & -0,023 & -0,024 & -0,153 ** & -0,152 *** \\
+& (0,021) & (0,046) & (0,047) & (0,046) \\
+\textbf{Nivel individual} & & & & \\
+Amenaza tecnológica & -0,026 *** & -0,029 *** & -0,042 *** & -0,042
+*** \\
+& (0,007) & (0,007) & (0,007) & (0,007) \\
+Beneficio esperado & 0,009 & 0,027 *** & 0,024 ** & 0,024 ** \\
+& (0,008) & (0,008) & (0,008) & (0,008) \\
+Expectativas negativas sobre la IA & 0,071 *** & 0,066 *** & 0,058 *** &
+0,058 *** \\
+& (0,008) & (0,008) & (0,008) & (0,008) \\
+Expectativas positivas sobre la IA & -0,055 *** & -0,048 *** & -0,045
+*** & -0,045 *** \\
+& (0,008) & (0,008) & (0,008) & (0,008) \\
+Preocupación por perder el empleo & & & 0,051 *** & 0,050 *** \\
+& & & (0,005) & (0,005) \\
+Mujer & & 0,047 *** & 0,039 *** & 0,039 *** \\
+& & (0,010) & (0,010) & (0,010) \\
+25 a 34 años & & 0,041 * & 0,036 & 0,035 \\
+& & (0,019) & (0,019) & (0,019) \\
+35 a 44 años & & 0,044 * & 0,037 * & 0,037 * \\
+& & (0,019) & (0,018) & (0,018) \\
+45 a 54 años & & 0,044 * & 0,037 & 0,036 \\
+& & (0,019) & (0,019) & (0,019) \\
+55 a 64 años & & 0,044 * & 0,041 * & 0,041 * \\
+& & (0,020) & (0,020) & (0,020) \\
+Educación media & & -0,010 & -0,015 & -0,014 \\
+& & (0,020) & (0,020) & (0,020) \\
+Educación alta & & -0,067 ** & -0,072 *** & -0,071 *** \\
+& & (0,021) & (0,021) & (0,021) \\
+Decil de ingreso & & -0,018 *** & -0,016 *** & -0,016 *** \\
+& & (0,002) & (0,002) & (0,002) \\
+Asalariado temporal o sin contrato & & 0,010 & 0,001 & 0,001 \\
+& & (0,015) & (0,015) & (0,015) \\
+Independiente & & 0,005 & 0,002 & 0,001 \\
+& & (0,015) & (0,015) & (0,015) \\
+Trabajo en plataformas & & -0,041 * & -0,045 ** & -0,046 ** \\
+& & (0,017) & (0,017) & (0,017) \\
+Sector público & & -0,003 & 0,004 & 0,004 \\
+& & (0,012) & (0,012) & (0,012) \\
+\textbf{Nivel país} & & & & \\
+PIB per cápita (log) & & & & 0,008 \\
+& & & & (0,023) \\
+Gini & & & & -0,011 \\
+& & & & (0,022) \\
+Prestaciones por desempleo & & & & -0,044 * \\
+& & & & (0,022) \\
+Políticas de mercado laboral & & & & -0,038 \\
+& & & & (0,023) \\
+Log verosimilitud & -21399,552 & -21305,664 & -21260,985 & -21267,176 \\
+N & 19.731 & 19.731 & 19.731 & 19.731 \\
+Países & 27 & 27 & 27 & 27 \\
+Varianza del intercepto (país) & 0,011 & 0,011 & 0,009 & 0,007 \\
+Varianza residual & 0,457 & 0,450 & 0,448 & 0,448 \\
+
+\end{longtable}
+
+}
+
+\emph{Nota}: Categorías de referencia: hombre, 18 a 24 años, educación
+baja, asalariado con contrato indefinido, sin trabajo en plataformas y
+no empleado en el sector público (asalariados del sector privado e
+independientes). Los modelos 2 a 4 controlan además por sector de
+actividad. Errores estándar entre paréntesis. *** p \textless{} 0,001;
+** p \textless{} 0,01; * p \textless{} 0,05.
+
+{
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.3684}}
+  >{\centering\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1579}}
+  >{\centering\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1579}}
+  >{\centering\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1579}}
+  >{\centering\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1579}}@{}}
+
+\caption{\label{tbl-a-proteccion}Modelos secuenciales de la dirección:
+protección}
+
+\tabularnewline
+
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Modelo 1
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Modelo 2
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Modelo 3
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Modelo 4
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Intercepto & 0,061 *** & 0,100 *** & 0,081 ** & 0,082 ** \\
+& (0,012) & (0,030) & (0,031) & (0,031) \\
+\textbf{Nivel individual} & & & & \\
+Amenaza tecnológica & 0,016 *** & 0,011 * & 0,009 & 0,009 \\
+& (0,005) & (0,005) & (0,005) & (0,005) \\
+Beneficio esperado & -0,051 *** & -0,044 *** & -0,044 *** & -0,044
+*** \\
+& (0,005) & (0,005) & (0,005) & (0,005) \\
+Expectativas negativas sobre la IA & 0,112 *** & 0,109 *** & 0,108 *** &
+0,108 *** \\
+& (0,005) & (0,005) & (0,005) & (0,005) \\
+Expectativas positivas sobre la IA & -0,088 *** & -0,083 *** & -0,082
+*** & -0,082 *** \\
+& (0,006) & (0,006) & (0,006) & (0,006) \\
+Preocupación por perder el empleo & & & 0,008 * & 0,007 * \\
+& & & (0,003) & (0,003) \\
+Mujer & & 0,022 ** & 0,020 ** & 0,020 ** \\
+& & (0,007) & (0,007) & (0,007) \\
+25 a 34 años & & 0,006 & 0,005 & 0,005 \\
+& & (0,012) & (0,012) & (0,012) \\
+35 a 44 años & & 0,009 & 0,008 & 0,008 \\
+& & (0,012) & (0,012) & (0,012) \\
+45 a 54 años & & 0,029 * & 0,028 * & 0,028 * \\
+& & (0,012) & (0,012) & (0,012) \\
+55 a 64 años & & 0,015 & 0,015 & 0,015 \\
+& & (0,013) & (0,013) & (0,013) \\
+Educación media & & -0,009 & -0,009 & -0,009 \\
+& & (0,013) & (0,013) & (0,013) \\
+Educación alta & & -0,101 *** & -0,101 *** & -0,101 *** \\
+& & (0,014) & (0,014) & (0,014) \\
+Decil de ingreso & & -0,002 & -0,001 & -0,001 \\
+& & (0,001) & (0,001) & (0,001) \\
+Asalariado temporal o sin contrato & & -0,018 & -0,019 * & -0,019 * \\
+& & (0,010) & (0,010) & (0,010) \\
+Independiente & & -0,027 ** & -0,028 ** & -0,028 ** \\
+& & (0,010) & (0,010) & (0,010) \\
+Trabajo en plataformas & & 0,013 & 0,012 & 0,012 \\
+& & (0,011) & (0,011) & (0,011) \\
+Sector público & & 0,008 & 0,009 & 0,009 \\
+& & (0,008) & (0,008) & (0,008) \\
+\textbf{Nivel país} & & & & \\
+PIB per cápita (log) & & & & -0,010 \\
+& & & & (0,017) \\
+Gini & & & & 0,004 \\
+& & & & (0,017) \\
+Prestaciones por desempleo & & & & 0,001 \\
+& & & & (0,016) \\
+Políticas de mercado laboral & & & & -0,014 \\
+& & & & (0,017) \\
+Log verosimilitud & -13173,919 & -13090,977 & -13093,215 & -13104,640 \\
+N & 19.731 & 19.731 & 19.731 & 19.731 \\
+Países & 27 & 27 & 27 & 27 \\
+Varianza del intercepto (país) & 0,004 & 0,004 & 0,004 & 0,004 \\
+Varianza residual & 0,199 & 0,196 & 0,196 & 0,196 \\
+
+\end{longtable}
+
+}
+
+\emph{Nota}: Categorías de referencia: hombre, 18 a 24 años, educación
+baja, asalariado con contrato indefinido, sin trabajo en plataformas y
+no empleado en el sector público (asalariados del sector privado e
+independientes). Los modelos 2 a 4 controlan además por sector de
+actividad. Errores estándar entre paréntesis. *** p \textless{} 0,001;
+** p \textless{} 0,01; * p \textless{} 0,05.
+
+{
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.4605}}
+  >{\centering\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.1974}}
+  >{\centering\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3421}}@{}}
+
+\caption{\label{tbl-a-sin-subsidios}Dirección de la protección con y sin
+subsidios}
+
+\tabularnewline
+
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Protección
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Protección sin subsidios
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Intercepto & 0,082 ** & 0,187 *** \\
+& (0,031) & (0,039) \\
+\textbf{Nivel individual} & & \\
+Amenaza tecnológica & 0,009 & 0,022 *** \\
+& (0,005) & (0,006) \\
+Beneficio esperado & -0,044 *** & -0,057 *** \\
+& (0,005) & (0,006) \\
+Expectativas negativas sobre la IA & 0,108 *** & 0,132 *** \\
+& (0,005) & (0,006) \\
+Expectativas positivas sobre la IA & -0,082 *** & -0,108 *** \\
+& (0,006) & (0,007) \\
+Preocupación por perder el empleo & 0,007 * & 0,002 \\
+& (0,003) & (0,004) \\
+Mujer & 0,020 ** & -0,010 \\
+& (0,007) & (0,008) \\
+25 a 34 años & 0,005 & -0,011 \\
+& (0,012) & (0,015) \\
+35 a 44 años & 0,008 & 0,001 \\
+& (0,012) & (0,015) \\
+45 a 54 años & 0,028 * & 0,023 \\
+& (0,012) & (0,015) \\
+55 a 64 años & 0,015 & 0,006 \\
+& (0,013) & (0,016) \\
+Educación media & -0,009 & -0,016 \\
+& (0,013) & (0,016) \\
+Educación alta & -0,101 *** & -0,106 *** \\
+& (0,014) & (0,017) \\
+Decil de ingreso & -0,001 & -0,001 \\
+& (0,001) & (0,001) \\
+Asalariado temporal o sin contrato & -0,019 * & -0,019 \\
+& (0,010) & (0,012) \\
+Independiente & -0,028 ** & -0,030 * \\
+& (0,010) & (0,013) \\
+Trabajo en plataformas & 0,012 & 0,010 \\
+& (0,011) & (0,014) \\
+Sector público & 0,009 & 0,022 * \\
+& (0,008) & (0,010) \\
+\textbf{Nivel país} & & \\
+PIB per cápita (log) & -0,010 & -0,011 \\
+& (0,017) & (0,024) \\
+Gini & 0,004 & 0,006 \\
+& (0,017) & (0,023) \\
+Prestaciones por desempleo & 0,001 & -0,004 \\
+& (0,016) & (0,023) \\
+Políticas de mercado laboral & -0,014 & -0,012 \\
+& (0,017) & (0,024) \\
+Log verosimilitud & -13104,640 & -17068,172 \\
+N & 19.731 & 19.708 \\
+Países & 27 & 27 \\
+Varianza del intercepto (país) & 0,004 & 0,008 \\
+Varianza residual & 0,196 & 0,293 \\
+
+\end{longtable}
+
+}
+
+\emph{Nota}: Categorías de referencia: hombre, 18 a 24 años, educación
+baja, asalariado con contrato indefinido, sin trabajo en plataformas y
+no empleado en el sector público (asalariados del sector privado e
+independientes). Todos los modelos controlan además por sector de
+actividad. Errores estándar entre paréntesis. *** p \textless{} 0,001;
+** p \textless{} 0,01; * p \textless{} 0,05. Los indicadores de nivel
+país están estandarizados entre los 27 países. PIB per cápita en paridad
+de poder adquisitivo, en logaritmo, y coeficiente de Gini, ambos del
+Banco Mundial. Prestaciones por desempleo: porcentaje de personas
+desempleadas que reciben prestaciones monetarias por desempleo (OIT,
+indicador 1.3.1 de los ODS). Políticas de mercado laboral: gasto público
+en políticas activas del mercado laboral como porcentaje del PIB,
+dividido por la tasa de desempleo (OCDE, SOCX).
+
+{
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.3241}}
+  >{\centering\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1759}}
+  >{\centering\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1389}}
+  >{\centering\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2222}}
+  >{\centering\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1389}}@{}}
+
+\caption{\label{tbl-a-items}Dirección de cada medida de protección}
+
+\tabularnewline
+
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Impuesto a robots
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Subsidios
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Prioridad a nacionales
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Aranceles
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Intercepto & 0,126 * & -0,229 *** & 0,367 *** & 0,065 \\
+& (0,063) & (0,052) & (0,067) & (0,064) \\
+\textbf{Nivel individual} & & & & \\
+Amenaza tecnológica & 0,118 *** & -0,033 *** & -0,103 *** & 0,029 ** \\
+& (0,010) & (0,009) & (0,010) & (0,009) \\
+Beneficio esperado & -0,080 *** & -0,006 & -0,042 *** & -0,023 * \\
+& (0,011) & (0,010) & (0,011) & (0,010) \\
+Expectativas negativas sobre la IA & 0,205 *** & 0,028 ** & 0,110 *** &
+0,068 *** \\
+& (0,011) & (0,010) & (0,011) & (0,011) \\
+Expectativas positivas sobre la IA & -0,154 *** & 0,001 & -0,136 *** &
+-0,033 ** \\
+& (0,012) & (0,010) & (0,012) & (0,011) \\
+Preocupación por perder el empleo & 0,003 & 0,026 *** & 0,004 &
+-0,004 \\
+& (0,007) & (0,006) & (0,007) & (0,007) \\
+Mujer & -0,079 *** & 0,109 *** & -0,022 & 0,051 *** \\
+& (0,014) & (0,012) & (0,014) & (0,013) \\
+25 a 34 años & -0,090 *** & 0,057 * & 0,032 & 0,022 \\
+& (0,026) & (0,022) & (0,026) & (0,025) \\
+35 a 44 años & -0,098 *** & 0,039 & 0,049 & 0,037 \\
+& (0,026) & (0,022) & (0,026) & (0,024) \\
+45 a 54 años & -0,099 *** & 0,050 * & 0,099 *** & 0,042 \\
+& (0,026) & (0,023) & (0,027) & (0,025) \\
+55 a 64 años & -0,102 *** & 0,046 & 0,088 ** & -0,010 \\
+& (0,027) & (0,024) & (0,028) & (0,026) \\
+Educación media & 0,007 & 0,014 & 0,000 & -0,062 * \\
+& (0,028) & (0,024) & (0,028) & (0,026) \\
+Educación alta & -0,040 & -0,075 ** & -0,137 *** & -0,138 *** \\
+& (0,028) & (0,025) & (0,029) & (0,027) \\
+Decil de ingreso & -0,000 & -0,004 & 0,001 & -0,004 \\
+& (0,002) & (0,002) & (0,002) & (0,002) \\
+Asalariado temporal o sin contrato & -0,029 & -0,025 & -0,001 &
+-0,004 \\
+& (0,020) & (0,018) & (0,021) & (0,019) \\
+Independiente & -0,057 ** & -0,028 & -0,008 & -0,025 \\
+& (0,021) & (0,018) & (0,022) & (0,020) \\
+Trabajo en plataformas & 0,024 & 0,002 & -0,040 & 0,052 * \\
+& (0,024) & (0,021) & (0,024) & (0,023) \\
+Sector público & 0,004 & -0,027 & 0,012 & 0,027 \\
+& (0,017) & (0,015) & (0,017) & (0,016) \\
+\textbf{Nivel país} & & & & \\
+PIB per cápita (log) & 0,015 & -0,007 & -0,027 & -0,025 \\
+& (0,031) & (0,015) & (0,039) & (0,042) \\
+Gini & 0,006 & -0,006 & 0,011 & -0,001 \\
+& (0,030) & (0,015) & (0,038) & (0,041) \\
+Prestaciones por desempleo & 0,043 & 0,014 & -0,021 & -0,020 \\
+& (0,029) & (0,014) & (0,037) & (0,040) \\
+Políticas de mercado laboral & -0,026 & -0,023 & 0,004 & -0,012 \\
+& (0,031) & (0,015) & (0,039) & (0,042) \\
+Log verosimilitud & -24327,606 & -21888,612 & -24841,400 & -23500,264 \\
+N & 17.987 & 17.987 & 17.987 & 17.987 \\
+Países & 27 & 27 & 27 & 27 \\
+Varianza del intercepto (país) & 0,012 & 0,002 & 0,020 & 0,024 \\
+Varianza residual & 0,775 & 0,592 & 0,821 & 0,706 \\
+
+\end{longtable}
+
+}
+
+\emph{Nota}: Categorías de referencia: hombre, 18 a 24 años, educación
+baja, asalariado con contrato indefinido, sin trabajo en plataformas y
+no empleado en el sector público (asalariados del sector privado e
+independientes). Todos los modelos controlan además por sector de
+actividad. Errores estándar entre paréntesis. *** p \textless{} 0,001;
+** p \textless{} 0,01; * p \textless{} 0,05. Los indicadores de nivel
+país están estandarizados entre los 27 países. PIB per cápita en paridad
+de poder adquisitivo, en logaritmo, y coeficiente de Gini, ambos del
+Banco Mundial. Prestaciones por desempleo: porcentaje de personas
+desempleadas que reciben prestaciones monetarias por desempleo (OIT,
+indicador 1.3.1 de los ODS). Políticas de mercado laboral: gasto público
+en políticas activas del mercado laboral como porcentaje del PIB,
+dividido por la tasa de desempleo (OCDE, SOCX).
+
+{
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.4286}}
+  >{\centering\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1429}}
+  >{\centering\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1429}}
+  >{\centering\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1429}}
+  >{\centering\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1429}}@{}}
+
+\caption{\label{tbl-a-moderacion-edad}Interacciones entre la amenaza
+tecnológica y el grupo de edad}
+
+\tabularnewline
+
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Volumen
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Inversión
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Compensación
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Protección
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Intercepto & 3,297 *** & 0,149 *** & -0,129 ** & 0,081 ** \\
+& (0,035) & (0,035) & (0,046) & (0,031) \\
+\textbf{Nivel individual} & & & & \\
+Amenaza tecnológica & 0,019 & -0,119 *** & -0,110 *** & 0,014 \\
+& (0,014) & (0,013) & (0,019) & (0,012) \\
+Beneficio esperado & 0,091 *** & 0,058 *** & 0,023 ** & -0,044 *** \\
+& (0,006) & (0,005) & (0,008) & (0,005) \\
+Expectativas negativas sobre la IA & 0,192 *** & -0,011 * & 0,059 *** &
+0,108 *** \\
+& (0,006) & (0,006) & (0,008) & (0,005) \\
+Expectativas positivas sobre la IA & 0,142 *** & -0,004 & -0,044 *** &
+-0,082 *** \\
+& (0,006) & (0,006) & (0,008) & (0,006) \\
+Preocupación por perder el empleo & 0,042 *** & -0,017 *** & 0,050 *** &
+0,007 * \\
+& (0,004) & (0,004) & (0,005) & (0,003) \\
+Mujer & 0,025 *** & -0,016 * & 0,035 *** & 0,021 ** \\
+& (0,007) & (0,007) & (0,010) & (0,007) \\
+25 a 34 años & 0,068 *** & 0,047 *** & 0,020 & 0,006 \\
+& (0,014) & (0,013) & (0,019) & (0,013) \\
+35 a 44 años & 0,068 *** & 0,096 *** & 0,019 & 0,009 \\
+& (0,014) & (0,013) & (0,019) & (0,013) \\
+45 a 54 años & 0,068 *** & 0,148 *** & 0,020 & 0,029 * \\
+& (0,014) & (0,013) & (0,019) & (0,013) \\
+55 a 64 años & 0,075 *** & 0,183 *** & 0,037 & 0,015 \\
+& (0,015) & (0,014) & (0,020) & (0,013) \\
+Educación media & -0,009 & 0,070 *** & -0,015 & -0,010 \\
+& (0,015) & (0,014) & (0,020) & (0,013) \\
+Educación alta & 0,009 & 0,133 *** & -0,072 *** & -0,101 *** \\
+& (0,015) & (0,014) & (0,021) & (0,014) \\
+Decil de ingreso & -0,002 & 0,008 *** & -0,016 *** & -0,001 \\
+& (0,001) & (0,001) & (0,002) & (0,001) \\
+Asalariado temporal o sin contrato & 0,012 & 0,027 ** & 0,001 & -0,019
+* \\
+& (0,011) & (0,010) & (0,015) & (0,010) \\
+Independiente & -0,066 *** & 0,012 & 0,003 & -0,029 ** \\
+& (0,011) & (0,011) & (0,015) & (0,010) \\
+Trabajo en plataformas & 0,122 *** & -0,102 *** & -0,040 * & 0,012 \\
+& (0,013) & (0,012) & (0,017) & (0,011) \\
+Sector público & -0,026 ** & -0,049 *** & 0,007 & 0,009 \\
+& (0,009) & (0,009) & (0,012) & (0,008) \\
+\textbf{Nivel país} & & & & \\
+PIB per cápita (log) & 0,005 & -0,003 & 0,008 & -0,010 \\
+& (0,022) & (0,025) & (0,023) & (0,017) \\
+Gini & 0,037 & 0,029 & -0,012 & 0,004 \\
+& (0,022) & (0,024) & (0,022) & (0,017) \\
+Prestaciones por desempleo & -0,024 & 0,010 & -0,043 * & 0,001 \\
+& (0,021) & (0,023) & (0,022) & (0,016) \\
+Políticas de mercado laboral & -0,035 & 0,025 & -0,038 & -0,013 \\
+& (0,022) & (0,025) & (0,023) & (0,017) \\
+\textbf{Interacciones con variables individuales} & & & & \\
+Amenaza tecnológica × 25 a 34 años & -0,022 & -0,029 & 0,034 & -0,001 \\
+& (0,016) & (0,015) & (0,022) & (0,014) \\
+Amenaza tecnológica × 35 a 44 años & -0,005 & -0,049 ** & 0,076 *** &
+-0,011 \\
+& (0,016) & (0,015) & (0,022) & (0,014) \\
+Amenaza tecnológica × 45 a 54 años & -0,022 & -0,055 *** & 0,084 *** &
+0,001 \\
+& (0,016) & (0,015) & (0,022) & (0,015) \\
+Amenaza tecnológica × 55 a 64 años & -0,009 & -0,034 * & 0,132 *** &
+-0,009 \\
+& (0,017) & (0,017) & (0,024) & (0,016) \\
+Log verosimilitud & -15092,223 & -14153,749 & -21259,222 & -13118,115 \\
+N & 19.731 & 19.731 & 19.731 & 19.731 \\
+Países & 27 & 27 & 27 & 27 \\
+Varianza del intercepto (país) & 0,007 & 0,008 & 0,007 & 0,004 \\
+Varianza residual & 0,239 & 0,217 & 0,447 & 0,196 \\
+
+\end{longtable}
+
+}
+
+\emph{Nota}: Categorías de referencia: hombre, 18 a 24 años, educación
+baja, asalariado con contrato indefinido, sin trabajo en plataformas y
+no empleado en el sector público (asalariados del sector privado e
+independientes). Todos los modelos controlan además por sector de
+actividad. Errores estándar entre paréntesis. *** p \textless{} 0,001;
+** p \textless{} 0,01; * p \textless{} 0,05. Los indicadores de nivel
+país están estandarizados entre los 27 países. PIB per cápita en paridad
+de poder adquisitivo, en logaritmo, y coeficiente de Gini, ambos del
+Banco Mundial. Prestaciones por desempleo: porcentaje de personas
+desempleadas que reciben prestaciones monetarias por desempleo (OIT,
+indicador 1.3.1 de los ODS). Políticas de mercado laboral: gasto público
+en políticas activas del mercado laboral como porcentaje del PIB,
+dividido por la tasa de desempleo (OCDE, SOCX).
+
+{
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.4286}}
+  >{\centering\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1429}}
+  >{\centering\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1429}}
+  >{\centering\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1429}}
+  >{\centering\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1429}}@{}}
+
+\caption{\label{tbl-a-moderacion-educacion}Interacciones entre la
+amenaza tecnológica y el nivel educacional}
+
+\tabularnewline
+
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Volumen
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Inversión
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Compensación
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Protección
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Intercepto & 3,307 *** & 0,152 *** & -0,146 ** & 0,090 ** \\
+& (0,035) & (0,035) & (0,046) & (0,031) \\
+\textbf{Nivel individual} & & & & \\
+Amenaza tecnológica & -0,015 & -0,086 *** & -0,093 *** & -0,039 ** \\
+& (0,016) & (0,015) & (0,022) & (0,014) \\
+Beneficio esperado & 0,093 *** & 0,056 *** & 0,025 ** & -0,042 *** \\
+& (0,006) & (0,005) & (0,008) & (0,005) \\
+Expectativas negativas sobre la IA & 0,190 *** & -0,009 & 0,057 *** &
+0,106 *** \\
+& (0,006) & (0,006) & (0,008) & (0,005) \\
+Expectativas positivas sobre la IA & 0,141 *** & -0,003 & -0,045 *** &
+-0,083 *** \\
+& (0,006) & (0,006) & (0,008) & (0,006) \\
+Preocupación por perder el empleo & 0,041 *** & -0,016 *** & 0,050 *** &
+0,006 \\
+& (0,004) & (0,004) & (0,005) & (0,003) \\
+Mujer & 0,027 *** & -0,020 ** & 0,040 *** & 0,023 *** \\
+& (0,007) & (0,007) & (0,010) & (0,007) \\
+25 a 34 años & 0,063 *** & 0,038 ** & 0,035 & 0,005 \\
+& (0,014) & (0,013) & (0,019) & (0,012) \\
+35 a 44 años & 0,063 *** & 0,087 *** & 0,036 & 0,006 \\
+& (0,013) & (0,013) & (0,018) & (0,012) \\
+45 a 54 años & 0,065 *** & 0,140 *** & 0,036 & 0,028 * \\
+& (0,014) & (0,013) & (0,019) & (0,012) \\
+55 a 64 años & 0,070 *** & 0,173 *** & 0,040 * & 0,014 \\
+& (0,014) & (0,014) & (0,020) & (0,013) \\
+Educación media & -0,011 & 0,072 *** & -0,016 & -0,012 \\
+& (0,015) & (0,014) & (0,020) & (0,013) \\
+Educación alta & 0,008 & 0,136 *** & -0,074 *** & -0,103 *** \\
+& (0,015) & (0,014) & (0,021) & (0,014) \\
+Decil de ingreso & -0,002 & 0,008 *** & -0,016 *** & -0,002 \\
+& (0,001) & (0,001) & (0,002) & (0,001) \\
+Asalariado temporal o sin contrato & 0,013 & 0,026 ** & 0,002 &
+-0,018 \\
+& (0,011) & (0,010) & (0,015) & (0,010) \\
+Independiente & -0,065 *** & 0,010 & 0,002 & -0,026 ** \\
+& (0,011) & (0,011) & (0,015) & (0,010) \\
+Trabajo en plataformas & 0,119 *** & -0,099 *** & -0,046 ** & 0,009 \\
+& (0,013) & (0,012) & (0,017) & (0,011) \\
+Sector público & -0,024 ** & -0,049 *** & 0,005 & 0,011 \\
+& (0,009) & (0,009) & (0,012) & (0,008) \\
+\textbf{Nivel país} & & & & \\
+PIB per cápita (log) & 0,005 & -0,003 & 0,008 & -0,010 \\
+& (0,022) & (0,025) & (0,023) & (0,017) \\
+Gini & 0,038 & 0,028 & -0,011 & 0,005 \\
+& (0,021) & (0,024) & (0,022) & (0,017) \\
+Prestaciones por desempleo & -0,024 & 0,011 & -0,044 * & -0,000 \\
+& (0,021) & (0,024) & (0,022) & (0,016) \\
+Políticas de mercado laboral & -0,035 & 0,025 & -0,038 & -0,014 \\
+& (0,022) & (0,025) & (0,023) & (0,017) \\
+\textbf{Interacciones con variables individuales} & & & & \\
+Amenaza tecnológica × Educación media & -0,013 & -0,050 ** & 0,043 &
+0,020 \\
+& (0,017) & (0,016) & (0,023) & (0,015) \\
+Amenaza tecnológica × Educación alta & 0,055 *** & -0,102 *** & 0,065 **
+& 0,082 *** \\
+& (0,017) & (0,016) & (0,023) & (0,015) \\
+Log verosimilitud & -15056,864 & -14123,394 & -21268,913 & -13075,727 \\
+N & 19.731 & 19.731 & 19.731 & 19.731 \\
+Países & 27 & 27 & 27 & 27 \\
+Varianza del intercepto (país) & 0,007 & 0,009 & 0,007 & 0,004 \\
+Varianza residual & 0,238 & 0,217 & 0,448 & 0,195 \\
+
+\end{longtable}
+
+}
+
+\emph{Nota}: Categorías de referencia: hombre, 18 a 24 años, educación
+baja, asalariado con contrato indefinido, sin trabajo en plataformas y
+no empleado en el sector público (asalariados del sector privado e
+independientes). Todos los modelos controlan además por sector de
+actividad. Errores estándar entre paréntesis. *** p \textless{} 0,001;
+** p \textless{} 0,01; * p \textless{} 0,05. Los indicadores de nivel
+país están estandarizados entre los 27 países. PIB per cápita en paridad
+de poder adquisitivo, en logaritmo, y coeficiente de Gini, ambos del
+Banco Mundial. Prestaciones por desempleo: porcentaje de personas
+desempleadas que reciben prestaciones monetarias por desempleo (OIT,
+indicador 1.3.1 de los ODS). Políticas de mercado laboral: gasto público
+en políticas activas del mercado laboral como porcentaje del PIB,
+dividido por la tasa de desempleo (OCDE, SOCX).
+
+{
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1549}}
+  >{\centering\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2113}}
+  >{\centering\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2113}}
+  >{\centering\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2113}}
+  >{\centering\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2113}}@{}}
+
+\caption{\label{tbl-a-moderacion-pendientes}Prueba conjunta y pendiente
+de la amenaza tecnológica por grupo de edad y nivel educacional}
+
+\tabularnewline
+
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Volumen
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Inversión
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Compensación
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Protección
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\textbf{Grupo de edad} & & & & \\
+18 a 24 años & 0,019 (0,014) & -0,119 (0,013)*** & -0,110 (0,019)*** &
+0,014 (0,012) \\
+25 a 34 años & -0,003 (0,009) & -0,148 (0,009)*** & -0,076 (0,012)*** &
+0,012 (0,008) \\
+35 a 44 años & 0,014 (0,009) & -0,168 (0,008)*** & -0,034 (0,012)** &
+0,002 (0,008) \\
+45 a 54 años & -0,004 (0,010) & -0,174 (0,009)*** & -0,026 (0,013)* &
+0,014 (0,009) \\
+55 a 64 años & 0,009 (0,012) & -0,153 (0,011)*** & 0,021 (0,016) & 0,004
+(0,010) \\
+Prueba conjunta & χ² = 4,12 (4 gl), p = 0,390 & χ² = 15,96 (4 gl), p =
+0,003 & χ² = 41,27 (4 gl), p = 0,000 & χ² = 1,71 (4 gl), p = 0,789 \\
+\textbf{Nivel educacional} & & & & \\
+Educación baja & -0,015 (0,016) & -0,086 (0,015)*** & -0,093 (0,022)***
+& -0,039 (0,014)** \\
+Educación media & -0,028 (0,007)*** & -0,137 (0,007)*** & -0,049
+(0,010)*** & -0,019 (0,006)** \\
+Educación alta & 0,041 (0,007)*** & -0,188 (0,007)*** & -0,028 (0,009)**
+& 0,043 (0,006)*** \\
+Prueba conjunta & χ² = 61,11 (2 gl), p = 0,000 & χ² = 62,69 (2 gl), p =
+0,000 & χ² = 9,25 (2 gl), p = 0,010 & χ² = 72,38 (2 gl), p = 0,000 \\
+
+\end{longtable}
+
+}
+
+\emph{Nota}: pendiente de la amenaza tecnológica en cada categoría,
+calculada como la suma del coeficiente de la amenaza y de su interacción
+con la categoría, con el error estándar de esa suma. Prueba conjunta:
+razón de verosimilitud de cada modelo frente al modelo 4 sin la
+interacción. Categorías de referencia: hombre, 18 a 24 años, educación
+baja, asalariado con contrato indefinido, sin trabajo en plataformas y
+no empleado en el sector público (asalariados del sector privado e
+independientes). Todos los modelos controlan además por sector de
+actividad. Errores estándar entre paréntesis. *** p \textless{} 0,001;
+** p \textless{} 0,01; * p \textless{} 0,05. Los indicadores de nivel
+país están estandarizados entre los 27 países. PIB per cápita en paridad
+de poder adquisitivo, en logaritmo, y coeficiente de Gini, ambos del
+Banco Mundial. Prestaciones por desempleo: porcentaje de personas
+desempleadas que reciben prestaciones monetarias por desempleo (OIT,
+indicador 1.3.1 de los ODS). Políticas de mercado laboral: gasto público
+en políticas activas del mercado laboral como porcentaje del PIB,
+dividido por la tasa de desempleo (OCDE, SOCX).
+
+{
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.2500}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.0357}}
+  >{\centering\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1786}}
+  >{\centering\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1786}}
+  >{\centering\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1786}}
+  >{\centering\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1786}}@{}}
+
+\caption{\label{tbl-a-sector}Pendiente de la amenaza tecnológica por
+sector de actividad (análisis exploratorio)}
+
+\tabularnewline
+
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Sector
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+N
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Volumen
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Inversión
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Compensación
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Protección
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Agricultura y minería & 445 & 0,060 (0,027)* & -0,121 (0,026)*** &
+-0,033 (0,037) & -0,039 (0,024) \\
+Manufactura y servicios básicos & 2.264 & 0,012 (0,013) & -0,165
+(0,013)*** & -0,084 (0,018)*** & 0,002 (0,012) \\
+Construcción & 1.167 & 0,006 (0,017) & -0,126 (0,016)*** & -0,061
+(0,023)** & -0,032 (0,015)* \\
+Comercio, transporte y hotelería & 2.831 & -0,013 (0,012) & -0,144
+(0,011)*** & -0,050 (0,016)** & -0,023 (0,010)* \\
+TIC, finanzas y servicios a empresas & 4.598 & 0,066 (0,009)*** & -0,181
+(0,009)*** & -0,022 (0,013) & 0,040 (0,008)*** \\
+Administración pública, educación y salud & 4.474 & -0,043 (0,010)*** &
+-0,171 (0,010)*** & -0,020 (0,014) & 0,020 (0,009)* \\
+Otros servicios & 2.878 & -0,004 (0,011) & -0,130 (0,011)*** & -0,061
+(0,016)*** & 0,007 (0,010) \\
+Otro o no declarado & 1.074 & -0,041 (0,018)* & -0,150 (0,017)*** &
+-0,040 (0,025) & 0,007 (0,016) \\
+Prueba conjunta & & χ² = 86,70 (7 gl), p = 0,000 & χ² = 25,36 (7 gl), p
+= 0,001 & χ² = 14,10 (7 gl), p = 0,050 & χ² = 37,74 (7 gl), p = 0,000 \\
+
+\end{longtable}
+
+}
+
+\emph{Nota}: modelos con una interacción entre la amenaza tecnológica y
+el sector de actividad. La pendiente de cada sector es la suma del
+coeficiente de la amenaza y de su interacción con el sector, con el
+error estándar de esa suma. Prueba conjunta: razón de verosimilitud
+frente al modelo 4 sin la interacción. N: personas de cada sector en la
+muestra analítica. Categorías de referencia: hombre, 18 a 24 años,
+educación baja, asalariado con contrato indefinido, sin trabajo en
+plataformas y no empleado en el sector público (asalariados del sector
+privado e independientes). Todos los modelos controlan además por sector
+de actividad. Errores estándar entre paréntesis. *** p \textless{}
+0,001; ** p \textless{} 0,01; * p \textless{} 0,05. Los indicadores de
+nivel país están estandarizados entre los 27 países. PIB per cápita en
+paridad de poder adquisitivo, en logaritmo, y coeficiente de Gini, ambos
+del Banco Mundial. Prestaciones por desempleo: porcentaje de personas
+desempleadas que reciben prestaciones monetarias por desempleo (OIT,
+indicador 1.3.1 de los ODS). Políticas de mercado laboral: gasto público
+en políticas activas del mercado laboral como porcentaje del PIB,
+dividido por la tasa de desempleo (OCDE, SOCX).
+
+{
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.3248}}
+  >{\centering\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.1592}}
+  >{\centering\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2484}}
+  >{\centering\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2675}}@{}}
+
+\caption{\label{tbl-a-gasto-social}Prestaciones por desempleo y gasto
+social público}
+
+\tabularnewline
+
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Modelo 4 + gasto social
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Gasto social en lugar de prestaciones
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Amenaza × prestaciones, con gasto social
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Intercepto & -0,151 *** & -0,151 *** & -0,147 ** \\
+& (0,045) & (0,045) & (0,045) \\
+\textbf{Nivel individual} & & & \\
+Amenaza tecnológica & -0,042 *** & -0,042 *** & -0,041 *** \\
+& (0,007) & (0,007) & (0,012) \\
+Beneficio esperado & 0,024 ** & 0,024 ** & 0,022 ** \\
+& (0,008) & (0,008) & (0,008) \\
+Expectativas negativas sobre la IA & 0,058 *** & 0,058 *** & 0,058
+*** \\
+& (0,008) & (0,008) & (0,008) \\
+Expectativas positivas sobre la IA & -0,045 *** & -0,045 *** & -0,044
+*** \\
+& (0,008) & (0,008) & (0,008) \\
+Preocupación por perder el empleo & 0,050 *** & 0,050 *** & 0,049 *** \\
+& (0,005) & (0,005) & (0,005) \\
+Mujer & 0,039 *** & 0,039 *** & 0,038 *** \\
+& (0,010) & (0,010) & (0,010) \\
+25 a 34 años & 0,035 & 0,035 & 0,038 * \\
+& (0,019) & (0,019) & (0,019) \\
+35 a 44 años & 0,037 * & 0,036 * & 0,039 * \\
+& (0,018) & (0,018) & (0,018) \\
+45 a 54 años & 0,036 & 0,036 & 0,039 * \\
+& (0,019) & (0,019) & (0,019) \\
+55 a 64 años & 0,041 * & 0,040 * & 0,044 * \\
+& (0,020) & (0,020) & (0,020) \\
+Educación media & -0,014 & -0,014 & -0,017 \\
+& (0,020) & (0,020) & (0,020) \\
+Educación alta & -0,072 *** & -0,072 *** & -0,076 *** \\
+& (0,021) & (0,021) & (0,020) \\
+Decil de ingreso & -0,016 *** & -0,016 *** & -0,016 *** \\
+& (0,002) & (0,002) & (0,002) \\
+Asalariado temporal o sin contrato & 0,001 & 0,001 & 0,001 \\
+& (0,015) & (0,015) & (0,015) \\
+Independiente & 0,000 & 0,000 & 0,001 \\
+& (0,015) & (0,015) & (0,015) \\
+Trabajo en plataformas & -0,046 ** & -0,046 ** & -0,042 * \\
+& (0,017) & (0,017) & (0,017) \\
+Sector público & 0,004 & 0,004 & 0,001 \\
+& (0,012) & (0,012) & (0,012) \\
+\textbf{Nivel país} & & & \\
+PIB per cápita (log) & -0,000 & -0,007 & -0,002 \\
+& (0,021) & (0,019) & (0,017) \\
+Gini & -0,041 & -0,044 & -0,022 \\
+& (0,023) & (0,022) & (0,019) \\
+Prestaciones por desempleo & -0,017 & & -0,023 \\
+& (0,022) & & (0,020) \\
+Políticas de mercado laboral & -0,050 * & -0,055 ** & -0,037 * \\
+& (0,021) & (0,020) & (0,017) \\
+Gasto social público & -0,054 ** & -0,062 *** & -0,036 * \\
+& (0,021) & (0,018) & (0,017) \\
+\textbf{Interacciones entre niveles} & & & \\
+Amenaza tecnológica × Prestaciones por desempleo & & & 0,047 *** \\
+& & & (0,011) \\
+Log verosimilitud & -21267,088 & -21264,490 & -21222,845 \\
+N & 19.731 & 19.731 & 19.731 \\
+Países & 27 & 27 & 27 \\
+Varianza del intercepto (país) & 0,005 & 0,005 & 0,005 \\
+Varianza residual & 0,448 & 0,448 & 0,446 \\
+Varianza de la pendiente de la amenaza tecnológica & & & 0,002 \\
+Covarianza entre intercepto y pendiente (amenaza) & & & -0,002 \\
+
+\end{longtable}
+
+}
+
+\emph{Nota}: variable dependiente: dirección de la compensación. El
+tercer modelo incluye una pendiente aleatoria por país para la amenaza
+tecnológica. Categorías de referencia: hombre, 18 a 24 años, educación
+baja, asalariado con contrato indefinido, sin trabajo en plataformas y
+no empleado en el sector público (asalariados del sector privado e
+independientes). Todos los modelos controlan además por sector de
+actividad. Errores estándar entre paréntesis. *** p \textless{} 0,001;
+** p \textless{} 0,01; * p \textless{} 0,05. Los indicadores de nivel
+país están estandarizados entre los 27 países. PIB per cápita en paridad
+de poder adquisitivo, en logaritmo, y coeficiente de Gini, ambos del
+Banco Mundial. Prestaciones por desempleo: porcentaje de personas
+desempleadas que reciben prestaciones monetarias por desempleo (OIT,
+indicador 1.3.1 de los ODS). Políticas de mercado laboral: gasto público
+en políticas activas del mercado laboral como porcentaje del PIB,
+dividido por la tasa de desempleo (OCDE, SOCX). Gasto social público:
+gasto social público total como porcentaje del PIB (OCDE, SOCX).
+
+
+
+
+\end{document}

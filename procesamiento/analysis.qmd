@@ -261,8 +261,8 @@ ggarrange(c1, c5, c2, c3,# c4,
 
 ```{r}
 # Cada repertorio contra la institución que lo hace disponible (escala original).
-# Hipótesis termostática: relación negativa. La compensación no tiene indicador
-# (la generosidad del seguro de desempleo no cubre los 27 países).
+# Hipótesis termostática: relación negativa. La compensación se mide con la cobertura
+# efectiva de las prestaciones por desempleo (OIT, ODS 1.3.1).
 c6 <- ggplot(country_data,
        aes(x = almp,
            y = rel_investment,
@@ -277,21 +277,21 @@ c6 <- ggplot(country_data,
   ) +
   theme_bw()
 
-c7 <- ggplot(country_data,
-       aes(x = epl,
-           y = rel_protection,
+c8 <- ggplot(country_data,
+       aes(x = ubcov,
+           y = rel_compensation,
            label = ctrcode)) +
   geom_point() +
   geom_smooth(method = "lm", se = FALSE) +
   stat_cor(method = "pearson") +
   geom_text_repel(size = 3, min.segment.length = 0) +
   labs(
-    x = "Employment protection, regular contracts (EPL, 0-6)",
-    y = "Relative support for protection"
+    x = "Unemployed receiving unemployment benefits (%)",
+    y = "Relative support for compensation"
   ) +
   theme_bw()
 
-ggarrange(c6, c7,
+ggarrange(c6, c8,
           ncol=2,
           nrow=1)
 ```
@@ -303,16 +303,16 @@ data_original <- data
 
 # Muestra analítica: en trabajo o temporalmente ausentes (únicos que responden Q25)
 data <- data %>% filter(employed == 1) %>%
-  select(ctrcode, country, weight,
-         rel_investment, rel_compensation, rel_protection, rel_protection_core, rel_compensation_orig,
+  select(ctrcode, id, country, weight,
+         rel_investment, rel_compensation, rel_protection, rel_compensation_orig,
          protection_vs_compensation, policy_mean,
-         ego_neg_cwc, ego_pos_cwc, socio_neg_cwc, socio_pos_cwc, ego_human_cwc,
+         ego_neg_cwc, ego_pos_cwc, socio_neg_cwc, socio_pos_cwc,
          ego_neg_mean, ego_pos_mean, socio_neg_mean, socio_pos_mean,
          unnemployment,
          sex, age, educ, income, lm_position, platform, public, sector_cat,
-         almp_z, epl_z, ind_emp_z,
+         almp_z, ubcov_z, ind_emp_z,
 #         rr_share,
-         gdp_pc_log_z)
+         gdp_pc_log_z, gini_z)
 
 # Casos perdidos por variable entre ocupados, antes de na.omit
 sort(colSums(is.na(data)), decreasing = TRUE)
@@ -320,10 +320,20 @@ c(ocupados = nrow(data), completos = sum(complete.cases(data)))
 
 data <- na.omit(data)
 
+# Media del ponderador de postestratificación por país en la muestra analítica
+data %>% group_by(ctrcode) %>%
+  summarise(n = n(), weight_mean = mean(weight)) %>%
+  print(n = Inf)
+
+# Ponderador normalizado para que su media sea 1 en cada país
+data <- data %>%
+  group_by(ctrcode) %>%
+  mutate(weight_n = weight / mean(weight)) %>%
+  ungroup()
+
 data$rel_investment  <- set_label(x = data$rel_investment, label = "Relative support: social investment")
 data$rel_compensation  <- set_label(x = data$rel_compensation, label = "Relative support: compensation")
 data$rel_protection  <- set_label(x = data$rel_protection, label = "Relative support: protection")
-data$rel_protection_core  <- set_label(x = data$rel_protection_core, label = "Relative support: protection without subsidies")
 data$rel_compensation_orig  <- set_label(x = data$rel_compensation_orig, label = "Relative support: compensation (original, q27d-g)")
 data$protection_vs_compensation  <- set_label(x = data$protection_vs_compensation, label = "Protection vs. compensation")
 data$policy_mean  <- set_label(x = data$policy_mean, label = "Mean support across the twelve measures")
@@ -331,7 +341,6 @@ data$ego_neg_cwc  <- set_label(x = data$ego_neg_cwc, label = "Egotropic threat: 
 data$ego_pos_cwc  <- set_label(x = data$ego_pos_cwc, label = "Egotropic benefit (cwc)")
 data$socio_neg_cwc  <- set_label(x = data$socio_neg_cwc, label = "Sociotropic pessimism about AI (cwc)")
 data$socio_pos_cwc  <- set_label(x = data$socio_pos_cwc, label = "Sociotropic optimism about AI (cwc)")
-data$ego_human_cwc  <- set_label(x = data$ego_human_cwc, label = "Displacement by foreign worker or offshoring (cwc)")
 data$ego_neg_mean  <- set_label(x = data$ego_neg_mean, label = "Egotropic threat (country mean)")
 data$ego_pos_mean  <- set_label(x = data$ego_pos_mean, label = "Egotropic benefit (country mean)")
 data$socio_neg_mean  <- set_label(x = data$socio_neg_mean, label = "Sociotropic pessimism (country mean)")
@@ -341,10 +350,11 @@ data$lm_position  <- set_label(x = data$lm_position, label = "Labour market posi
 data$platform  <- set_label(x = data$platform, label = "Platform worker")
 data$public  <- set_label(x = data$public, label = "Public sector employee")
 data$almp_z  <- set_label(x = data$almp_z, label = "ALMP spending per point of unemployment (standardised)")
-data$epl_z  <- set_label(x = data$epl_z, label = "Employment protection, regular contracts (standardised)")
+data$ubcov_z  <- set_label(x = data$ubcov_z, label = "Unemployed receiving unemployment benefits (standardised)")
 data$ind_emp_z  <- set_label(x = data$ind_emp_z, label = "Employment in industry (standardised)")
 #data$rr_share  <- set_label(x = data$rr_share, label = "Radical right vote intention (country share)")
 data$gdp_pc_log_z  <- set_label(x = data$gdp_pc_log_z, label = "GDP per capita (standardised)")
+data$gini_z  <- set_label(x = data$gini_z, label = "Gini coefficient (standardised)")
 
 data$platform <- set_labels(data$platform,
             labels=c( "No"=1,
@@ -354,22 +364,35 @@ data$platform <- set_labels(data$platform,
 ### Modelos nulos
 
 ```{r}
-reg0_inv <- lmer(rel_investment ~ 1 + (1|ctrcode), data=data)
-reg0_com <- lmer(rel_compensation ~ 1 + (1|ctrcode), data=data)
-reg0_pro <- lmer(rel_protection ~ 1 + (1|ctrcode), data=data)
+reg0_lev <- lmer(policy_mean ~ 1 + (1|ctrcode), data=data, weights=weight_n)
+reg0_inv <- lmer(rel_investment ~ 1 + (1|ctrcode), data=data, weights=weight_n)
+reg0_com <- lmer(rel_compensation ~ 1 + (1|ctrcode), data=data, weights=weight_n)
+reg0_pro <- lmer(rel_protection ~ 1 + (1|ctrcode), data=data, weights=weight_n)
 
+performance::icc(reg0_lev)
 performance::icc(reg0_inv)
 performance::icc(reg0_com)
 performance::icc(reg0_pro)
 ```
 
+### Volumen
+
+```{r}
+reg1_lev <- lmer(policy_mean ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + (1|ctrcode), data=data, weights=weight_n)
+reg2_lev <- lmer(policy_mean ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + sex + age + educ + income + lm_position + platform + public + sector_cat + (1|ctrcode), data=data, weights=weight_n)
+reg3_lev <- lmer(policy_mean ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + (1|ctrcode), data=data, weights=weight_n)
+reg4_lev <- lmer(policy_mean ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + gini_z + ubcov_z + almp_z + (1|ctrcode), data=data, weights=weight_n)
+
+tab(reg1_lev, reg2_lev, reg3_lev, reg4_lev, show.ci=FALSE, p.style = "stars", show.se = TRUE)
+```
+
 ### Inversión social
 
 ```{r}
-reg1_inv <- lmer(rel_investment ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + (1|ctrcode), data=data)
-reg2_inv <- lmer(rel_investment ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + sex + age + educ + income + lm_position + platform + public + sector_cat + (1|ctrcode), data=data)
-reg3_inv <- lmer(rel_investment ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + ego_human_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + (1|ctrcode), data=data)
-reg4_inv <- lmer(rel_investment ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + ego_human_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + (1|ctrcode), data=data)
+reg1_inv <- lmer(rel_investment ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + (1|ctrcode), data=data, weights=weight_n)
+reg2_inv <- lmer(rel_investment ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + sex + age + educ + income + lm_position + platform + public + sector_cat + (1|ctrcode), data=data, weights=weight_n)
+reg3_inv <- lmer(rel_investment ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + (1|ctrcode), data=data, weights=weight_n)
+reg4_inv <- lmer(rel_investment ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + gini_z + ubcov_z + almp_z + (1|ctrcode), data=data, weights=weight_n)
 
 tab(reg1_inv, reg2_inv, reg3_inv, reg4_inv, show.ci=FALSE, p.style = "stars", show.se = TRUE)
 ```
@@ -377,16 +400,16 @@ tab(reg1_inv, reg2_inv, reg3_inv, reg4_inv, show.ci=FALSE, p.style = "stars", sh
 ### Compensación
 
 ```{r}
-reg1_com <- lmer(rel_compensation ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + (1|ctrcode), data=data)
-reg2_com <- lmer(rel_compensation ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + sex + age + educ + income + lm_position + platform + public + sector_cat + (1|ctrcode), data=data)
-reg3_com <- lmer(rel_compensation ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + ego_human_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + (1|ctrcode), data=data)
-reg4_com <- lmer(rel_compensation ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + ego_human_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + (1|ctrcode), data=data)
+reg1_com <- lmer(rel_compensation ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + (1|ctrcode), data=data, weights=weight_n)
+reg2_com <- lmer(rel_compensation ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + sex + age + educ + income + lm_position + platform + public + sector_cat + (1|ctrcode), data=data, weights=weight_n)
+reg3_com <- lmer(rel_compensation ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + (1|ctrcode), data=data, weights=weight_n)
+reg4_com <- lmer(rel_compensation ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + gini_z + ubcov_z + almp_z + (1|ctrcode), data=data, weights=weight_n)
 
 tab(reg1_com, reg2_com, reg3_com, reg4_com, show.ci=FALSE, p.style = "stars", show.se = TRUE)
 
 # Comparación con la compensación original (q27d a q27g), que incluía el impuesto
 # a robots y el límite de jornada
-reg4_com_orig <- lmer(rel_compensation_orig ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + ego_human_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + (1|ctrcode), data=data)
+reg4_com_orig <- lmer(rel_compensation_orig ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + gini_z + (1|ctrcode), data=data, weights=weight_n)
 
 tab(reg4_com, reg4_com_orig, show.ci=FALSE, p.style = "stars", show.se = TRUE)
 ```
@@ -396,15 +419,25 @@ tab(reg4_com, reg4_com_orig, show.ci=FALSE, p.style = "stars", show.se = TRUE)
 ```{r}
 # Protección frente a competidores, sean personas o máquinas: impuesto a robots (q27d),
 # subsidios a industrias afectadas (q27h), prioridad a nacionales (q27k) y aranceles (q27l)
-reg1_pro <- lmer(rel_protection ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + (1|ctrcode), data=data)
-reg2_pro <- lmer(rel_protection ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + sex + age + educ + income + lm_position + platform + public + sector_cat + (1|ctrcode), data=data)
-reg3_pro <- lmer(rel_protection ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + ego_human_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + (1|ctrcode), data=data)
-reg4_pro <- lmer(rel_protection ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + ego_human_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + (1|ctrcode), data=data)
+reg1_pro <- lmer(rel_protection ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + (1|ctrcode), data=data, weights=weight_n)
+reg2_pro <- lmer(rel_protection ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + sex + age + educ + income + lm_position + platform + public + sector_cat + (1|ctrcode), data=data, weights=weight_n)
+reg3_pro <- lmer(rel_protection ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + (1|ctrcode), data=data, weights=weight_n)
+reg4_pro <- lmer(rel_protection ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + gini_z + ubcov_z + almp_z + (1|ctrcode), data=data, weights=weight_n)
 
 tab(reg1_pro, reg2_pro, reg3_pro, reg4_pro, show.ci=FALSE, p.style = "stars", show.se = TRUE)
 
-# Robustez: protección sin subsidios a empresas (q27h tiene cargas cruzadas con compensación)
-reg4_pro_core <- lmer(rel_protection_core ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + ego_human_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + (1|ctrcode), data=data)
+# Robustez: protección sin subsidios a empresas (q27h tiene cargas cruzadas con compensación).
+# Se estima en su propia submuestra, porque quienes solo responden q27h no tienen este índice.
+data_core <- data %>%
+  left_join(select(data_original, ctrcode, id, rel_protection_core), by = c("ctrcode", "id")) %>%
+  filter(!is.na(rel_protection_core)) %>%
+  group_by(ctrcode) %>%
+  mutate(weight_n = weight / mean(weight)) %>%
+  ungroup()
+
+data_core$rel_protection_core  <- set_label(x = data_core$rel_protection_core, label = "Relative support: protection without subsidies")
+
+reg4_pro_core <- lmer(rel_protection_core ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + gini_z + ubcov_z + almp_z + (1|ctrcode), data=data_core, weights=weight_n)
 
 tab(reg4_pro, reg4_pro_core, show.ci=FALSE, p.style = "stars", show.se = TRUE)
 ```
@@ -426,36 +459,42 @@ car::linearHypothesis(reg4_com, "ego_pos_cwc = socio_pos_cwc")
 car::linearHypothesis(reg4_pro, "ego_pos_cwc = socio_pos_cwc")
 
 # H2: preferencia por protección frente a compensación
-reg5_dif <- lmer(protection_vs_compensation ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + ego_human_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + (1|ctrcode), data=data)
+reg5_dif <- lmer(protection_vs_compensation ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + gini_z + (1|ctrcode), data=data, weights=weight_n)
 
 # Robustez con ítems de IA: IA en el propio empleo (Q25c) y aumento de la desigualdad por
 # la IA en el país (Q26a), en lugar de los índices de amenaza y pesimismo.
 # Se estiman en su propia muestra, para que los casos perdidos en estos ítems no reduzcan
 # la muestra principal.
 data_reg6 <- data_original %>% filter(employed == 1) %>%
-  select(all_of(names(data)), ego_ai_cwc, socio_ineq_cwc) %>%
-  na.omit()
+  select(all_of(setdiff(names(data), "weight_n")), ego_ai_cwc, socio_ineq_cwc) %>%
+  na.omit() %>%
+  group_by(ctrcode) %>%
+  mutate(weight_n = weight / mean(weight)) %>%
+  ungroup()
 
 data_reg6$ego_ai_cwc  <- set_label(x = data_reg6$ego_ai_cwc, label = "Egotropic threat: AI (cwc)")
 data_reg6$socio_ineq_cwc  <- set_label(x = data_reg6$socio_ineq_cwc, label = "AI will increase inequality (cwc)")
 
-reg6_inv <- lmer(rel_investment ~ ego_ai_cwc + ego_pos_cwc + socio_ineq_cwc + socio_pos_cwc + ego_human_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + (1|ctrcode), data=data_reg6)
-reg6_com <- lmer(rel_compensation ~ ego_ai_cwc + ego_pos_cwc + socio_ineq_cwc + socio_pos_cwc + ego_human_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + (1|ctrcode), data=data_reg6)
-reg6_pro <- lmer(rel_protection ~ ego_ai_cwc + ego_pos_cwc + socio_ineq_cwc + socio_pos_cwc + ego_human_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + (1|ctrcode), data=data_reg6)
+reg6_inv <- lmer(rel_investment ~ ego_ai_cwc + ego_pos_cwc + socio_ineq_cwc + socio_pos_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + gini_z + (1|ctrcode), data=data_reg6, weights=weight_n)
+reg6_com <- lmer(rel_compensation ~ ego_ai_cwc + ego_pos_cwc + socio_ineq_cwc + socio_pos_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + gini_z + (1|ctrcode), data=data_reg6, weights=weight_n)
+reg6_pro <- lmer(rel_protection ~ ego_ai_cwc + ego_pos_cwc + socio_ineq_cwc + socio_pos_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + gini_z + (1|ctrcode), data=data_reg6, weights=weight_n)
 
 tab(reg5_dif, reg6_inv, reg6_com, reg6_pro, show.ci=FALSE)
 
 # Robustez: índice de amenaza del paper anterior, sin la IA (tecnoestres_cwc: robot, plataforma
 # y habilidades), en lugar de ego_neg_cwc.
 data_tecno <- data_original %>% filter(employed == 1) %>%
-  select(all_of(names(data)), tecnoestres_cwc) %>%
-  na.omit()
+  select(all_of(setdiff(names(data), "weight_n")), tecnoestres_cwc) %>%
+  na.omit() %>%
+  group_by(ctrcode) %>%
+  mutate(weight_n = weight / mean(weight)) %>%
+  ungroup()
 
 data_tecno$tecnoestres_cwc  <- set_label(x = data_tecno$tecnoestres_cwc, label = "Egotropic threat without AI: robot, platform and skills (cwc)")
 
-reg4_inv_tecno <- lmer(rel_investment ~ tecnoestres_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + ego_human_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + (1|ctrcode), data=data_tecno)
-reg4_com_tecno <- lmer(rel_compensation ~ tecnoestres_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + ego_human_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + (1|ctrcode), data=data_tecno)
-reg4_pro_tecno <- lmer(rel_protection ~ tecnoestres_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + ego_human_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + (1|ctrcode), data=data_tecno)
+reg4_inv_tecno <- lmer(rel_investment ~ tecnoestres_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + gini_z + (1|ctrcode), data=data_tecno, weights=weight_n)
+reg4_com_tecno <- lmer(rel_compensation ~ tecnoestres_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + gini_z + (1|ctrcode), data=data_tecno, weights=weight_n)
+reg4_pro_tecno <- lmer(rel_protection ~ tecnoestres_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + gini_z + (1|ctrcode), data=data_tecno, weights=weight_n)
 
 tab(reg4_inv_tecno, reg4_com_tecno, reg4_pro_tecno, show.ci=FALSE)
 ```
@@ -465,7 +504,7 @@ tab(reg4_inv_tecno, reg4_com_tecno, reg4_pro_tecno, show.ci=FALSE)
 ```{r}
 # Modelos anidados sobre la misma muestra: completo (con la situación económica del país
 # y del hogar), sin econ_country ni econ_household (especificación principal) y sin esas
-# dos ni unnemployment. Como información adicional, el completo sin ego_human_cwc.
+# dos ni unnemployment.
 # anova() reajusta por máxima verosimilitud.
 # Regla: se quitan econ_country y econ_household si ningún coeficiente focal cambia de signo
 # o de significación y ninguno significativo varía más de 20%; unnemployment se quita solo
@@ -473,86 +512,87 @@ tab(reg4_inv_tecno, reg4_com_tecno, reg4_pro_tecno, show.ci=FALSE)
 # econ_country y econ_household; unnemployment se mantiene (significativa en inversión y
 # compensación).
 data_spec <- data_original %>% filter(employed == 1) %>%
-  select(all_of(names(data)), econ_country, econ_household) %>%
-  na.omit()
+  select(all_of(setdiff(names(data), "weight_n")), econ_country, econ_household) %>%
+  na.omit() %>%
+  group_by(ctrcode) %>%
+  mutate(weight_n = weight / mean(weight)) %>%
+  ungroup()
 
 data_spec$econ_country  <- set_label(x = data_spec$econ_country, label = "Country economic situation (retrospective)")
 data_spec$econ_household  <- set_label(x = data_spec$econ_household, label = "Household economic situation (retrospective)")
 
-reg18_inv_full <- lmer(rel_investment ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + ego_human_cwc + unnemployment + econ_country + econ_household + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + (1|ctrcode), data=data_spec)
-reg18_inv_noecon <- lmer(rel_investment ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + ego_human_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + (1|ctrcode), data=data_spec)
-reg18_inv_nounemp <- lmer(rel_investment ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + ego_human_cwc + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + (1|ctrcode), data=data_spec)
-reg18_inv_nohum <- lmer(rel_investment ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + unnemployment + econ_country + econ_household + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + (1|ctrcode), data=data_spec)
+reg18_inv_full <- lmer(rel_investment ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + unnemployment + econ_country + econ_household + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + gini_z + (1|ctrcode), data=data_spec, weights=weight_n)
+reg18_inv_noecon <- lmer(rel_investment ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + gini_z + (1|ctrcode), data=data_spec, weights=weight_n)
+reg18_inv_nounemp <- lmer(rel_investment ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + gini_z + (1|ctrcode), data=data_spec, weights=weight_n)
 
-reg18_com_full <- lmer(rel_compensation ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + ego_human_cwc + unnemployment + econ_country + econ_household + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + (1|ctrcode), data=data_spec)
-reg18_com_noecon <- lmer(rel_compensation ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + ego_human_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + (1|ctrcode), data=data_spec)
-reg18_com_nounemp <- lmer(rel_compensation ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + ego_human_cwc + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + (1|ctrcode), data=data_spec)
-reg18_com_nohum <- lmer(rel_compensation ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + unnemployment + econ_country + econ_household + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + (1|ctrcode), data=data_spec)
+reg18_com_full <- lmer(rel_compensation ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + unnemployment + econ_country + econ_household + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + gini_z + (1|ctrcode), data=data_spec, weights=weight_n)
+reg18_com_noecon <- lmer(rel_compensation ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + gini_z + (1|ctrcode), data=data_spec, weights=weight_n)
+reg18_com_nounemp <- lmer(rel_compensation ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + gini_z + (1|ctrcode), data=data_spec, weights=weight_n)
 
-reg18_pro_full <- lmer(rel_protection ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + ego_human_cwc + unnemployment + econ_country + econ_household + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + (1|ctrcode), data=data_spec)
-reg18_pro_noecon <- lmer(rel_protection ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + ego_human_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + (1|ctrcode), data=data_spec)
-reg18_pro_nounemp <- lmer(rel_protection ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + ego_human_cwc + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + (1|ctrcode), data=data_spec)
-reg18_pro_nohum <- lmer(rel_protection ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + unnemployment + econ_country + econ_household + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + (1|ctrcode), data=data_spec)
+reg18_pro_full <- lmer(rel_protection ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + unnemployment + econ_country + econ_household + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + gini_z + (1|ctrcode), data=data_spec, weights=weight_n)
+reg18_pro_noecon <- lmer(rel_protection ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + gini_z + (1|ctrcode), data=data_spec, weights=weight_n)
+reg18_pro_nounemp <- lmer(rel_protection ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + gini_z + (1|ctrcode), data=data_spec, weights=weight_n)
 
-reg18_lev_full <- lmer(policy_mean ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + ego_human_cwc + unnemployment + econ_country + econ_household + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + (1|ctrcode), data=data_spec)
-reg18_lev_noecon <- lmer(policy_mean ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + ego_human_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + (1|ctrcode), data=data_spec)
-reg18_lev_nounemp <- lmer(policy_mean ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + ego_human_cwc + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + (1|ctrcode), data=data_spec)
-reg18_lev_nohum <- lmer(policy_mean ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + unnemployment + econ_country + econ_household + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + (1|ctrcode), data=data_spec)
+reg18_lev_full <- lmer(policy_mean ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + unnemployment + econ_country + econ_household + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + gini_z + (1|ctrcode), data=data_spec, weights=weight_n)
+reg18_lev_noecon <- lmer(policy_mean ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + gini_z + (1|ctrcode), data=data_spec, weights=weight_n)
+reg18_lev_nounemp <- lmer(policy_mean ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + gini_z + (1|ctrcode), data=data_spec, weights=weight_n)
 
 anova(reg18_inv_full, reg18_inv_noecon, reg18_inv_nounemp)
-anova(reg18_inv_full, reg18_inv_nohum)
 anova(reg18_com_full, reg18_com_noecon, reg18_com_nounemp)
-anova(reg18_com_full, reg18_com_nohum)
 anova(reg18_pro_full, reg18_pro_noecon, reg18_pro_nounemp)
-anova(reg18_pro_full, reg18_pro_nohum)
 anova(reg18_lev_full, reg18_lev_noecon, reg18_lev_nounemp)
-anova(reg18_lev_full, reg18_lev_nohum)
 
-tab(reg18_inv_full, reg18_inv_noecon, reg18_inv_nounemp, reg18_inv_nohum, show.ci=FALSE)
-tab(reg18_com_full, reg18_com_noecon, reg18_com_nounemp, reg18_com_nohum, show.ci=FALSE)
-tab(reg18_pro_full, reg18_pro_noecon, reg18_pro_nounemp, reg18_pro_nohum, show.ci=FALSE)
-tab(reg18_lev_full, reg18_lev_noecon, reg18_lev_nounemp, reg18_lev_nohum, show.ci=FALSE)
+tab(reg18_inv_full, reg18_inv_noecon, reg18_inv_nounemp, show.ci=FALSE)
+tab(reg18_com_full, reg18_com_noecon, reg18_com_nounemp, show.ci=FALSE)
+tab(reg18_pro_full, reg18_pro_noecon, reg18_pro_nounemp, show.ci=FALSE)
+tab(reg18_lev_full, reg18_lev_noecon, reg18_lev_nounemp, show.ci=FALSE)
 ```
 
 ### Instituciones de cada repertorio (efectos principales)
 
 ```{r}
 # A cada repertorio se le asigna la institución que lo hace disponible (Estevez-Abe,
-# Iversen y Soskice 2001): protección del empleo (EPL) para la protección y gasto en
-# políticas activas por punto de desempleo para la inversión. La generosidad del seguro
-# de desempleo, asignada a la compensación, no cubre los 27 países y no se incluye.
+# Iversen y Soskice 2001): gasto en políticas activas por punto de desempleo para la
+# inversión y cobertura efectiva de las prestaciones por desempleo (OIT, ODS 1.3.1) para la
+# compensación. La protección del empleo (EPL) quedó fuera del análisis.
 # Hipótesis termostática: donde la institución ya es fuerte, el apoyo relativo a su
 # repertorio es menor (efecto principal negativo).
-reg20_inv_almp <- lmer(rel_investment ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + ego_human_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + almp_z + (1|ctrcode), data=data)
-reg20_pro_epl <- lmer(rel_protection ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + ego_human_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + epl_z + (1|ctrcode), data=data)
+reg20_inv_almp <- lmer(rel_investment ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + gini_z + almp_z + (1|ctrcode), data=data, weights=weight_n)
+reg20_com_cov <- lmer(rel_compensation ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + gini_z + ubcov_z + (1|ctrcode), data=data, weights=weight_n)
 
-tab(reg4_inv, reg20_inv_almp, reg4_pro, reg20_pro_epl, show.ci=FALSE, df.method="satterthwaite")
+tab(reg4_inv, reg20_inv_almp, reg4_com, reg20_com_cov, show.ci=FALSE)
 ```
 
 ### Ítems de protección por agente
 
 ```{r}
 # ¿La amenaza de cada agente se asocia con la protección frente a ese mismo agente?
-# Impuesto a robots (q27d) frente a la amenaza tecnológica (ego_neg_cwc: robot, IA, plataforma
-# y habilidades); prioridad a nacionales (q27k) frente a persona de otro país y
-# deslocalización (ego_human_cwc).
-# Escala relativa (ítem menos policy_mean) y absoluta.
+# Medidas dirigidas a la tecnología, impuesto a robots (q27d) y subsidios a industrias
+# afectadas (q27h), frente a la amenaza tecnológica (ego_neg_cwc: robot, IA, plataforma y
+# habilidades); medidas dirigidas a la competencia extranjera, prioridad a nacionales (q27k)
+# y aranceles (q27l). La amenaza asociada a la apertura ya no entra en los modelos.
+# Escala relativa (ítem menos policy_mean) para las cuatro medidas; absoluta para q27d y q27k.
 data_items <- data_original %>% filter(employed == 1) %>%
-  select(all_of(names(data)), policy_4, policy_11) %>%
+  select(all_of(setdiff(names(data), "weight_n")), policy_4, policy_8, policy_11, policy_12) %>%
   na.omit() %>%
   mutate(rel_robot_tax = policy_4 - policy_mean,
-         rel_natives = policy_11 - policy_mean)
+         rel_subsidies = policy_8 - policy_mean,
+         rel_natives = policy_11 - policy_mean,
+         rel_tariffs = policy_12 - policy_mean) %>%
+  group_by(ctrcode) %>%
+  mutate(weight_n = weight / mean(weight)) %>%
+  ungroup()
 
-reg13_tax <- lmer(rel_robot_tax ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + ego_human_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + (1|ctrcode), data=data_items)
-reg13_tax_abs <- lmer(policy_4 ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + ego_human_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + (1|ctrcode), data=data_items)
-reg13_nat <- lmer(rel_natives ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + ego_human_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + (1|ctrcode), data=data_items)
-reg13_nat_abs <- lmer(policy_11 ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + ego_human_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + (1|ctrcode), data=data_items)
+reg13_tax <- lmer(rel_robot_tax ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + gini_z + ubcov_z + almp_z + (1|ctrcode), data=data_items, weights=weight_n)
+reg13_sub <- lmer(rel_subsidies ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + gini_z + ubcov_z + almp_z + (1|ctrcode), data=data_items, weights=weight_n)
+reg13_nat <- lmer(rel_natives ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + gini_z + ubcov_z + almp_z + (1|ctrcode), data=data_items, weights=weight_n)
+reg13_tar <- lmer(rel_tariffs ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + gini_z + ubcov_z + almp_z + (1|ctrcode), data=data_items, weights=weight_n)
+reg13_tax_abs <- lmer(policy_4 ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + gini_z + (1|ctrcode), data=data_items, weights=weight_n)
+reg13_nat_abs <- lmer(policy_11 ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + gini_z + (1|ctrcode), data=data_items, weights=weight_n)
 
-tab(reg13_tax, reg13_tax_abs, reg13_nat, reg13_nat_abs, show.ci=FALSE)
+tab(reg13_tax, reg13_sub, reg13_nat, reg13_tar, show.ci=FALSE)
+tab(reg13_tax_abs, reg13_nat_abs, show.ci=FALSE)
 
-# ¿Difieren las pendientes de los dos agentes en cada ítem?
-car::linearHypothesis(reg13_tax, "ego_neg_cwc = ego_human_cwc")
-car::linearHypothesis(reg13_nat, "ego_neg_cwc = ego_human_cwc")
 ```
 
 ### Nivel y dirección (verificación)
@@ -566,18 +606,20 @@ car::linearHypothesis(reg13_nat, "ego_neg_cwc = ego_human_cwc")
 # es positiva en migración, pero nula en subsidios y no significativa en policy_mean.
 # Estos modelos quedan como documentación.
 data_rev3 <- data_original %>% filter(employed == 1) %>%
-  select(all_of(names(data)), rel_migration, rel_subsidies) %>%
-  na.omit()
+  select(all_of(setdiff(names(data), "weight_n")), rel_migration, rel_subsidies) %>%
+  na.omit() %>%
+  group_by(ctrcode) %>%
+  mutate(weight_n = weight / mean(weight)) %>%
+  ungroup()
 
-reg15_mig <- lmer(rel_migration ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + ego_human_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + (1|ctrcode), data=data_rev3)
-reg15_sub <- lmer(rel_subsidies ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + ego_human_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + (1|ctrcode), data=data_rev3)
-reg15_lev <- lmer(policy_mean ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + ego_human_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + (1|ctrcode), data=data)
-
-tab(reg15_mig, reg15_sub, reg15_lev, show.ci=FALSE)
+reg15_mig <- lmer(rel_migration ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + gini_z + (1|ctrcode), data=data_rev3, weights=weight_n)
+reg15_sub <- lmer(rel_subsidies ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + gini_z + (1|ctrcode), data=data_rev3, weights=weight_n)
+# (b) El nivel general de apoyo es reg4_lev (sección Volumen)
+tab(reg15_mig, reg15_sub, reg4_lev, show.ci=FALSE)
 
 # (c) Media y porcentaje en la categoría máxima de cada ítem en la muestra analítica
 data_original %>% filter(employed == 1) %>%
-  filter(if_all(all_of(names(data)), ~ !is.na(.x))) %>%
+  filter(if_all(all_of(setdiff(names(data), "weight_n")), ~ !is.na(.x))) %>%
   summarise(across(policy_1:policy_12,
                    list(mean = ~ round(mean(.x, na.rm=TRUE), 2),
                         pct5 = ~ round(100*mean(.x == 5, na.rm=TRUE), 1)))) %>%
@@ -592,18 +634,18 @@ data_original %>% filter(employed == 1) %>%
 # salen de la especificación principal y se estiman juntas en un modelo contextual aparte.
 # Los coeficientes _cwc no deberían cambiar de manera apreciable.
 data %>%
-  distinct(ctrcode, ego_neg_mean, ego_pos_mean, socio_neg_mean, socio_pos_mean, gdp_pc_log_z) %>%
+  distinct(ctrcode, ego_neg_mean, ego_pos_mean, socio_neg_mean, socio_pos_mean, gdp_pc_log_z, gini_z) %>%
   select(-ctrcode) %>%
   cor() %>%
   round(2)
 
-reg19_inv_ctx <- lmer(rel_investment ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + ego_human_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + ego_neg_mean + ego_pos_mean + socio_neg_mean + socio_pos_mean + gdp_pc_log_z + (1|ctrcode), data=data)
-reg19_com_ctx <- lmer(rel_compensation ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + ego_human_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + ego_neg_mean + ego_pos_mean + socio_neg_mean + socio_pos_mean + gdp_pc_log_z + (1|ctrcode), data=data)
-reg19_pro_ctx <- lmer(rel_protection ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + ego_human_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + ego_neg_mean + ego_pos_mean + socio_neg_mean + socio_pos_mean + gdp_pc_log_z + (1|ctrcode), data=data)
-reg19_lev_ctx <- lmer(policy_mean ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + ego_human_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + ego_neg_mean + ego_pos_mean + socio_neg_mean + socio_pos_mean + gdp_pc_log_z + (1|ctrcode), data=data)
+reg19_inv_ctx <- lmer(rel_investment ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + ego_neg_mean + ego_pos_mean + socio_neg_mean + socio_pos_mean + gdp_pc_log_z + gini_z + (1|ctrcode), data=data, weights=weight_n)
+reg19_com_ctx <- lmer(rel_compensation ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + ego_neg_mean + ego_pos_mean + socio_neg_mean + socio_pos_mean + gdp_pc_log_z + gini_z + (1|ctrcode), data=data, weights=weight_n)
+reg19_pro_ctx <- lmer(rel_protection ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + ego_neg_mean + ego_pos_mean + socio_neg_mean + socio_pos_mean + gdp_pc_log_z + gini_z + (1|ctrcode), data=data, weights=weight_n)
+reg19_lev_ctx <- lmer(policy_mean ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + ego_neg_mean + ego_pos_mean + socio_neg_mean + socio_pos_mean + gdp_pc_log_z + gini_z + (1|ctrcode), data=data, weights=weight_n)
 
-tab(reg4_inv, reg19_inv_ctx, reg4_com, reg19_com_ctx, show.ci=FALSE, df.method="satterthwaite")
-tab(reg4_pro, reg19_pro_ctx, reg15_lev, reg19_lev_ctx, show.ci=FALSE, df.method="satterthwaite")
+tab(reg4_inv, reg19_inv_ctx, reg4_com, reg19_com_ctx, show.ci=FALSE)
+tab(reg4_pro, reg19_pro_ctx, reg4_lev, reg19_lev_ctx, show.ci=FALSE)
 ```
 
 ### Pendientes aleatorias e interacciones entre niveles (H4)
@@ -611,13 +653,14 @@ tab(reg4_pro, reg19_pro_ctx, reg15_lev, reg19_lev_ctx, show.ci=FALSE, df.method=
 ```{r}
 # ¿Varían entre países las pendientes sociotrópica y egotrópica?
 # Con 27 países, conviene reportar estas varianzas antes de las interacciones.
-reg7_inv_soc <- lmer(rel_investment ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + ego_human_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + (1 + socio_neg_cwc|ctrcode), data=data)
-reg7_com_soc <- lmer(rel_compensation ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + ego_human_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + (1 + socio_neg_cwc|ctrcode), data=data)
-reg7_pro_soc <- lmer(rel_protection ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + ego_human_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + (1 + socio_neg_cwc|ctrcode), data=data)
+reg7_inv_soc <- lmer(rel_investment ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + gini_z + (1 + socio_neg_cwc|ctrcode), data=data, weights=weight_n)
+reg7_com_soc <- lmer(rel_compensation ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + gini_z + (1 + socio_neg_cwc|ctrcode), data=data, weights=weight_n)
+# No converge con el optimizador por defecto; se usa bobyqa
+reg7_pro_soc <- lmer(rel_protection ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + gini_z + (1 + socio_neg_cwc|ctrcode), data=data, weights=weight_n, control = lmerControl(optimizer = "bobyqa"))
 
-reg7_inv_ego <- lmer(rel_investment ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + ego_human_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + (1 + ego_neg_cwc|ctrcode), data=data)
-reg7_com_ego <- lmer(rel_compensation ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + ego_human_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + (1 + ego_neg_cwc|ctrcode), data=data)
-reg7_pro_ego <- lmer(rel_protection ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + ego_human_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + (1 + ego_neg_cwc|ctrcode), data=data)
+reg7_inv_ego <- lmer(rel_investment ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + gini_z + (1 + ego_neg_cwc|ctrcode), data=data, weights=weight_n)
+reg7_com_ego <- lmer(rel_compensation ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + gini_z + (1 + ego_neg_cwc|ctrcode), data=data, weights=weight_n)
+reg7_pro_ego <- lmer(rel_protection ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + gini_z + (1 + ego_neg_cwc|ctrcode), data=data, weights=weight_n)
 
 anova(reg4_inv, reg7_inv_soc, refit=FALSE)
 anova(reg4_com, reg7_com_soc, refit=FALSE)
@@ -641,37 +684,36 @@ lattice::dotplot(ranef(reg7_pro_soc, condVar=TRUE))
 ```{r}
 # Moderadores de nivel 2: la institución que hace disponible cada repertorio, una
 # interacción por modelo y con la pendiente aleatoria correspondiente. Inversión:
-# gasto en políticas activas por punto de desempleo (almp_z). Protección: rigidez de
-# la protección del empleo (epl_z). La compensación no tiene indicador (la generosidad
-# del seguro de desempleo no cubre los 27 países).
+# gasto en políticas activas por punto de desempleo (almp_z). Compensación: cobertura
+# efectiva de las prestaciones por desempleo (ubcov_z, OIT, ODS 1.3.1).
 # Hipótesis de disponibilidad: la ansiedad se traduce con más fuerza en el repertorio
 # que las instituciones ya ofrecen (interacción positiva en el repertorio correspondiente).
 # Hipótesis termostática: donde la institución ya es fuerte, el apoyo relativo a su
 # repertorio es menor (efecto principal negativo, en la sección de efectos principales).
 
 # Pendiente sociotrópica
-reg8_inv_soc_almp <- lmer(rel_investment ~ socio_neg_cwc*almp_z + ego_neg_cwc + ego_pos_cwc + socio_pos_cwc + ego_human_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + (1 + socio_neg_cwc|ctrcode), data=data)
-reg8_pro_soc_epl <- lmer(rel_protection ~ socio_neg_cwc*epl_z + ego_neg_cwc + ego_pos_cwc + socio_pos_cwc + ego_human_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + (1 + socio_neg_cwc|ctrcode), data=data)
+# Como en 04-results.qmd, los cuatro modelos de interacción usan bobyqa
+reg8_inv_soc_almp <- lmer(rel_investment ~ socio_neg_cwc*almp_z + ego_neg_cwc + ego_pos_cwc + socio_pos_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + gini_z + ubcov_z + (1 + socio_neg_cwc|ctrcode), data=data, weights=weight_n, control = lmerControl(optimizer = "bobyqa"))
+reg8_com_soc_cov <- lmer(rel_compensation ~ socio_neg_cwc*ubcov_z + ego_neg_cwc + ego_pos_cwc + socio_pos_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + gini_z + almp_z + (1 + socio_neg_cwc|ctrcode), data=data, weights=weight_n, control = lmerControl(optimizer = "bobyqa"))
 
 # Pendiente egotrópica
-reg8_inv_ego_almp <- lmer(rel_investment ~ ego_neg_cwc*almp_z + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + ego_human_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + (1 + ego_neg_cwc|ctrcode), data=data)
-# No converge con el optimizador por defecto; se usa bobyqa
-reg8_pro_ego_epl <- lmer(rel_protection ~ ego_neg_cwc*epl_z + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + ego_human_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + (1 + ego_neg_cwc|ctrcode), data=data, control = lmerControl(optimizer = "bobyqa"))
+reg8_inv_ego_almp <- lmer(rel_investment ~ ego_neg_cwc*almp_z + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + gini_z + ubcov_z + (1 + ego_neg_cwc|ctrcode), data=data, weights=weight_n, control = lmerControl(optimizer = "bobyqa"))
+reg8_com_ego_cov <- lmer(rel_compensation ~ ego_neg_cwc*ubcov_z + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + gini_z + almp_z + (1 + ego_neg_cwc|ctrcode), data=data, weights=weight_n, control = lmerControl(optimizer = "bobyqa"))
 
 # H4b: oferta política de cierre (proporción de intención de voto por la derecha radical)
-#reg9_clo <- lmer(rel_closure ~ ego_tech_cwc*rr_share + socio_neg_cwc + ego_human_cwc + pos_tecnoestres + unnemployment + econ_country + econ_household + sex + age + educ + income + lm_position + platform + public + sector_cat + ego_tech_mean + socio_neg_mean + gdp_pc_log_z + (1 + ego_tech_cwc|ctrcode), data=data)
-#reg9_dif <- lmer(closure_vs_compensation ~ ego_tech_cwc*rr_share + socio_neg_cwc + ego_human_cwc + pos_tecnoestres + unnemployment + econ_country + econ_household + sex + age + educ + income + lm_position + platform + public + sector_cat + ego_tech_mean + socio_neg_mean + gdp_pc_log_z + (1 + ego_tech_cwc|ctrcode), data=data)
+#reg9_clo <- lmer(rel_closure ~ ego_tech_cwc*rr_share + socio_neg_cwc + pos_tecnoestres + unnemployment + econ_country + econ_household + sex + age + educ + income + lm_position + platform + public + sector_cat + ego_tech_mean + socio_neg_mean + gdp_pc_log_z + gini_z + (1 + ego_tech_cwc|ctrcode), data=data)
+#reg9_dif <- lmer(closure_vs_compensation ~ ego_tech_cwc*rr_share + socio_neg_cwc + pos_tecnoestres + unnemployment + econ_country + econ_household + sex + age + educ + income + lm_position + platform + public + sector_cat + ego_tech_mean + socio_neg_mean + gdp_pc_log_z + gini_z + (1 + ego_tech_cwc|ctrcode), data=data)
 
-tab(reg8_inv_soc_almp, reg8_pro_soc_epl, show.ci=FALSE, df.method="satterthwaite")
-tab(reg8_inv_ego_almp, reg8_pro_ego_epl, show.ci=FALSE, df.method="satterthwaite")
+tab(reg8_inv_soc_almp, reg8_com_soc_cov, show.ci=FALSE)
+tab(reg8_inv_ego_almp, reg8_com_ego_cov, show.ci=FALSE)
 ```
 
 ```{r}
-# Filas: pendiente sociotrópica y egotrópica. Columnas: inversión y protección.
+# Filas: pendiente sociotrópica y egotrópica. Columnas: inversión y compensación.
 int1 <- plot_model(reg8_inv_soc_almp, type="int", mdrt.values="meansd") + theme_bw()
-int2 <- plot_model(reg8_pro_soc_epl, type="int", mdrt.values="meansd") + theme_bw()
+int2 <- plot_model(reg8_com_soc_cov, type="int", mdrt.values="meansd") + theme_bw()
 int3 <- plot_model(reg8_inv_ego_almp, type="int", mdrt.values="meansd") + theme_bw()
-int4 <- plot_model(reg8_pro_ego_epl, type="int", mdrt.values="meansd") + theme_bw()
+int4 <- plot_model(reg8_com_ego_cov, type="int", mdrt.values="meansd") + theme_bw()
 
 ggarrange(int1, int2, int3, int4,
           ncol=2,
@@ -684,12 +726,12 @@ ggarrange(int1, int2, int3, int4,
 # Exploratorio: ¿la amenaza egotrópica pesa más donde la economía está más expuesta a la
 # automatización? Se usa el empleo en la industria (% del empleo total, WDI) como
 # aproximación, porque la exposición a IA generativa de la OIT no cubre los 27 países.
-reg21_inv_ind <- lmer(rel_investment ~ ego_neg_cwc*ind_emp_z + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + ego_human_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + (1 + ego_neg_cwc|ctrcode), data=data)
-reg21_com_ind <- lmer(rel_compensation ~ ego_neg_cwc*ind_emp_z + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + ego_human_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + (1 + ego_neg_cwc|ctrcode), data=data)
+reg21_inv_ind <- lmer(rel_investment ~ ego_neg_cwc*ind_emp_z + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + gini_z + (1 + ego_neg_cwc|ctrcode), data=data, weights=weight_n)
+reg21_com_ind <- lmer(rel_compensation ~ ego_neg_cwc*ind_emp_z + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + gini_z + (1 + ego_neg_cwc|ctrcode), data=data, weights=weight_n)
 # No converge con el optimizador por defecto; se usa bobyqa
-reg21_pro_ind <- lmer(rel_protection ~ ego_neg_cwc*ind_emp_z + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + ego_human_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + (1 + ego_neg_cwc|ctrcode), data=data, control = lmerControl(optimizer = "bobyqa"))
+reg21_pro_ind <- lmer(rel_protection ~ ego_neg_cwc*ind_emp_z + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + gini_z + (1 + ego_neg_cwc|ctrcode), data=data, weights=weight_n, control = lmerControl(optimizer = "bobyqa"))
 
-tab(reg21_inv_ind, reg21_com_ind, reg21_pro_ind, show.ci=FALSE, df.method="satterthwaite")
+tab(reg21_inv_ind, reg21_com_ind, reg21_pro_ind, show.ci=FALSE)
 ```
 
 
@@ -698,50 +740,36 @@ tab(reg21_inv_ind, reg21_com_ind, reg21_pro_ind, show.ci=FALSE, df.method="satte
 ```{r}
 # Exploratorio: ¿el clima nacional amplifica la creencia individual? Las medias de país
 # salen de la especificación principal; aquí socio_neg_mean entra como moderador.
-reg14_com_cli <- lmer(rel_compensation ~ socio_neg_cwc*socio_neg_mean + ego_neg_cwc + ego_pos_cwc + socio_pos_cwc + ego_human_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + (1 + socio_neg_cwc|ctrcode), data=data)
-reg14_pro_cli <- lmer(rel_protection ~ socio_neg_cwc*socio_neg_mean + ego_neg_cwc + ego_pos_cwc + socio_pos_cwc + ego_human_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + (1 + socio_neg_cwc|ctrcode), data=data)
+reg14_com_cli <- lmer(rel_compensation ~ socio_neg_cwc*socio_neg_mean + ego_neg_cwc + ego_pos_cwc + socio_pos_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + gini_z + (1 + socio_neg_cwc|ctrcode), data=data, weights=weight_n)
+reg14_pro_cli <- lmer(rel_protection ~ socio_neg_cwc*socio_neg_mean + ego_neg_cwc + ego_pos_cwc + socio_pos_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + gini_z + (1 + socio_neg_cwc|ctrcode), data=data, weights=weight_n)
 
-tab(reg14_com_cli, reg14_pro_cli, show.ci=FALSE, df.method="satterthwaite")
-```
-
-### Robustez con ponderadores
-
-```{r}
-reg4_com_w <- lmer(rel_compensation ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + ego_human_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + (1|ctrcode), data=data, weights=weight)
-reg4_pro_w <- lmer(rel_protection ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + ego_human_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + (1|ctrcode), data=data, weights=weight)
-
-tab(reg4_com, reg4_com_w, reg4_pro, reg4_pro_w, show.ci=FALSE)
+tab(reg14_com_cli, reg14_pro_cli, show.ci=FALSE)
 ```
 
 ### Robustez: controles con más casos perdidos
 
 ```{r}
-# Entre ocupados, sector (s26 = 97), preocupación por perder el empleo (q2b) y
-# desplazamiento por persona de otro país o deslocalización (q25b, q25d) explican cada uno
-# por sí solo más de 5% de los casos perdidos. Se estima reg4 sin cada uno de ellos, con la
+# Entre ocupados, sector (s26 = 97) y preocupación por perder el empleo (q2b) explican cada
+# uno por sí solo más de 5% de los casos perdidos. Se estima reg4 sin cada uno de ellos, con la
 # muestra que se recupera.
 data_nosec <- data_original %>% filter(employed == 1) %>%
-  select(all_of(setdiff(names(data), "sector_cat"))) %>% na.omit()
+  select(all_of(setdiff(names(data), c("sector_cat", "weight_n")))) %>% na.omit() %>%
+  group_by(ctrcode) %>% mutate(weight_n = weight / mean(weight)) %>% ungroup()
 data_nounemp <- data_original %>% filter(employed == 1) %>%
-  select(all_of(setdiff(names(data), "unnemployment"))) %>% na.omit()
-data_nohum <- data_original %>% filter(employed == 1) %>%
-  select(all_of(setdiff(names(data), "ego_human_cwc"))) %>% na.omit()
+  select(all_of(setdiff(names(data), c("unnemployment", "weight_n")))) %>% na.omit() %>%
+  group_by(ctrcode) %>% mutate(weight_n = weight / mean(weight)) %>% ungroup()
 
-reg4_inv_nosec <- lmer(rel_investment ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + ego_human_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + gdp_pc_log_z + (1|ctrcode), data=data_nosec)
-reg4_com_nosec <- lmer(rel_compensation ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + ego_human_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + gdp_pc_log_z + (1|ctrcode), data=data_nosec)
-reg4_pro_nosec <- lmer(rel_protection ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + ego_human_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + gdp_pc_log_z + (1|ctrcode), data=data_nosec)
+reg4_inv_nosec <- lmer(rel_investment ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + gdp_pc_log_z + gini_z + (1|ctrcode), data=data_nosec, weights=weight_n)
+reg4_com_nosec <- lmer(rel_compensation ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + gdp_pc_log_z + gini_z + (1|ctrcode), data=data_nosec, weights=weight_n)
+reg4_pro_nosec <- lmer(rel_protection ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + gdp_pc_log_z + gini_z + (1|ctrcode), data=data_nosec, weights=weight_n)
 
-reg4_inv_nounemp <- lmer(rel_investment ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + ego_human_cwc + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + (1|ctrcode), data=data_nounemp)
-reg4_com_nounemp <- lmer(rel_compensation ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + ego_human_cwc + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + (1|ctrcode), data=data_nounemp)
-reg4_pro_nounemp <- lmer(rel_protection ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + ego_human_cwc + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + (1|ctrcode), data=data_nounemp)
+reg4_inv_nounemp <- lmer(rel_investment ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + gini_z + (1|ctrcode), data=data_nounemp, weights=weight_n)
+reg4_com_nounemp <- lmer(rel_compensation ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + gini_z + (1|ctrcode), data=data_nounemp, weights=weight_n)
+reg4_pro_nounemp <- lmer(rel_protection ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + gini_z + (1|ctrcode), data=data_nounemp, weights=weight_n)
 
-reg4_inv_nohum <- lmer(rel_investment ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + (1|ctrcode), data=data_nohum)
-reg4_com_nohum <- lmer(rel_compensation ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + (1|ctrcode), data=data_nohum)
-reg4_pro_nohum <- lmer(rel_protection ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + unnemployment + sex + age + educ + income + lm_position + platform + public + sector_cat + gdp_pc_log_z + (1|ctrcode), data=data_nohum)
 
 tab(reg4_inv_nosec, reg4_com_nosec, reg4_pro_nosec, show.ci=FALSE)
 tab(reg4_inv_nounemp, reg4_com_nounemp, reg4_pro_nounemp, show.ci=FALSE)
-tab(reg4_inv_nohum, reg4_com_nohum, reg4_pro_nohum, show.ci=FALSE)
 ```
 
 ## Extensión: personas sin empleo
@@ -750,13 +778,16 @@ tab(reg4_inv_nohum, reg4_com_nohum, reg4_pro_nohum, show.ci=FALSE)
 # Entre desempleados e inactivos solo existe la vía sociotrópica, porque Q25
 # no se les pregunta. Se compara la pendiente sociotrópica entre ocupados y no ocupados.
 data_all <- data_original %>%
-  select(ctrcode, rel_investment, rel_compensation, rel_protection,
+  select(ctrcode, weight, rel_investment, rel_compensation, rel_protection,
          socio_neg_cwc, socio_neg_mean, socio_pos_cwc, socio_pos_mean, employed, sex, age, educ, income)
-data_all <- na.omit(data_all)
+data_all <- na.omit(data_all) %>%
+  group_by(ctrcode) %>%
+  mutate(weight_n = weight / mean(weight)) %>%
+  ungroup()
 
-reg10_inv <- lmer(rel_investment ~ socio_neg_cwc*employed + socio_pos_cwc + sex + age + educ + income + socio_neg_mean + socio_pos_mean + (1|ctrcode), data=data_all)
-reg10_com <- lmer(rel_compensation ~ socio_neg_cwc*employed + socio_pos_cwc + sex + age + educ + income + socio_neg_mean + socio_pos_mean + (1|ctrcode), data=data_all)
-reg10_pro <- lmer(rel_protection ~ socio_neg_cwc*employed + socio_pos_cwc + sex + age + educ + income + socio_neg_mean + socio_pos_mean + (1|ctrcode), data=data_all)
+reg10_inv <- lmer(rel_investment ~ socio_neg_cwc*employed + socio_pos_cwc + sex + age + educ + income + socio_neg_mean + socio_pos_mean + (1|ctrcode), data=data_all, weights=weight_n)
+reg10_com <- lmer(rel_compensation ~ socio_neg_cwc*employed + socio_pos_cwc + sex + age + educ + income + socio_neg_mean + socio_pos_mean + (1|ctrcode), data=data_all, weights=weight_n)
+reg10_pro <- lmer(rel_protection ~ socio_neg_cwc*employed + socio_pos_cwc + sex + age + educ + income + socio_neg_mean + socio_pos_mean + (1|ctrcode), data=data_all, weights=weight_n)
 
 tab(reg10_inv, reg10_com, reg10_pro, show.ci=FALSE)
 ```
@@ -768,12 +799,15 @@ tab(reg10_inv, reg10_com, reg10_pro, show.ci=FALSE)
 # en su empleo apoya igualmente más tecnología ante la escasez, hay razonamiento sociotrópico.
 # Se controla por el beneficio percibido en el propio empleo (ego_pos_cwc).
 data_st <- data_original %>% filter(employed == 1) %>%
-  select(ctrcode, shortage_tech, ego_ai_cwc, ego_neg_cwc, ego_pos_cwc, socio_neg_cwc, socio_pos_cwc,
+  select(ctrcode, weight, shortage_tech, ego_ai_cwc, ego_neg_cwc, ego_pos_cwc, socio_neg_cwc, socio_pos_cwc,
          sex, age, educ, income)
-data_st <- na.omit(data_st)
+data_st <- na.omit(data_st) %>%
+  group_by(ctrcode) %>%
+  mutate(weight_n = weight / mean(weight)) %>%
+  ungroup()
 
-reg11_st <- lmer(shortage_tech ~ ego_ai_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + sex + age + educ + income + (1|ctrcode), data=data_st)
-reg12_st <- lmer(shortage_tech ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + sex + age + educ + income + (1|ctrcode), data=data_st)
+reg11_st <- lmer(shortage_tech ~ ego_ai_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + sex + age + educ + income + (1|ctrcode), data=data_st, weights=weight_n)
+reg12_st <- lmer(shortage_tech ~ ego_neg_cwc + ego_pos_cwc + socio_neg_cwc + socio_pos_cwc + sex + age + educ + income + (1|ctrcode), data=data_st, weights=weight_n)
 
 tab(reg11_st, reg12_st, show.ci=FALSE)
 ```

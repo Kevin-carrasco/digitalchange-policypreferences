@@ -11,7 +11,7 @@ Este artículo sostiene que las preferencias frente al cambio tecnológico tiene
 
 Las percepciones sobre el propio empleo activan el interés propio y orientan la demanda hacia las respuestas que protegen o amplían la posición de cada persona, en una dirección que depende de si la amenaza se atribuye a riesgos que el Estado debe asegurar, a la tecnología y las empresas que la adoptan o a la competencia extranjera. Las expectativas sobre los efectos sociales de la IA activan, por su parte, normas de justicia que definen si el cambio tecnológico se percibe como un problema de adaptación o como un problema distributivo, y ambas percepciones se traducen en preferencias dentro de instituciones que pueden volver más disponible el repertorio correspondiente o reducir la demanda de expandirlo.
 
-De este modo, el estudio relaciona tres conjuntos de conceptos. Las preferencias frente al cambio tecnológico, en su volumen y su dirección, constituyen el objeto de estudio. Las percepciones sobre el propio empleo y las expectativas sobre los efectos sociales de la IA constituyen sus factores individuales, y la protección del empleo, las prestaciones por desempleo y las políticas activas del mercado laboral constituyen su contexto. Las secciones siguientes precisan cada concepto y presentan las hipótesis que se derivan de ellos.
+De este modo, el estudio relaciona tres conjuntos de conceptos. Las preferencias frente al cambio tecnológico, en su volumen y su dirección, constituyen el objeto de estudio. Las percepciones sobre el propio empleo y las expectativas sobre los efectos sociales de la IA constituyen sus factores individuales, y las prestaciones por desempleo y las políticas de mercado laboral constituyen su contexto. Las secciones siguientes precisan cada concepto y presentan las hipótesis que se derivan de ellos.
 
 ## Preferencias frente al cambio tecnológico
 
@@ -33,7 +33,7 @@ Respecto del volumen de la demanda, la teoría más establecida sostiene que el 
 
 Hay razones, sin embargo, para dudar de que esa traducción sea directa. El riesgo de automatización se asocia con más apoyo a la redistribución y con menos apoyo a la inversión social, sin relación con el apoyo a una renta básica [@busemeyer_social_2022], y los trabajadores que se sienten amenazados apoyan la compensación pasiva sin aumentar su apoyo a las políticas activas [@kurer_automation_2022]. La disposición a ampliar la intervención estatal depende, además, de la confianza en que el Estado actuará con eficiencia e imparcialidad [@rothstein_just_1998; @svallfors_government_2013]. Si quienes se sienten amenazados dudan de la capacidad estatal para gestionar el cambio tecnológico, su demanda puede concentrarse en respuestas específicas sin aumentar en su conjunto. La lógica del aseguramiento permite, con todo, formular una primera hipótesis:
 
-::: callout
+::: {.callout-note appearance="minimal" icon=false}
 
 H1: Quienes perciben una mayor amenaza tecnológica sobre su empleo demandarán más intervención estatal frente al cambio tecnológico.
 
@@ -43,7 +43,7 @@ Respecto de la dirección, la respuesta preferida depende de a qué se atribuye 
 
 La tesis de la compensación sostiene que la amenaza tecnológica se canaliza hacia el Estado como asegurador. Las prestaciones aseguran el ingreso de manera inmediata si el riesgo se materializa, mientras que los beneficios de la formación son inciertos, llegan a mediano plazo y dependen de la capacidad de cada persona para reconvertirse [@busemeyer_dealing_2023]. Los estudios que usan medidas subjetivas u ocupacionales del riesgo de automatización encuentran, entre quienes enfrentan más riesgo, un mayor apoyo a la compensación y un apoyo igual o menor a la inversión social [@busemeyer_social_2022; @kurer_automation_2022; @busemeyer_dealing_2023].
 
-::: callout
+::: {.callout-note appearance="minimal" icon=false}
 
 H2a: Quienes perciben una mayor amenaza tecnológica sobre su empleo darán mayor prioridad a la compensación y menor prioridad a la inversión.
 
@@ -53,7 +53,7 @@ La tesis de la protección sostiene que quienes se sienten amenazados buscan pre
 
 La segunda vía desplaza la amenaza tecnológica hacia la competencia extranjera. Los trabajadores más expuestos a la automatización muestran mayor oposición al comercio y a la inmigración, lo que sugiere que atribuyen a la apertura pérdidas que produce la tecnología [@wu_misattributed_2022], y apoyan en mayor medida a partidos de derecha radical que combinan la preferencia nacional con el proteccionismo económico [@im_losers_2019; @kurer_declining_2020; @anelli_individual_2021]. La evidencia experimental indica, con todo, que la sustitución por robots genera menos demanda de medidas preventivas que la deslocalización o la contratación de trabajadores extranjeros [@kuo_automation_2024]. Por cualquiera de las dos vías, la amenaza tecnológica debería aumentar la prioridad de la protección.
 
-::: callout
+::: {.callout-note appearance="minimal" icon=false}
 
 H2b: Quienes perciben una mayor amenaza tecnológica sobre su empleo darán mayor prioridad a la protección.
 
@@ -61,7 +61,7 @@ H2b: Quienes perciben una mayor amenaza tecnológica sobre su empleo darán mayo
 
 El beneficio esperado de la tecnología sitúa a la persona en una posición distinta. Quien anticipa que la tecnología mejorará sus condiciones de trabajo ocupa una posición complementaria con el cambio tecnológico, más cercana a la ampliación de sus tareas que a su sustitución. Según @gmyrek_generative_2023, esa ampliación es el efecto más probable de la IA generativa en muchas ocupaciones. La inversión en educación, reentrenamiento e infraestructura amplía las oportunidades de aprovechar la tecnología, mientras que las medidas de protección, al frenar el ajuste, ponen en riesgo esos beneficios [@gmyrek_generative_2023]. @busemeyer_preferred_2023 esperan que quienes usan tecnología de forma constante en el trabajo, tienen educación universitaria y mayores ingresos prefieran la inversión, y encuentran que incluso en esos grupos el aumento del riesgo percibido desplaza el apoyo hacia las políticas compensatorias. A su vez, la información de que las ganancias de la automatización se distribuyen ampliamente aumenta el apoyo a acelerarla, en especial entre los trabajadores menos expuestos [@lee_luddite_2024].
 
-::: callout
+::: {.callout-note appearance="minimal" icon=false}
 
 H3: Quienes esperan mayores beneficios de la tecnología en su empleo darán mayor prioridad a la inversión y menor prioridad a la protección.
 
@@ -77,7 +77,7 @@ La evidencia reciente es consistente con este razonamiento. La exposición direc
 
 Respecto del volumen, un diagnóstico distributivo convierte el cambio tecnológico en un problema colectivo que reclama la acción del Estado. A nivel agregado, la desigualdad se asocia con una mayor demanda de redistribución [@finseraas_income_2009], y la exposición de las economías a riesgos externos ha ido acompañada de una expansión del gasto social, que la hipótesis de compensación interpreta como una demanda de aseguramiento frente a esos riesgos [@rodrik_why_1998; @walter_globalization_2010].
 
-::: callout
+::: {.callout-note appearance="minimal" icon=false}
 
 H4: Las expectativas negativas sobre los efectos sociales de la IA aumentarán la demanda de intervención estatal frente al cambio tecnológico.
 
@@ -85,7 +85,7 @@ H4: Las expectativas negativas sobre los efectos sociales de la IA aumentarán l
 
 Respecto de la dirección, un diagnóstico distributivo favorece las respuestas que corrigen la distribución de los costos. La compensación redistribuye hacia quienes pierden, y la protección traslada los costos del ajuste desde los trabajadores de los sectores afectados hacia las empresas que automatizan, el presupuesto público o la competencia extranjera. Un diagnóstico de adaptación favorece, en cambio, la inversión, porque sitúa el problema en la preparación de las personas y del país para aprovechar las oportunidades esperadas y reduce la urgencia de compensar pérdidas o de frenar el ajuste.
 
-::: callout
+::: {.callout-note appearance="minimal" icon=false}
 
 H5a: Las expectativas negativas sobre los efectos sociales de la IA se asociarán con una mayor prioridad de la compensación y de la protección.
 
@@ -99,20 +99,20 @@ Las preferencias de política social se forman en contextos institucionales que 
 
 Las tipologías de regímenes describen con dificultad a los Estados de bienestar reales, que rara vez se ajustan a un tipo puro [@arts_three_2002], y los efectos de la protección social sobre la experiencia del riesgo dependen de componentes específicos. Las distintas formas de inseguridad laboral responden a instrumentos de protección distintos, mientras que la generosidad general del Estado de bienestar no tiene un efecto sistemático sobre ellas [@anderson_workers_2007]. Las políticas que aseguran el ingreso y la empleabilidad reducen la inseguridad laboral percibida [@chung_institutions_2011], y el temor a los robots es, en alguna medida, mayor donde los trabajadores están menos protegidos frente al mercado [@dekker_fear_2017]. En el caso de la automatización, el tamaño del Estado de bienestar modera la relación entre el riesgo y las preferencias de política social [@busemeyer_social_2022].
 
-Estos resultados justifican desagregar el contexto institucional según los repertorios. La legislación de protección del empleo corresponde a la protección, porque comparte su objetivo de preservar los puestos existentes y constituye la principal preocupación de los trabajadores con empleos estables [@rueda_social_2007]. El gasto en prestaciones por desempleo corresponde a la compensación, y el gasto en políticas activas del mercado laboral, que incluye la capacitación y el reentrenamiento, corresponde a la inversión. Esta correspondencia sigue la lógica de complementariedad institucional entre la protección del empleo, la protección frente al desempleo y la formación de calificaciones [@estevez-abe_social_2001].
+Estos resultados justifican desagregar el contexto institucional según los repertorios. Las prestaciones por desempleo corresponden a la compensación y las políticas de mercado laboral, a la inversión. En este estudio, las políticas de mercado laboral se refieren a las políticas activas, que buscan que las personas consigan o conserven un empleo mediante la capacitación, el reentrenamiento y otros programas. Esta correspondencia sigue la lógica de complementariedad institucional entre la protección frente al desempleo y la formación de calificaciones [@estevez-abe_social_2001].
 
 La literatura sobre retroalimentación de las políticas públicas sostiene que las instituciones existentes moldean las preferencias porque distribuyen recursos y ofrecen marcos para interpretar los problemas [@pierson_when_1993]. Una implicancia de este argumento es que las instituciones vuelven disponibles ciertas respuestas. Donde un repertorio está institucionalizado, las personas lo conocen, lo consideran viable y lo asocian con la manera habitual de enfrentar los riesgos, de modo que quienes perciben amenazas tenderían a canalizar su demanda hacia él. A este mecanismo puede sumarse otro de carácter relacional. Las instituciones restringen las prácticas de las personas, esas prácticas se interpretan como expresión de preferencias compartidas y las respuestas institucionalizadas adquieren así una validez social aparente [@puga_ideology_2023]. En China, el riesgo de automatización y el apoyo a la responsabilidad estatal se refuerzan mutuamente donde los sistemas locales de bienestar son más generosos [@fan_how_2024], un patrón consistente con este argumento. La expectativa de disponibilidad compite con el argumento de que las instituciones que uniforman los riesgos, como una protección del empleo fuerte o prestaciones desvinculadas de la participación laboral, reducen el peso del riesgo individual en las preferencias [@gingrich_preferences_2012].
 
-::: callout
+::: {.callout-note appearance="minimal" icon=false}
 
-H6a: En los países donde la institución correspondiente a un repertorio está más desarrollada, la amenaza tecnológica y las expectativas negativas sobre la IA se traducirán en mayor medida en prioridad para ese repertorio.
+H6a: En los países con mayor gasto en políticas de mercado laboral, la amenaza tecnológica y las expectativas negativas sobre la IA se traducirán en mayor medida en prioridad para la inversión, y en los países con mayor cobertura de las prestaciones por desempleo, en prioridad para la compensación.
 
 :::
 
 El modelo termostático plantea una expectativa diferente, referida al nivel del apoyo. Según este modelo, la opinión pública ajusta su demanda de más intervención en un ámbito en función de lo que el Estado ya hace en él, de modo que la demanda relativa disminuye donde la política es más generosa [@wlezien_public_1995a; @soroka_degrees_2010]. En el ámbito tecnológico, @busemeyer_dealing_2023 encuentran que el apoyo a las prestaciones es algo menor en los países con tasas de reemplazo más altas, lo que interpretan como un efecto de retroalimentación que limita su propia expansión. Ambas expectativas pueden operar a la vez, ya que en esos mismos datos las diferencias entre contextos se concentran entre las personas de bajo riesgo y se reducen a medida que el riesgo percibido aumenta.
 
-::: callout
+::: {.callout-note appearance="minimal" icon=false}
 
-H6b: En los países donde la institución correspondiente a un repertorio está más desarrollada, ese repertorio tendrá menor prioridad.
+H6b: En los países con mayor gasto en políticas de mercado laboral, la inversión tendrá menor prioridad, y en los países con mayor cobertura de las prestaciones por desempleo, la compensación tendrá menor prioridad.
 
 :::
